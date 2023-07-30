@@ -8,10 +8,6 @@ namespace Blah.Features.Tests
 {
 internal class MockFeatureInvalidSignalProducer : BlahFeatureBase
 {
-	public override bool IsEnabled => true;
-
-	public override int SystemsGroupId => 0;
-
 	public override HashSet<Type> Consumers { get; } = new()
 	{
 		typeof(MockCmdA),

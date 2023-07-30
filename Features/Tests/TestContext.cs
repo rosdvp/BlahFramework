@@ -9,6 +9,7 @@ internal class TestContext
 	{
 		var context = new MockContext();
 		context.Init(null, null);
+
 		context.RequestSwitchSystemsGroup(0, false);
 
 		var producer = context.Pools.GetSignalProducer<MockCmdA>();

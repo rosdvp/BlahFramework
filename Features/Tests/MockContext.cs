@@ -4,10 +4,15 @@ namespace Blah.Features.Tests
 {
 internal class MockContext : BlahContext
 {
-	protected override IReadOnlyList<BlahFeatureBase> Features { get; } = new BlahFeatureBase[]
+	protected override Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; } = new()
 	{
-		new MockFeatureB(),
-		new MockFeatureA()
+		{
+			0, new List<BlahFeatureBase>
+			{
+				new MockFeatureA(),
+				new MockFeatureB()
+			}
+		}
 	};
 }
 }

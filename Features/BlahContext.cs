@@ -24,38 +24,36 @@ public abstract class BlahContext
 		_poolsContext    = new BlahPoolsContext();
 		_systemsContext  = new BlahSystemsContext(systemsInitData);
 
-		foreach (var feature in Features)
-		foreach (var serviceType in feature.Services)
-			_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
-		_servicesContext.FinalizeInit();
-
-
-		var groupIdToSystemsTypes = new Dictionary<int, List<Type>>();
-		foreach (var feature in Features)
+		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
+		foreach (var feature in features)
 		{
 			BlahFeaturesValidator.Validate(feature);
 
-			if (groupIdToSystemsTypes.TryGetValue(feature.SystemsGroupId, out var systems))
-				systems.AddRange(feature.Systems);
-			else
-				groupIdToSystemsTypes[feature.SystemsGroupId] = new List<Type>(feature.Systems);
+			foreach (var serviceType in feature.Services)
+				_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
 		}
-		
+		_servicesContext.FinalizeInit();
+
 		var injector = new BlahInjector();
 		injector.AddSource(_servicesContext, typeof(BlahServiceBase), nameof(BlahServicesContext.Get));
 		injector.AddSource(_poolsContext, typeof(IBlahSignalConsumer<>), nameof(BlahPoolsContext.GetSignalConsumer));
 		injector.AddSource(_poolsContext, typeof(IBlahSignalProducer<>), nameof(BlahPoolsContext.GetSignalProducer));
 		injector.AddSource(_poolsContext, typeof(IBlahDataConsumer<>), nameof(BlahPoolsContext.GetDataConsumer));
 		injector.AddSource(_poolsContext, typeof(IBlahDataProducer<>), nameof(BlahPoolsContext.GetDataProducer));
-		
-		foreach (var pair in groupIdToSystemsTypes)
+
+		var tempSystemsTypes = new List<Type>();
+		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
 		{
-			int groupId      = pair.Key;
-			var systemsTypes = pair.Value;
-			BlahOrderer.Order(ref systemsTypes);
+			tempSystemsTypes.Clear();
+
+			foreach (var feature in features)
+			foreach (var systemType in feature.Systems)
+				tempSystemsTypes.Add(systemType);
+
+			BlahOrderer.Order(ref tempSystemsTypes);
 
 			var group = _systemsContext.AddGroup(groupId);
-			foreach (var systemType in systemsTypes)
+			foreach (var systemType in tempSystemsTypes)
 			{
 				var system = (IBlahSystem)Activator.CreateInstance(systemType);
 				injector.InjectInto(system);
@@ -63,7 +61,7 @@ public abstract class BlahContext
 			}
 		}
 	}
-	
+
 	public BlahPoolsContext Pools => _poolsContext;
 
 	public void Run()
@@ -73,11 +71,11 @@ public abstract class BlahContext
 		{
 			_poolsContext.RemoveAll();
 		}
-		
+
 		_systemsContext.Run();
 		_poolsContext.ToNextFrame();
 	}
-	
+
 	public void RequestSwitchSystemsGroup(int? groupId, bool withPoolsRemoveAll)
 	{
 		_systemsContext.RequestSwitchGroup(groupId);
@@ -85,6 +83,12 @@ public abstract class BlahContext
 	}
 
 
-	protected abstract IReadOnlyList<BlahFeatureBase> Features { get; }
+	protected abstract Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; }
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+#if UNITY_EDITOR
+	public string DebugGetSystemsOrderMsg() => _systemsContext.DebugGetSystemsOrderMsg();
+#endif
 }
 }
