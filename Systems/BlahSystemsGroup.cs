@@ -5,7 +5,7 @@ namespace Blah.Systems
 {
 public class BlahSystemsGroup
 {
-	private readonly HashSet<IBlahSystem>         _allSystems         = new();
+	private readonly List<IBlahSystem>         _allSystems         = new();
 	private readonly List<IBlahInitSystem>        _initSystems        = new();
 	private readonly List<IBlahRunSystem>         _runSystems         = new();
 	private readonly List<IBlahResumePauseSystem> _resumePauseSystems = new();
@@ -15,7 +15,7 @@ public class BlahSystemsGroup
 	private bool _isInited;
 	private bool _isActive;
 
-	public IReadOnlyCollection<IBlahSystem> GetAllSystems() => _allSystems;
+	public IReadOnlyList<IBlahSystem> GetAllSystems() => _allSystems;
 
 	/// <summary>
 	/// Add system to the group.

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Blah.Systems
 {
@@ -54,8 +55,8 @@ public class BlahSystemsContext
 
 		if (groupId == null || _groupsMap.TryGetValue(groupId.Value, out _))
 		{
-			_requestedSwitchGroupId   = groupId;
-			IsSwitchGroupRequested = true;
+			_requestedSwitchGroupId = groupId;
+			IsSwitchGroupRequested  = true;
 		}
 		else
 			throw new Exception($"Group with id {groupId} does not exists.");
@@ -88,8 +89,26 @@ public class BlahSystemsContext
 			PerformSwitch();
 			IsSwitchGroupRequested = false;
 		}
-		
+
 		_activeGroup?.RunSystems();
 	}
+
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+#if UNITY_EDITOR
+	public string DebugGetSystemsOrderMsg()
+	{
+		var sb = new StringBuilder();
+		foreach ((int groupId, var group) in _groupsMap)
+		{
+			sb.AppendLine($"--- group {groupId} ---");
+			foreach (var system in group.GetAllSystems())
+				sb.AppendLine(system.GetType().Name);
+			sb.AppendLine("---------------------");
+		}
+		return sb.ToString();
+	}
+#endif
 }
 }
