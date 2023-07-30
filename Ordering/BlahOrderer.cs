@@ -37,17 +37,13 @@ public static class BlahOrderer
 		foreach (var field in fields)
 		{
 			var fieldType = field.FieldType;
-			if (fieldType.BaseType == typeof(IBlahDataConsumer<>) ||
-			    fieldType.BaseType == typeof(IBlahSignalConsumer<>))
+			if (fieldType.IsGenericType)
 			{
-				var type = fieldType.GenericTypeArguments[0];
-				cache.AddConsumingSystem(system, type);
-			}
-			if (fieldType.BaseType == typeof(IBlahDataProducer<>) ||
-			    fieldType.BaseType == typeof(IBlahSignalProducer<>))
-			{
-				var type = fieldType.GenericTypeArguments[0];
-				cache.AddProducingSystem(system, type);
+				var fieldGenType = fieldType.GetGenericTypeDefinition();
+				if (fieldGenType == typeof(IBlahSignalConsumer<>))
+					cache.AddConsumingSystem(system, fieldType.GenericTypeArguments[0]);
+				else if (fieldGenType == typeof(IBlahSignalProducer<>))
+					cache.AddProducingSystem(system, fieldType.GenericTypeArguments[0]);
 			}
 		}
 	}
@@ -101,7 +97,7 @@ public static class BlahOrderer
 			if (_consumingTypeToSystems.TryGetValue(type, out var consumingSystems))
 				consumingSystems.Add(system);
 			else
-				_consumingTypeToSystems[type] = new HashSet<Type> { type };
+				_consumingTypeToSystems[type] = new HashSet<Type> { system };
 		}
 		
 		public HashSet<Type> GetConsumingTypesOfSystem(Type system)
@@ -122,7 +118,7 @@ public static class BlahOrderer
 			if (_producingTypeToSystems.TryGetValue(type, out var producingSystems))
 				producingSystems.Add(system);
 			else
-				_producingTypeToSystems[type] = new HashSet<Type> { type };
+				_producingTypeToSystems[type] = new HashSet<Type> { system };
 		}
 
 		public HashSet<Type> GetProducingSystems(Type producingType)
