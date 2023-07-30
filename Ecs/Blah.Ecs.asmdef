@@ -1,0 +1,16 @@
+{
+    "name": "Blah.Ecs",
+    "rootNamespace": "",
+    "references": [
+        "GUID:0d082d3f89160f64283bd62ecb15a718"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

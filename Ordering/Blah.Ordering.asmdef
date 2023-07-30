@@ -1,0 +1,17 @@
+{
+    "name": "Blah.AutoOrder",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c176af676f993494da2dfb5eca868efd",
+        "GUID:36170ce64e4049f4e89ab25634e39037"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

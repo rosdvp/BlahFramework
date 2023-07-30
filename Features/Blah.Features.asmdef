@@ -1,0 +1,20 @@
+{
+    "name": "Blah.Features",
+    "rootNamespace": "",
+    "references": [
+        "GUID:c176af676f993494da2dfb5eca868efd",
+        "GUID:bf9f9844a6c7cd34193c3081016eedef",
+        "GUID:36170ce64e4049f4e89ab25634e39037",
+        "GUID:ab13cd081db2d814bbd9230b3f9dfcf8",
+        "GUID:5267bae9dbc87de42933b820c17a7f6f"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
