@@ -13,5 +13,7 @@ public class BlahServiceLazy<T> where T: BlahServiceBase
 	private T _service;
 
 	public T Get => _service ??= _context.Get<T>();
+
+	public void InitIfNot() => _context.Get<T>();
 }
 }
