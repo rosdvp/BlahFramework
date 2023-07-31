@@ -12,8 +12,9 @@ public abstract class BlahContextBase
 {
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
+	private BlahPoolsContext _poolsContext = new();
+	
 	private BlahServicesContext _servicesContext;
-	private BlahPoolsContext    _poolsContext;
 	private BlahSystemsContext  _systemsContext;
 
 	private bool _isRequestedSwitchSystemsGroupWithPoolsRemoveAll;
@@ -21,7 +22,6 @@ public abstract class BlahContextBase
 	public void Init(IBlahServicesInitData servicesInitData, IBlahSystemsInitData systemsInitData)
 	{
 		_servicesContext = new BlahServicesContext(servicesInitData);
-		_poolsContext    = new BlahPoolsContext();
 		_systemsContext  = new BlahSystemsContext(systemsInitData);
 
 		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
@@ -62,7 +62,8 @@ public abstract class BlahContextBase
 		}
 	}
 
-	public BlahPoolsContext Pools => _poolsContext;
+	public BlahPoolsContext    Pools    => _poolsContext;
+	public BlahServicesContext Services => _servicesContext;
 
 	public void Run()
 	{
