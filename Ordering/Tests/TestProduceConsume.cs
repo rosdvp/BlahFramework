@@ -61,17 +61,17 @@ internal class TestProduceConsume
 			typeof(SystemF),
 			typeof(SystemG),
 		};
-		var expected = new[]
-		{
-			typeof(SystemF),
-			typeof(SystemG),
-			typeof(SystemH),
-			typeof(SystemI),
-		};
 		
 		BlahOrderer.Order(ref systems);
+
+		int indexF = systems.IndexOf(typeof(SystemF));
+		int indexG = systems.IndexOf(typeof(SystemG));
+		int indexH = systems.IndexOf(typeof(SystemH));
+		int indexI = systems.IndexOf(typeof(SystemI));
 		
-		AssertHelper.AssertEqual(expected, systems);
+		Assert.IsTrue(indexF < indexH, $"F({indexF}) < H({indexH})");
+		Assert.IsTrue(indexG < indexH, $"G({indexG}) < H({indexH})");
+		Assert.IsTrue(indexH < indexI, $"H({indexH}) < I({indexI})");
 	}
 	
 

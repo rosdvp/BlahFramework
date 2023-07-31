@@ -29,36 +29,46 @@ public static class BlahOrderer
 
 	private static void FillConsumersProducers(Cache cache, Type system)
 	{
-		var fields = system.GetFields(
-			BindingFlags.Instance |
-			BindingFlags.NonPublic |
-			BindingFlags.Public
-		);
-		foreach (var field in fields)
+		var childSystem = system;
+		while (childSystem?.Namespace?.StartsWith("System.") == false)
 		{
-			var fieldType = field.FieldType;
-			if (fieldType.IsGenericType)
+			var fields = childSystem.GetFields(
+				BindingFlags.Instance |
+				BindingFlags.NonPublic |
+				BindingFlags.Public
+			);
+			foreach (var field in fields)
 			{
-				var fieldGenType = fieldType.GetGenericTypeDefinition();
-				if (fieldGenType == typeof(IBlahSignalConsumer<>))
-					cache.AddConsumingSystem(system, fieldType.GenericTypeArguments[0]);
-				else if (fieldGenType == typeof(IBlahSignalProducer<>))
-					cache.AddProducingSystem(system, fieldType.GenericTypeArguments[0]);
+				var fieldType = field.FieldType;
+				if (fieldType.IsGenericType)
+				{
+					var fieldGenType = fieldType.GetGenericTypeDefinition();
+					if (fieldGenType == typeof(IBlahSignalConsumer<>))
+						cache.AddConsumingSystem(system, fieldType.GenericTypeArguments[0]);
+					else if (fieldGenType == typeof(IBlahSignalProducer<>))
+						cache.AddProducingSystem(system, fieldType.GenericTypeArguments[0]);
+				}
 			}
+			childSystem = childSystem.BaseType;
 		}
 	}
 
 	private static void FillAfterSystemsByAttributes(Cache cache, Type system)
 	{
-		foreach (var attr in system.GetCustomAttributes())
-			if (attr is BlahAfterAttribute afterAttr)
-			{
-				cache.AddSystemsDependency(afterAttr.SystemGoingBefore, system);
-			}
-			else if (attr is BlahBeforeAttribute beforeAttr)
-			{
-				cache.AddSystemsDependency(system, beforeAttr.SystemGoingAfter);
-			}
+		var childSystem = system;
+		while (childSystem?.Namespace?.StartsWith("System.") == false)
+		{
+			foreach (var attr in childSystem.GetCustomAttributes())
+				if (attr is BlahAfterAttribute afterAttr)
+				{
+					cache.AddSystemsDependency(afterAttr.SystemGoingBefore, system);
+				}
+				else if (attr is BlahBeforeAttribute beforeAttr)
+				{
+					cache.AddSystemsDependency(system, beforeAttr.SystemGoingAfter);
+				}
+			childSystem = childSystem.BaseType;
+		}
 	}
 
 	private static void FillAfterSystemsByConsumersProducers(Cache cache, Type system)
