@@ -1,0 +1,18 @@
+{
+    "name": "Blah.Features.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:f48ef6c6822f9b24297877a3a9c05b11"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
