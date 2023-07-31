@@ -29,7 +29,7 @@ public class BlahInjector
 	{
 		var targetType = target.GetType();
 
-		while (targetType?.Namespace?.StartsWith("System.") == false)
+		while (targetType?.Namespace?.StartsWith("System") == false)
 		{
 			var fields = targetType.GetFields(
 				BindingFlags.Instance |

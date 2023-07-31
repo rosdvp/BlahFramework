@@ -95,5 +95,22 @@ internal class TestValidator
 			Assert.AreEqual(typeof(MockFeatureInvalidService.MockInvalidService), exc.InvalidType);
 		}
 	}
+
+	[Test]
+	public void Test_InvalidExcessiveConsumer_Throws()
+	{
+		var feature = new MockFeatureExcessiveSignalConsumer();
+		try
+		{
+			BlahFeaturesValidator.Validate(feature);
+			Assert.Fail();
+		}
+		catch (BlahFeatureValidatorException exc)
+		{
+			Assert.AreEqual(feature, exc.Feature);
+			Assert.AreEqual(null, exc.SystemType);
+			Assert.AreEqual(typeof(MockFeatureExcessiveSignalConsumer.MockInvalidSignal), exc.InvalidType);
+		}
+	}
 }
 }

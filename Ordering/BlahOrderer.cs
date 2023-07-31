@@ -30,7 +30,7 @@ public static class BlahOrderer
 	private static void FillConsumersProducers(Cache cache, Type system)
 	{
 		var childSystem = system;
-		while (childSystem?.Namespace?.StartsWith("System.") == false)
+		while (childSystem?.Namespace?.StartsWith("System") == false)
 		{
 			var fields = childSystem.GetFields(
 				BindingFlags.Instance |
@@ -56,7 +56,7 @@ public static class BlahOrderer
 	private static void FillAfterSystemsByAttributes(Cache cache, Type system)
 	{
 		var childSystem = system;
-		while (childSystem?.Namespace?.StartsWith("System.") == false)
+		while (childSystem?.Namespace?.StartsWith("System") == false)
 		{
 			foreach (var attr in childSystem.GetCustomAttributes())
 				if (attr is BlahAfterAttribute afterAttr)

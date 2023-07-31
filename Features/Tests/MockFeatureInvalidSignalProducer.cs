@@ -8,15 +8,9 @@ namespace Blah.Features.Tests
 {
 internal class MockFeatureInvalidSignalProducer : BlahFeatureBase
 {
-	public override HashSet<Type> Consumers { get; } = new()
-	{
-		typeof(MockCmdA),
-	};
+	public override HashSet<Type> Consumers { get; }
 
-	public override HashSet<Type> Producers { get; } = new()
-	{
-		typeof(MockEventA)
-	};
+	public override HashSet<Type> Producers { get; }
 
 	public override IReadOnlyList<Type> Systems { get; } = new[]
 	{

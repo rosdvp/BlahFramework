@@ -35,6 +35,9 @@ internal class MockFeatureB : BlahFeatureBase
 
 		private IBlahDataProducer<MockDataB> _data;
 
+		private MockServiceA _serviceA;
+		private MockServiceB _serviceB;
+
 		public void Run()
 		{
 			foreach (ref var ev in _event)

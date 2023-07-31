@@ -6,9 +6,12 @@ using Blah.Systems;
 
 namespace Blah.Features.Tests
 {
-internal class MockFeatureInvalidSignalConsumer : BlahFeatureBase
+internal class MockFeatureExcessiveSignalConsumer : BlahFeatureBase
 {
-	public override HashSet<Type> Consumers { get; }
+	public override HashSet<Type> Consumers { get; } = new()
+	{
+		typeof(MockInvalidSignal),
+	};
 
 	public override HashSet<Type> Producers { get; }
 
@@ -24,8 +27,6 @@ internal class MockFeatureInvalidSignalConsumer : BlahFeatureBase
 
 	public class MockInvalidSystem : IBlahRunSystem
 	{
-		private IBlahSignalConsumer<MockInvalidSignal> _pool;
-
 		public void Run() { }
 	}
 }

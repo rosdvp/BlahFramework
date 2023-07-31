@@ -34,6 +34,8 @@ internal class MockFeatureA : BlahFeatureBase
 	
 		private IBlahSignalProducer<MockEventA> _event;
 
+		private MockServiceA _serviceA;
+
 		public void Run()
 		{
 			foreach (ref var cmd in _cmd)
