@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using Blah.Pools;
 using Blah.Services;
 using UnityEditor;
@@ -119,44 +120,42 @@ internal static class EditorBlahFeaturesAutoFiller
 			system = system.BaseType;
 		}
 	}
-	
+
 	private static void PatchFeature(
-		string filePath, 
+		string        filePath,
 		HashSet<Type> services,
 		HashSet<Type> consumers,
 		HashSet<Type> producers)
 	{
-		const string servicesHeader  = "HashSet<Type> Services";
-		const string consumersHeader = "HashSet<Type> Consumers";
-		const string producersHeader = "HashSet<Type> Producers";
-		const string nextHeader      = "public";
+		const string servicesPattern = "(HashSet<Type>.*?Services)(.|\n)*?(public)";
+		const string consumersPattern = "(HashSet<Type>.*?Consumers)(.|\n)*?(public)";
+		const string producersPattern = "(HashSet<Type>.*?Producers)(.|\n)*?(public)";
 
 		string file = File.ReadAllText(filePath);
 
-		file = PatchStr(file, servicesHeader, nextHeader, services);
-		file = PatchStr(file, consumersHeader, nextHeader, consumers);
-		file = PatchStr(file, producersHeader, nextHeader, producers);
-		
-		File.WriteAllText(filePath, file);
+		file = PatchStr(file, servicesPattern, services);
+		file = PatchStr(file,  consumersPattern, consumers);
+		file = PatchStr(file, producersPattern, producers);
+
+		File.WriteAllText(filePath, file, Encoding.UTF8);
 	}
 
-	private static string PatchStr(string str, string startHeader, string nextHeader, HashSet<Type> types)
+	private static string PatchStr(string str, string pattern, HashSet<Type> types)
 	{
-		int startIdx = str.IndexOf(startHeader, StringComparison.Ordinal) + startHeader.Length;
-		int endIdx   = str.IndexOf(nextHeader, startIdx, StringComparison.Ordinal) - 1;
-
-		if (startIdx < 0 || endIdx < 0)
-			throw new Exception("incorrect feature format");
-
 		var sb = new StringBuilder();
-		sb.Append("{ get; } = new()");
-		sb.AppendLine();
-		sb.AppendLine("{");
-		foreach (var type in types)
-			sb.AppendLine($"typeof({type.Name}),");
-		sb.AppendLine("};");
-		
-		return str[..startIdx] + sb + str[endIdx..];
+		if (types.Count > 0)
+		{
+			sb.AppendLine("{ get; } = new()");
+			sb.AppendLine("{");
+			foreach (var type in types)
+				sb.AppendLine($"typeof({type.Name}),");
+			sb.AppendLine("};");
+		}
+		else
+		{
+			sb.AppendLine("{ get; }");
+		}
+		return Regex.Replace(str, pattern, $"$1{sb}$3", RegexOptions.Multiline);
 	}
 
 
