@@ -11,6 +11,9 @@ public static class BlahFeaturesValidator
 {
 	public static void Validate(BlahFeatureBase feature)
 	{
+		if (feature.Systems == null)
+			return;
+		
 		var usedService   = feature.Services == null ? null : new HashSet<Type>();
 		var usedConsumers = feature.Consumers == null ? null : new HashSet<Type>();
 		var usedProducers = feature.Producers == null ? null : new HashSet<Type>();
