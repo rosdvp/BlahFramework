@@ -9,6 +9,30 @@ namespace Blah.Features.Editor
 {
 internal class EditorBlahFeatures
 {
+	[MenuItem("Blah/Report features validation")]
+	public static void EditorReportFeaturesValidation()
+	{
+		var sb = new StringBuilder();
+		sb.AppendLine("--- features validation report ---");
+		
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == typeof(BlahFeatureBase))
+			{
+				var feature = (BlahFeatureBase)Activator.CreateInstance(type);
+				try
+				{
+					BlahFeaturesValidator.Validate(feature);
+				}
+				catch (BlahFeatureValidatorException exc)
+				{
+					sb.AppendLine(exc.Message);
+				}
+			}
+
+		sb.AppendLine("---------------------------------");
+		Debug.Log(sb.ToString());
+	}
+	
 	[MenuItem("Blah/Report unused features")]
 	public static void EditorReportUnUsedFeatures()
 	{
