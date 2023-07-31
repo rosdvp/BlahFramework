@@ -107,7 +107,7 @@ internal static class EditorBlahFeaturesAutoFiller
 				var genArgType  = field.FieldType.GenericTypeArguments[0];
 
 				if (genBaseType == typeof(IBlahSignalConsumer<>) ||
-				    genBaseType == typeof(IBlahDataProducer<>))
+				    genBaseType == typeof(IBlahDataConsumer<>))
 				{
 					consumers.Add(genArgType);
 				}
