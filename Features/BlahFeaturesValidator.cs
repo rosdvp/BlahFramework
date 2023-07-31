@@ -7,24 +7,6 @@ using UnityEditor;
 
 namespace Blah.Features
 {
-public class BlahFeatureValidatorException : Exception
-{
-	public readonly BlahFeatureBase Feature;
-	public readonly Type            SystemType;
-	public readonly Type            InvalidType;
-
-	public BlahFeatureValidatorException(BlahFeatureBase feature, Type systemType, Type invalidType)
-		: base($"in feature {feature.GetType().Name}, " +
-		       (systemType == null
-			       ? $"no system uses {invalidType.Name}"
-			       : $"system {systemType.Name} not allowed to use {invalidType.Name}"))
-	{
-		Feature     = feature;
-		SystemType  = systemType;
-		InvalidType = invalidType;
-	}
-}
-
 public static class BlahFeaturesValidator
 {
 	public static void Validate(BlahFeatureBase feature)
@@ -109,6 +91,25 @@ public static class BlahFeaturesValidator
 				if (!usedProducers.Contains(producer))
 					throw new BlahFeatureValidatorException(feature, null, producer);
 		}
+	}
+}
+
+
+public class BlahFeatureValidatorException : Exception
+{
+	public readonly BlahFeatureBase Feature;
+	public readonly Type            SystemType;
+	public readonly Type            InvalidType;
+
+	internal BlahFeatureValidatorException(BlahFeatureBase feature, Type systemType, Type invalidType)
+		: base($"in feature {feature.GetType().Name}, " +
+		       (systemType == null
+			       ? $"no system uses {invalidType.Name}"
+			       : $"system {systemType.Name} not allowed to use {invalidType.Name}"))
+	{
+		Feature     = feature;
+		SystemType  = systemType;
+		InvalidType = invalidType;
 	}
 }
 }
