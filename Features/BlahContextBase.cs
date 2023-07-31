@@ -8,7 +8,7 @@ using Blah.Systems;
 
 namespace Blah.Features
 {
-public abstract class BlahContext
+public abstract class BlahContextBase
 {
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------

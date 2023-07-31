@@ -16,13 +16,13 @@ internal class EditorBlahFeatures
 		var  featuresInProject = new HashSet<Type>();
 		
 		foreach (var type in EnumerateGameTypes())
-			if (type.BaseType == typeof(BlahContext))
+			if (type.BaseType == typeof(BlahContextBase))
 				contextType = type;
 			else if (type.BaseType == typeof(BlahFeatureBase))
 				featuresInProject.Add(type);
 		
 		object context = Activator.CreateInstance(contextType);
-		var prop = typeof(BlahContext).GetProperty(
+		var prop = typeof(BlahContextBase).GetProperty(
 			"FeaturesBySystemsGroups",
 			BindingFlags.Instance |
 			BindingFlags.Public |
