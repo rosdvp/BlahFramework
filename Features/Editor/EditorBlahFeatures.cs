@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using UnityEditor;
@@ -7,13 +8,13 @@ using UnityEngine;
 
 namespace Blah.Features.Editor
 {
-internal class EditorBlahFeatures
+internal static class EditorBlahFeatures
 {
-	[MenuItem("Blah/Report features validation")]
-	public static void EditorReportFeaturesValidation()
+	[MenuItem("Blah/Validate features consumers-producers")]
+	public static void EditorValidateFeaturesConsumersProducers()
 	{
 		var sb = new StringBuilder();
-		sb.AppendLine("--- features validation report ---");
+		sb.AppendLine("--- features consumers/producers report ---");
 		
 		foreach (var type in EnumerateGameTypes())
 			if (type.BaseType == typeof(BlahFeatureBase))
@@ -137,9 +138,10 @@ internal class EditorBlahFeatures
 		sb.AppendLine("------------------------------");
 		Debug.Log(sb.ToString());
 	}
+	
+	
 
-
-	private static IEnumerable<Type> EnumerateGameTypes()
+	internal static IEnumerable<Type> EnumerateGameTypes()
 	{
 		var assemblies   = AppDomain.CurrentDomain.GetAssemblies();
 		foreach (var assembly in assemblies)
