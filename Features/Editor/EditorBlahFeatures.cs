@@ -67,7 +67,7 @@ internal class EditorBlahFeatures
 
 	
 	[MenuItem("Blah/Report unused systems")]
-	public static void EditorReportUnUsedOrDuplicatingSystems()
+	public static void EditorReportUnUsedSystems()
 	{
 		var featuresInProject = new HashSet<Type>();
 		var systemsInProject  = new HashSet<Type>();
@@ -89,10 +89,11 @@ internal class EditorBlahFeatures
 				BindingFlags.NonPublic
 			);
 			var systems = (IReadOnlyList<Type>)prop.GetValue(featureObj);
-			foreach (var system in systems)
-				systemsInProject.Remove(system);
+			if (systems != null)
+				foreach (var system in systems)
+					systemsInProject.Remove(system);
 		}
-		
+
 		var sb = new StringBuilder();
 		sb.AppendLine("--- unused systems report ---");
 		foreach (var system in systemsInProject)
@@ -119,13 +120,14 @@ internal class EditorBlahFeatures
 					BindingFlags.NonPublic
 				);
 				var systems = (IReadOnlyList<Type>)prop.GetValue(featureObj);
-				foreach (var system in systems)
-				{
-					if (systemsInProject.Contains(system))
-						systemsDuplicates.Add(system);
-					else
-						systemsInProject.Add(system);
-				}
+				if (systems != null)
+					foreach (var system in systems)
+					{
+						if (systemsInProject.Contains(system))
+							systemsDuplicates.Add(system);
+						else
+							systemsInProject.Add(system);
+					}
 			}
 
 		var sb = new StringBuilder();
