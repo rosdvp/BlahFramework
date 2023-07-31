@@ -13,9 +13,9 @@ internal class TestAttributeMixed
 		var systems = new List<Type>
 		{
 			typeof(SystemD),
+			typeof(SystemA),
 			typeof(SystemC),
 			typeof(SystemB),
-			typeof(SystemA)
 		};
 		var expected = new[]
 		{
@@ -37,9 +37,9 @@ internal class TestAttributeMixed
 		{
 			typeof(SystemC),
 			typeof(SystemD),
-			typeof(SystemB),
 			typeof(SystemE),
 			typeof(SystemA),
+			typeof(SystemB),
 			typeof(SystemF)
 		};
 		var expectedOrder = new[]

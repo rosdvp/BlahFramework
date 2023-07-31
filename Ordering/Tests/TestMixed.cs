@@ -15,9 +15,9 @@ internal class TextMixed
 		{
 			typeof(SystemE),
 			typeof(SystemD),
-			typeof(SystemC),
+			typeof(SystemA),
 			typeof(SystemB),
-			typeof(SystemA)
+			typeof(SystemC),
 		};
 		var expected = new[]
 		{

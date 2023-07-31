@@ -13,8 +13,8 @@ internal class TestProduceConsume
 		var systems = new List<Type>
 		{
 			typeof(SystemC),
+			typeof(SystemA),
 			typeof(SystemB),
-			typeof(SystemA)
 		};
 		var expected = new[]
 		{
@@ -33,11 +33,11 @@ internal class TestProduceConsume
 	{
 		var systems = new List<Type>
 		{
-			typeof(SystemC),
-			typeof(SystemD),
 			typeof(SystemB),
+			typeof(SystemD),
+			typeof(SystemA),
 			typeof(SystemE),
-			typeof(SystemA)
+			typeof(SystemC),
 		};
 		var expectedOrder = new[]
 		{
@@ -58,8 +58,8 @@ internal class TestProduceConsume
 		{
 			typeof(SystemI),
 			typeof(SystemH),
-			typeof(SystemG),
 			typeof(SystemF),
+			typeof(SystemG),
 		};
 		var expected = new[]
 		{

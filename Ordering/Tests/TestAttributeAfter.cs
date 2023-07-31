@@ -35,9 +35,9 @@ internal class TestAttributeAfter
 		{
 			typeof(SystemC),
 			typeof(SystemD),
-			typeof(SystemB),
+			typeof(SystemA),
 			typeof(SystemE),
-			typeof(SystemA)
+			typeof(SystemB),
 		};
 		var expectedOrder = new[]
 		{

@@ -13,8 +13,8 @@ internal class TestAttributeBefore
 		var systems = new List<Type>
 		{
 			typeof(SystemC),
+			typeof(SystemA),
 			typeof(SystemB),
-			typeof(SystemA)
 		};
 		var expected = new[]
 		{
