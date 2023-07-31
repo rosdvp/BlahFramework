@@ -12,27 +12,15 @@ internal class EditorBlahFeatures
 	[MenuItem("Blah/Report unused features")]
 	public static void EditorReportUnUsedFeatures()
 	{
-		var blahAssembly = typeof(BlahContext).Assembly;
-		
 		Type contextType   = null;
 		var  featuresInProject = new HashSet<Type>();
-
-		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-		foreach (var assembly in assemblies)
-		{
-			if (assembly != blahAssembly &&
-		     !assembly.FullName.StartsWith("Unity") &&
-		     !assembly.FullName.StartsWith("System") &&
-		     !assembly.FullName.StartsWith("Blah"))
-			{
-				foreach (var type in assembly.GetTypes())
-					if (type.BaseType == typeof(BlahContext))
-						contextType = type;
-					else if (type.BaseType == typeof(BlahFeatureBase))
-						featuresInProject.Add(type);
-			}
-		}
-
+		
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == typeof(BlahContext))
+				contextType = type;
+			else if (type.BaseType == typeof(BlahFeatureBase))
+				featuresInProject.Add(type);
+		
 		object context = Activator.CreateInstance(contextType);
 		var prop = typeof(BlahContext).GetProperty(
 			"FeaturesBySystemsGroups",
@@ -51,6 +39,93 @@ internal class EditorBlahFeatures
 			sb.AppendLine(feature.Name);
 		sb.AppendLine("------------------------------");
 		Debug.Log(sb.ToString());
+	}
+
+	
+	[MenuItem("Blah/Report unused systems")]
+	public static void EditorReportUnUsedOrDuplicatingSystems()
+	{
+		var featuresInProject = new HashSet<Type>();
+		var systemsInProject  = new HashSet<Type>();
+
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == typeof(BlahFeatureBase))
+				featuresInProject.Add(type);
+			else if (type.GetInterface("IBlahInitSystem") != null ||
+			         type.GetInterface("IBlahRunSystem") != null)
+				systemsInProject.Add(type);
+
+		foreach (var feature in featuresInProject)
+		{
+			object featureObj = Activator.CreateInstance(feature);
+			var prop = typeof(BlahFeatureBase).GetProperty(
+				"Systems",
+				BindingFlags.Instance |
+				BindingFlags.Public |
+				BindingFlags.NonPublic
+			);
+			var systems = (IReadOnlyList<Type>)prop.GetValue(featureObj);
+			foreach (var system in systems)
+				systemsInProject.Remove(system);
+		}
+		
+		var sb = new StringBuilder();
+		sb.AppendLine("--- unused systems report ---");
+		foreach (var system in systemsInProject)
+			sb.AppendLine(system.Name);
+		sb.AppendLine("------------------------------");
+		Debug.Log(sb.ToString());
+	}
+	
+	
+	[MenuItem("Blah/Report duplicating systems")]
+	public static void EditorReportDuplicatingSystems()
+	{
+		var systemsInProject  = new HashSet<Type>();
+		var systemsDuplicates = new HashSet<Type>();
+
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == typeof(BlahFeatureBase))
+			{
+				object featureObj = Activator.CreateInstance(type);
+				var prop = typeof(BlahFeatureBase).GetProperty(
+					"Systems",
+					BindingFlags.Instance |
+					BindingFlags.Public |
+					BindingFlags.NonPublic
+				);
+				var systems = (IReadOnlyList<Type>)prop.GetValue(featureObj);
+				foreach (var system in systems)
+				{
+					if (systemsInProject.Contains(system))
+						systemsDuplicates.Add(system);
+					else
+						systemsInProject.Add(system);
+				}
+			}
+
+		var sb = new StringBuilder();
+		sb.AppendLine("--- duplicating systems report ---");
+		foreach (var system in systemsDuplicates)
+			sb.AppendLine(system.Name);
+		sb.AppendLine("------------------------------");
+		Debug.Log(sb.ToString());
+	}
+
+
+	private static IEnumerable<Type> EnumerateGameTypes()
+	{
+		var assemblies   = AppDomain.CurrentDomain.GetAssemblies();
+		foreach (var assembly in assemblies)
+		{
+			if (!assembly.FullName.StartsWith("Unity") &&
+			    !assembly.FullName.StartsWith("System") &&
+			    !assembly.FullName.StartsWith("Blah"))
+			{
+				foreach (var type in assembly.GetTypes())
+					yield return type;
+			}
+		}
 	}
 }
 }
