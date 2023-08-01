@@ -1,99 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
-using Blah.Pools;
-using Blah.Services;
-using UnityEditor;
+using Blah.Reflection;
 
 namespace Blah.Features
 {
 public static class BlahFeaturesValidator
 {
+	private static readonly HashSet<Type> _usedService   = new();
+	private static readonly HashSet<Type> _usedConsumers = new();
+	private static readonly HashSet<Type> _usedProducers = new();
+
 	public static void Validate(BlahFeatureBase feature)
 	{
 		if (feature.Systems == null)
 			return;
 		
-		var usedService   = feature.Services == null ? null : new HashSet<Type>();
-		var usedConsumers = feature.Consumers == null ? null : new HashSet<Type>();
-		var usedProducers = feature.Producers == null ? null : new HashSet<Type>();
+		_usedService.Clear();
+		_usedConsumers.Clear();
+		_usedProducers.Clear();
 
-		foreach (var rawSystemType in feature.Systems)
-		{
-			var systemType = rawSystemType;
-			while (systemType?.Namespace?.StartsWith("System") == false)
+		foreach (var system in feature.Systems)
+		foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
+			if (kind is BlahReflection.EKind.Service)
 			{
-				var fields = systemType.GetFields(
-					BindingFlags.Instance |
-					BindingFlags.Public |
-					BindingFlags.NonPublic
-				);
-				foreach (var field in fields)
-				{
-					var fieldType = field.FieldType;
-
-					if (fieldType.BaseType == typeof(BlahServiceBase))
-					{
-						usedService?.Add(fieldType);
-						if (feature.Services?.Contains(fieldType) == false)
-							throw new BlahFeatureValidatorException(
-								feature,
-								systemType,
-								fieldType
-							);
-					}
-
-					if (!fieldType.IsGenericType)
-						continue;
-					var genBaseType = fieldType.GetGenericTypeDefinition();
-					var genArgType  = fieldType.GenericTypeArguments[0];
-
-					if (genBaseType == typeof(IBlahSignalConsumer<>) ||
-					    genBaseType == typeof(IBlahDataConsumer<>))
-					{
-						usedConsumers?.Add(genArgType);
-						if (feature.Consumers?.Contains(genArgType) != true)
-							throw new BlahFeatureValidatorException(
-								feature,
-								systemType,
-								genArgType
-							);
-					}
-
-					if (genBaseType == typeof(IBlahSignalProducer<>) ||
-					    genBaseType == typeof(IBlahDataProducer<>))
-					{
-						usedProducers?.Add(genArgType);
-						if (feature.Producers?.Contains(genArgType) != true)
-							throw new BlahFeatureValidatorException(
-								feature,
-								systemType,
-								genArgType
-							);
-					}
-				}
-				systemType = systemType.BaseType;
+				_usedService.Add(type);
+				if (feature.Services?.Contains(type) != true)
+					throw new BlahFeatureValidatorException(feature, system, type);
 			}
-		}
-
-		if (usedService != null && feature.Services != null)
-		{
+			else if (kind is BlahReflection.EKind.SignalConsumer or BlahReflection.EKind.DataConsumer)
+			{
+				_usedConsumers.Add(type);
+				if (feature.Consumers?.Contains(type) != true)
+					throw new BlahFeatureValidatorException(feature, system, type);
+			}
+			else if (kind is BlahReflection.EKind.SignalProducer or BlahReflection.EKind.DataProducer)
+			{
+				_usedProducers.Add(type);
+				if (feature.Producers?.Contains(type) != true)
+					throw new BlahFeatureValidatorException(feature, system, type);
+			}
+		
+		if (feature.Services != null)
 			foreach (var service in feature.Services)
-				if (!usedService.Contains(service))
+				if (!_usedService.Contains(service))
 					throw new BlahFeatureValidatorException(feature, null, service);
-		}
-		if (usedConsumers != null && feature.Consumers != null)
-		{
+		if (feature.Consumers != null)
 			foreach (var consumer in feature.Consumers)
-				if (!usedConsumers.Contains(consumer))
+				if (!_usedConsumers.Contains(consumer))
 					throw new BlahFeatureValidatorException(feature, null, consumer);
-		}
-		if (usedProducers != null && feature.Producers != null)
-		{
+		if (feature.Producers != null)
 			foreach (var producer in feature.Producers)
-				if (!usedProducers.Contains(producer))
+				if (!_usedProducers.Contains(producer))
 					throw new BlahFeatureValidatorException(feature, null, producer);
-		}
 	}
 }
 

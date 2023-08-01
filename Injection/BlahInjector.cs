@@ -11,17 +11,18 @@ public class BlahInjector
 	private readonly Dictionary<Type, object> _fieldTypeToObject        = new();
 
 	public void AddSource(
-		object obj, 
-		Type fieldBaseType, 
+		object obj,
+		Type   fieldBaseType,
 		string methodBaseName)
 	{
 		_injectableFieldBaseTypes.Add(fieldBaseType);
-		_fieldBaseTypeToSource.TryAdd(fieldBaseType,
-		                              new Source
-		                              {
-			                              Obj            = obj,
-			                              MethodBaseName = methodBaseName
-		                              }
+		_fieldBaseTypeToSource.TryAdd(
+			fieldBaseType,
+			new Source
+			{
+				Obj            = obj,
+				MethodBaseName = methodBaseName
+			}
 		);
 	}
 

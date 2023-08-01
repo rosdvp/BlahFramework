@@ -27,7 +27,9 @@ public abstract class BlahContextBase
 		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
 		foreach (var feature in features)
 		{
+#if UNITY_EDITOR
 			BlahFeaturesValidator.Validate(feature);
+#endif
 
 			foreach (var serviceType in feature.Services)
 				_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));

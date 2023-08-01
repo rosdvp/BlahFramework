@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Blah.Ordering.Attributes;
-using Blah.Pools;
+using Blah.Reflection;
 
 namespace Blah.Ordering
 {
@@ -16,75 +15,33 @@ public static class BlahOrderer
 		var cache = new Cache();
 
 		foreach (var system in systems)
-			FillConsumersProducers(cache, system);
+			foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
+				if (kind == BlahReflection.EKind.SignalConsumer)
+					cache.AddConsumingSystem(system, type);
+				else if (kind == BlahReflection.EKind.SignalProducer)
+					cache.AddProducingSystem(system, type);
 
 		foreach (var system in systems)
 		{
-			FillAfterSystemsByConsumersProducers(cache, system);
-			FillAfterSystemsByAttributes(cache, system);
+			foreach (var attr in BlahReflection.EnumerateAttributes(system))
+				if (attr is BlahAfterAttribute afterAttr)
+					cache.AddSystemsDependency(afterAttr.SystemGoingBefore, system);
+				else if (attr is BlahBeforeAttribute beforeAttr)
+					cache.AddSystemsDependency(system, beforeAttr.SystemGoingAfter);
+			
+			var consumingTypes = cache.GetConsumingTypesOfSystem(system);
+			if (consumingTypes != null)
+				foreach (var type in consumingTypes)
+				{
+					var producingSystems = cache.GetProducingSystems(type);
+					if (producingSystems != null)
+						cache.AddSystemsDependency(producingSystems, system);
+				}
 		}
 
 		systems = BlahOrdererTopologicalSort.Sort(systems, cache.GetCopySystemToSystemsGoingBefore());
 	}
 
-	private static void FillConsumersProducers(Cache cache, Type system)
-	{
-		var childSystem = system;
-		while (childSystem?.Namespace?.StartsWith("System") == false)
-		{
-			var fields = childSystem.GetFields(
-				BindingFlags.Instance |
-				BindingFlags.NonPublic |
-				BindingFlags.Public
-			);
-			foreach (var field in fields)
-			{
-				var fieldType = field.FieldType;
-				if (fieldType.IsGenericType)
-				{
-					var fieldGenType = fieldType.GetGenericTypeDefinition();
-					if (fieldGenType == typeof(IBlahSignalConsumer<>))
-						cache.AddConsumingSystem(system, fieldType.GenericTypeArguments[0]);
-					else if (fieldGenType == typeof(IBlahSignalProducer<>))
-						cache.AddProducingSystem(system, fieldType.GenericTypeArguments[0]);
-				}
-			}
-			childSystem = childSystem.BaseType;
-		}
-	}
-
-	private static void FillAfterSystemsByAttributes(Cache cache, Type system)
-	{
-		var childSystem = system;
-		while (childSystem?.Namespace?.StartsWith("System") == false)
-		{
-			foreach (var attr in childSystem.GetCustomAttributes())
-				if (attr is BlahAfterAttribute afterAttr)
-				{
-					cache.AddSystemsDependency(afterAttr.SystemGoingBefore, system);
-				}
-				else if (attr is BlahBeforeAttribute beforeAttr)
-				{
-					cache.AddSystemsDependency(system, beforeAttr.SystemGoingAfter);
-				}
-			childSystem = childSystem.BaseType;
-		}
-	}
-
-	private static void FillAfterSystemsByConsumersProducers(Cache cache, Type system)
-	{
-		var consumingTypes = cache.GetConsumingTypesOfSystem(system);
-		if (consumingTypes == null)
-			return;
-
-		foreach (var type in consumingTypes)
-		{
-			var producingSystems = cache.GetProducingSystems(type);
-			if (producingSystems != null)
-				cache.AddSystemsDependency(producingSystems, system);
-		}
-	}
-	
 
 	private class Cache
 	{
