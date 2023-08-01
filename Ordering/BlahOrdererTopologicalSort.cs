@@ -55,34 +55,45 @@ internal static class BlahOrdererTopologicalSort
 				foreach (var prevItem in prevItems)
 					if (i < items.IndexOf(prevItem))
 					{
-						var cycle = RecFindCycle(item, null, itemToPrevItems);
+						var cycle = FindCycle(items, itemToPrevItems);
 						throw new BlahOrdererSortingException(cycle);
 					}
 		}
 	}
 
+	private static List<Type> FindCycle(List<Type> items, Dictionary<Type, List<Type>> itemToPrevItems)
+	{
+		var visitedItems = new HashSet<Type>();
+		foreach (var item in items)
+		{
+			visitedItems.Clear();
+			var result = RecFindCycle(item, visitedItems, itemToPrevItems);
+			if (result != null)
+				return result;
+		}
+		return null;
+	}
+
 	private static List<Type> RecFindCycle(
-		Type startItem,
 		Type currItem,
+		HashSet<Type> visitedItems,
 		Dictionary<Type, List<Type>> itemToPrevItems)
 	{
-		if (startItem == currItem)
+		if (visitedItems.Contains(currItem))
 			return new List<Type> { currItem };
-		
-		currItem ??= startItem;
-		
-		Debug.Log(currItem);
-		
+
+		visitedItems.Add(currItem);
 		if (itemToPrevItems.TryGetValue(currItem, out var prevItems))
 			foreach (var prevItem in prevItems)
 			{
-				var cycle = RecFindCycle(startItem, prevItem, itemToPrevItems);
+				var cycle = RecFindCycle(prevItem, visitedItems, itemToPrevItems);
 				if (cycle != null)
 				{
 					cycle.Add(currItem);
 					return cycle;
 				}
 			}
+		visitedItems.Remove(currItem);
 
 		return null;
 	}
