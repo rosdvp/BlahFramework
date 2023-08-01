@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Blah.Ordering
 {
@@ -69,6 +70,8 @@ internal static class BlahOrdererTopologicalSort
 			return new List<Type> { currItem };
 		
 		currItem ??= startItem;
+		
+		Debug.Log(currItem);
 		
 		if (itemToPrevItems.TryGetValue(currItem, out var prevItems))
 			foreach (var prevItem in prevItems)
