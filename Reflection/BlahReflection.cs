@@ -48,8 +48,18 @@ public static class BlahReflection
 			system = system.BaseType;
 		}
 	}
-	
-	
+
+	public static object GetContextFeaturesBySystemsGroups(object context)
+	{
+		var prop = context.GetType().GetProperty(
+			"FeaturesBySystemsGroups",
+			BindingFlags.Instance |
+			BindingFlags.Public |
+			BindingFlags.NonPublic
+		);
+		return prop?.GetValue(context);
+	}
+
 	public static IReadOnlyList<Type> GetFeatureSystems(object feature)
 	{
 		var prop = feature.GetType().GetProperty(

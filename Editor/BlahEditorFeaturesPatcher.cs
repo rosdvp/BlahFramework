@@ -12,7 +12,7 @@ namespace Blah.Editor
 internal static class BlahEditorFeaturesPatcher
 {
 	[MenuItem("Blah/Experimental/Patch features")]
-	public static void EditorFillFeatures()
+	public static void FillFeatures()
 	{
 		var typeNameToFilePath = new Dictionary<string, string>();
 		FillTypeNameToFilePathMap(Application.dataPath, "Feature", typeNameToFilePath);

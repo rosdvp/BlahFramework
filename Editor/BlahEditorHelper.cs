@@ -22,6 +22,14 @@ internal static class BlahEditorHelper
 		}
 	}
 
+	public static BlahContextBase FindGameContext()
+	{
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == typeof(BlahContextBase))
+				return (BlahContextBase)Activator.CreateInstance(type);
+		return null;
+	}
+	
 	public static IEnumerable<BlahFeatureBase> EnumerateGameFeatures()
 	{
 		foreach (var type in EnumerateGameTypes())

@@ -12,7 +12,7 @@ namespace Blah.Editor
 internal static class BlahEditorFeaturesValidation
 {
 	[MenuItem("Blah/Report/Features issues")]
-	public static void EditorReportFeaturesIssues()
+	public static void ReportFeaturesIssues()
 	{
 		var sb = new StringBuilder();
 		sb.AppendLine("--- features issues report ---");
@@ -30,7 +30,7 @@ internal static class BlahEditorFeaturesValidation
 	}
 	
 	[MenuItem("Blah/Report/Unused features")]
-	public static void EditorReportUnUsedFeatures()
+	public static void ReportUnUsedFeatures()
 	{
 		Type contextType   = null;
 		var  featuresInProject = new HashSet<Type>();
@@ -63,7 +63,7 @@ internal static class BlahEditorFeaturesValidation
 
 	
 	[MenuItem("Blah/Report/Unused systems")]
-	public static void EditorReportUnUsedSystems()
+	public static void ReportUnUsedSystems()
 	{
 		var featuresInProject = new HashSet<Type>();
 		var systemsInProject  = new HashSet<Type>();
@@ -101,7 +101,7 @@ internal static class BlahEditorFeaturesValidation
 	
 	
 	[MenuItem("Blah/Report/Duplicating systems")]
-	public static void EditorReportDuplicatingSystems()
+	public static void ReportDuplicatingSystems()
 	{
 		var systemsInProject  = new HashSet<Type>();
 		var systemsDuplicates = new HashSet<Type>();
