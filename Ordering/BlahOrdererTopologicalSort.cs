@@ -48,6 +48,10 @@ internal static class BlahOrdererTopologicalSort
 		List<Type>                   items,
 		Dictionary<Type, List<Type>> itemToPrevItems)
 	{
+		foreach (var (item, prevItems) in itemToPrevItems)
+			if (prevItems.Contains(item))
+				throw new BlahOrdererSortingException(item, null);
+		
 		for (var i = 0; i < items.Count; i++)
 		{
 			var item = items[i];
@@ -56,7 +60,7 @@ internal static class BlahOrdererTopologicalSort
 					if (i < items.IndexOf(prevItem))
 					{
 						var cycle = FindCycle(items, itemToPrevItems);
-						throw new BlahOrdererSortingException(cycle);
+						throw new BlahOrdererSortingException(null, cycle);
 					}
 		}
 	}
@@ -117,22 +121,26 @@ internal static class BlahOrdererTopologicalSort
 
 public class BlahOrdererSortingException : Exception
 {
+	public readonly Type                SelfCyclicType;
 	public readonly IReadOnlyList<Type> Cycle;
 
-	internal BlahOrdererSortingException(List<Type> cycle)
+	internal BlahOrdererSortingException(Type selfCyclicType, List<Type> cycle)
 		: base($"cyclic dependency, use {nameof(GetFullMsg)} for more info")
 	{
-		Cycle = cycle;
+		SelfCyclicType = selfCyclicType;
+		Cycle          = cycle;
 	}
 
 	public string GetFullMsg()
 	{
 		var s = "cyclic dependency: ";
-		if (Cycle == null)
-			s += "failed to identify";
-		else
+		if (SelfCyclicType != null)
+			s = $"{SelfCyclicType.Name} self cyclic";
+		else if (Cycle != null)
 			foreach (var item in Cycle)
 				s += $"-> {item.Name} ";
+		else
+			s += "failed to identify";
 		return s;
 	}
 }
