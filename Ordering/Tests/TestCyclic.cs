@@ -14,7 +14,9 @@ internal class TestCyclic
 		{
 			typeof(SystemA),
 			typeof(SystemB),
-			typeof(SystemC)
+			typeof(SystemC),
+			typeof(SystemD),
+			typeof(SystemE)
 		};
 		try
 		{
@@ -23,12 +25,12 @@ internal class TestCyclic
 		}
 		catch (BlahOrdererSortingException e)
 		{
-			Assert.Pass(e.Message);
+			Assert.Pass(e.GetFullMsg());
 		}
 	}
 
 
-	[BlahAfter(typeof(SystemC))]
+	[BlahAfter(typeof(SystemD))]
 	private class SystemA { }
 
 	[BlahAfter(typeof(SystemA))]

@@ -35,7 +35,7 @@ internal static class BlahEditorSystemsOrdering
 			}
 			catch (BlahOrdererSortingException e)
 			{
-				sb.AppendLine($"group {groupId}, {e.Message}");
+				sb.AppendLine($"group {groupId}, {e.GetFullMsg()}");
 			}
 		}
 

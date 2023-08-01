@@ -25,9 +25,9 @@ public static class BlahOrderer
 		{
 			foreach (var attr in BlahReflection.EnumerateAttributes(system))
 				if (attr is BlahAfterAttribute afterAttr)
-					cache.AddSystemsDependency(afterAttr.SystemGoingBefore, system);
+					cache.AddSystemsDependency(afterAttr.PrevSystem, system);
 				else if (attr is BlahBeforeAttribute beforeAttr)
-					cache.AddSystemsDependency(system, beforeAttr.SystemGoingAfter);
+					cache.AddSystemsDependency(system, beforeAttr.NextSystem);
 			
 			var consumingTypes = cache.GetConsumingTypesOfSystem(system);
 			if (consumingTypes != null)
@@ -39,7 +39,7 @@ public static class BlahOrderer
 				}
 		}
 
-		systems = BlahOrdererTopologicalSort.Sort(systems, cache.GetCopySystemToSystemsGoingBefore());
+		systems = BlahOrdererTopologicalSort.Sort(systems, cache.GetSystemToPrevSystemsMap());
 	}
 
 
@@ -50,8 +50,8 @@ public static class BlahOrderer
 		
 		private Dictionary<Type, HashSet<Type>> _systemToProducingTypes = new();
 		private Dictionary<Type, HashSet<Type>> _producingTypeToSystems = new();
-	
-		private Dictionary<Type, List<Type>> _systemToSystemsGoingBefore = new();
+
+		private Dictionary<Type, List<Type>> _systemToPrevSystems = new();
 		
 
 		public void AddConsumingSystem(Type system, Type type)
@@ -96,29 +96,24 @@ public static class BlahOrderer
 		}
 
 
-		public void AddSystemsDependency(Type beforeSystem, Type afterSystem)
+		public void AddSystemsDependency(Type prevSystem, Type nextSystem)
 		{
-			if (_systemToSystemsGoingBefore.TryGetValue(afterSystem, out var systemsGoingBefore))
-				systemsGoingBefore.Add(beforeSystem);
+			if (_systemToPrevSystems.TryGetValue(nextSystem, out var prevSystems))
+				prevSystems.Add(prevSystem);
 			else
-				_systemToSystemsGoingBefore[afterSystem] = new List<Type> { beforeSystem };
+				_systemToPrevSystems[nextSystem] = new List<Type> { prevSystem };
 		}
 
-		public void AddSystemsDependency(IReadOnlyCollection<Type> beforeSystems, Type afterSystem)
+		public void AddSystemsDependency(IReadOnlyCollection<Type> prevSystems, Type nextSystem)
 		{
-			if (_systemToSystemsGoingBefore.TryGetValue(afterSystem, out var systemsGoingBefore))
-				systemsGoingBefore.AddRange(beforeSystems);
+			if (_systemToPrevSystems.TryGetValue(nextSystem, out var cachedPrevSystems))
+				cachedPrevSystems.AddRange(prevSystems);
 			else
-				_systemToSystemsGoingBefore[afterSystem] = new List<Type>(beforeSystems);
+				_systemToPrevSystems[nextSystem] = new List<Type>(prevSystems);
 		}
 
-		public Dictionary<Type, List<Type>> GetCopySystemToSystemsGoingBefore()
-		{
-			var dict = new Dictionary<Type, List<Type>>();
-			foreach (var pair in _systemToSystemsGoingBefore)
-				dict[pair.Key] = new List<Type>(pair.Value);
-			return dict;
-		}
+		public Dictionary<Type, List<Type>> GetSystemToPrevSystemsMap()
+			=> _systemToPrevSystems;
 	}
 }
 }

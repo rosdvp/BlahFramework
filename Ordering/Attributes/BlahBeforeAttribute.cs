@@ -4,11 +4,11 @@ namespace Blah.Ordering.Attributes
 {
 public class BlahBeforeAttribute : Attribute
 {
-	public readonly Type SystemGoingAfter;
+	public readonly Type NextSystem;
 
-	public BlahBeforeAttribute(Type systemGoingAfter)
+	public BlahBeforeAttribute(Type nextSystem)
 	{
-		SystemGoingAfter = systemGoingAfter;
+		NextSystem = nextSystem;
 	}
 }
 }
