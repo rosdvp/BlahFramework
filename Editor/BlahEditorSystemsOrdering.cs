@@ -25,8 +25,9 @@ internal static class BlahEditorSystemsOrdering
 		{
 			var systems = new List<Type>();
 			foreach (var feature in features)
-			foreach (var system in BlahReflection.GetFeatureSystems(feature))
-				systems.Add(system);
+				if (feature.Systems != null)
+					foreach (var system in feature.Systems)
+						systems.Add(system);
 
 			try
 			{
