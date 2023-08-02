@@ -10,49 +10,98 @@ internal static class BlahOrdererTopologicalSort
 		List<Type>                   items,
 		Dictionary<Type, List<Type>> sourceItemToPrevItems)
 	{
-		var cycle = FindCycle(items, sourceItemToPrevItems);
-		if (cycle != null)
-			throw new BlahOrdererSortingException(
-				null,
-				cycle,
-				null,
-				null,
-				null
-			);
-		
-		var visited = new List<Type>();
-		var result  = new List<Type>();
-		
-		var itemToPrevItems = Copy(sourceItemToPrevItems);
+		//var visited = new List<Type>();
+		//var result  = new List<Type>();
+		//
+		//var itemToPrevItems = Copy(sourceItemToPrevItems);
+		//
+		//var overflowCounter = 0;
+		//
+		//while (items.Count > 0 || visited.Count > 0)
+		//{
+		//	if (visited.Count == 0)
+		//	{
+		//		visited.Add(PopLast(items));
+		//	}
+		//	if (itemToPrevItems.TryGetValue(visited[^1], out var prevItems) &&
+		//	    prevItems.Count > 0 &&
+		//	    items.Remove(prevItems[^1]))
+		//	{
+		//		visited.Add(PopLast(prevItems));
+		//	}
+		//	else
+		//	{
+		//		result.Add(PopLast(visited));
+		//	}
+		//
+		//	if (++overflowCounter >= 1000000)
+		//		throw new Exception("overflow");
+		//}
 
-		var overflowCounter = 0;
-
-		while (items.Count > 0 || visited.Count > 0)
+		var result = Sort(items,
+		                  item =>
+		                  {
+			                  if (sourceItemToPrevItems.TryGetValue(item, out var prevItems))
+				                  return prevItems;
+			                  return null;
+		                  }
+		);
+		if (result == null)
 		{
-			if (visited.Count == 0)
-			{
-				visited.Add(PopLast(items));
-			}
-			if (itemToPrevItems.TryGetValue(visited[^1], out var prevItems) &&
-			    prevItems.Count > 0 &&
-			    items.Remove(prevItems[^1]))
-			{
-				visited.Add(PopLast(prevItems));
-			}
-			else
-			{
-				result.Add(PopLast(visited));
-			}
-
-			if (++overflowCounter >= 1000000)
-				throw new Exception("overflow");
+			ThrowOnCyclicDependency(items, Copy(sourceItemToPrevItems));
+			throw new Exception("undefined");
 		}
-
-		//ThrowOnCyclicDependency(result, Copy(sourceItemToPrevItems));
 
 		return result;
 	}
+	
+	private static List<T> Sort<T>(IEnumerable<T> source, Func<T, IEnumerable<T>> getDependencies)
+	{
+		var sorted  = new List<T>();
+		var visited = new Dictionary<T, bool>();
 
+		foreach (var item in source)
+		{
+			if (!Visit(item, getDependencies, sorted, visited))
+				return null;
+		}
+
+		return sorted;
+	}
+
+	private static bool Visit<T>(T       item,   Func<T, IEnumerable<T>> getDependencies, 
+	                            List<T> sorted, Dictionary<T, bool>     visited)
+	{
+		bool inProcess;
+		var  alreadyVisited = visited.TryGetValue(item, out inProcess);
+
+		if (alreadyVisited)
+		{
+			if (inProcess)
+			{
+				return false;
+			}
+		}
+		else
+		{
+			visited[item] = true;
+
+			var dependencies = getDependencies(item);
+			if (dependencies != null)
+			{
+				foreach (var dependency in dependencies)
+				{
+					if (!Visit(dependency, getDependencies, sorted, visited))
+						return false;
+				}
+			}
+
+			visited[item] = false;
+			sorted.Add(item);
+		}
+		return true;
+	}
+	
 
 	private static void ThrowOnCyclicDependency(
 		List<Type>                   items,
