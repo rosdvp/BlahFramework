@@ -38,6 +38,21 @@ internal static class BlahOrdererTopologicalSort
 		//		throw new Exception("overflow");
 		//}
 
+		//var reversed = new Dictionary<Type, List<Type>>();
+		//
+		//foreach (var (item, prevItems) in sourceItemToPrevItems)
+		//{
+		//	if (prevItems == null)
+		//		continue;
+		//	foreach (var prevItem in prevItems)
+		//		if (reversed.TryGetValue(prevItem, out var cached))
+		//			cached.Add(item);
+		//		else
+		//			reversed.Add(prevItem, new List<Type> { item });
+		//}
+
+		ThrowOnCyclicDependency(items, Copy(sourceItemToPrevItems));
+		
 		var result = Sort(items,
 		                  item =>
 		                  {
@@ -47,10 +62,7 @@ internal static class BlahOrdererTopologicalSort
 		                  }
 		);
 		if (result == null)
-		{
-			ThrowOnCyclicDependency(items, Copy(sourceItemToPrevItems));
 			throw new Exception("undefined");
-		}
 
 		return result;
 	}
@@ -101,7 +113,7 @@ internal static class BlahOrdererTopologicalSort
 		}
 		return true;
 	}
-	
+
 
 	private static void ThrowOnCyclicDependency(
 		List<Type>                   items,
@@ -117,23 +129,15 @@ internal static class BlahOrdererTopologicalSort
 					null
 				);
 
-		for (var i = 0; i < items.Count; i++)
-		{
-			var item = items[i];
-			if (itemToPrevItems.TryGetValue(item, out var prevItems))
-				foreach (var prevItem in prevItems)
-					if (i < items.IndexOf(prevItem))
-					{
-						var cycle = FindCycle(items, itemToPrevItems);
-						throw new BlahOrdererSortingException(
-							null,
-							cycle,
-							prevItem,
-							item,
-							items
-						);
-					}
-		}
+		var cycle = FindCycle(items, itemToPrevItems);
+		if (cycle != null)
+			throw new BlahOrdererSortingException(
+				null,
+				cycle,
+				null,
+				null,
+				null
+			);
 	}
 
 	private static List<Type> FindCycle(List<Type> items, Dictionary<Type, List<Type>> itemToPrevItems)

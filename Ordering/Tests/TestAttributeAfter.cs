@@ -22,9 +22,16 @@ internal class TestAttributeAfter
 			typeof(SystemB),
 			typeof(SystemC)
 		};
-		
-		BlahOrderer.Order(ref systems);
-		
+
+		try
+		{
+			BlahOrderer.Order(ref systems);
+		}
+		catch (BlahOrdererSortingException e)
+		{
+			Assert.Fail(e.GetFullMsg());
+		}
+
 		AssertHelper.AssertEqual(expected, systems);
 	}
 
