@@ -10,6 +10,16 @@ internal static class BlahOrdererTopologicalSort
 		List<Type>                   items,
 		Dictionary<Type, List<Type>> sourceItemToPrevItems)
 	{
+		var cycle = FindCycle(items, sourceItemToPrevItems);
+		if (cycle != null)
+			throw new BlahOrdererSortingException(
+				null,
+				cycle,
+				null,
+				null,
+				null
+			);
+		
 		var visited = new List<Type>();
 		var result  = new List<Type>();
 		
@@ -38,7 +48,7 @@ internal static class BlahOrdererTopologicalSort
 				throw new Exception("overflow");
 		}
 
-		ThrowOnCyclicDependency(result, Copy(sourceItemToPrevItems));
+		//ThrowOnCyclicDependency(result, Copy(sourceItemToPrevItems));
 
 		return result;
 	}
