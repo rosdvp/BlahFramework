@@ -52,7 +52,14 @@ public abstract class BlahContextBase
 			foreach (var systemType in feature.Systems)
 				tempSystemsTypes.Add(systemType);
 
-			BlahOrderer.Order(ref tempSystemsTypes);
+			try
+			{
+				BlahOrderer.Order(ref tempSystemsTypes);
+			}
+			catch (BlahOrdererSortingException e)
+			{
+				throw new Exception(e.GetFullMsg());
+			}
 
 			var group = _systemsContext.AddGroup(groupId);
 			foreach (var systemType in tempSystemsTypes)

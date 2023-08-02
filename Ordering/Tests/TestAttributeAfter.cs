@@ -23,14 +23,7 @@ internal class TestAttributeAfter
 			typeof(SystemC)
 		};
 
-		try
-		{
-			BlahOrderer.Order(ref systems);
-		}
-		catch (BlahOrdererSortingException e)
-		{
-			Assert.Fail(e.GetFullMsg());
-		}
+		BlahOrderer.Order(ref systems);
 
 		AssertHelper.AssertEqual(expected, systems);
 	}

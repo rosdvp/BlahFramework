@@ -39,7 +39,7 @@ public static class BlahOrderer
 				}
 		}
 
-		systems = BlahOrdererTopologicalSort.Sort(systems, cache.GetSystemToPrevSystemsMap());
+		systems = BlahOrdererSort.Sort(systems, cache.GetSystemToPrevSystemsMap());
 	}
 
 
