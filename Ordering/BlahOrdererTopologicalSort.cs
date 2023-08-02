@@ -50,8 +50,14 @@ internal static class BlahOrdererTopologicalSort
 	{
 		foreach (var (item, prevItems) in itemToPrevItems)
 			if (prevItems.Contains(item))
-				throw new BlahOrdererSortingException(item, null);
-		
+				throw new BlahOrdererSortingException(
+					item,
+					null,
+					null,
+					null,
+					null
+				);
+
 		for (var i = 0; i < items.Count; i++)
 		{
 			var item = items[i];
@@ -60,7 +66,13 @@ internal static class BlahOrdererTopologicalSort
 					if (i < items.IndexOf(prevItem))
 					{
 						var cycle = FindCycle(items, itemToPrevItems);
-						throw new BlahOrdererSortingException(null, cycle);
+						throw new BlahOrdererSortingException(
+							null,
+							cycle,
+							prevItem,
+							item,
+							items
+						);
 					}
 		}
 	}
@@ -121,26 +133,41 @@ internal static class BlahOrdererTopologicalSort
 
 public class BlahOrdererSortingException : Exception
 {
-	public readonly Type                SelfCyclicType;
+	public readonly Type                SelfCyclicItem;
 	public readonly IReadOnlyList<Type> Cycle;
+	public readonly Type                IssuePrevItem;
+	public readonly Type                IssueNextItem;
+	public readonly List<Type>          IssueOrder;
 
-	internal BlahOrdererSortingException(Type selfCyclicType, List<Type> cycle)
+	internal BlahOrdererSortingException(
+		Type       selfCyclicItem,
+		List<Type> cycle,
+		Type       issuePrevItem,
+		Type       issueNextItem,
+		List<Type> issueOrder)
 		: base($"cyclic dependency, use {nameof(GetFullMsg)} for more info")
 	{
-		SelfCyclicType = selfCyclicType;
+		SelfCyclicItem = selfCyclicItem;
 		Cycle          = cycle;
+		IssuePrevItem     = issuePrevItem;
+		IssueNextItem     = issueNextItem;
+		IssueOrder     = issueOrder;
 	}
 
 	public string GetFullMsg()
 	{
 		var s = "cyclic dependency: ";
-		if (SelfCyclicType != null)
-			s = $"{SelfCyclicType.Name} self cyclic";
+		if (SelfCyclicItem != null)
+			s = $"{SelfCyclicItem.Name} self cyclic";
 		else if (Cycle != null)
 			foreach (var item in Cycle)
 				s += $"-> {item.Name} ";
 		else
-			s += "failed to identify";
+		{
+			s += $"failed to identify, but {IssuePrevItem} must go before {IssueNextItem}.\nResulted order:";
+			foreach (var item in IssueOrder)
+				s += $"{item.Name}, \n";
+		}
 		return s;
 	}
 }
