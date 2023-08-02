@@ -64,6 +64,23 @@ internal static class BlahOrdererTopologicalSort
 		if (result == null)
 			throw new Exception("undefined");
 
+		for (var i = 0; i < items.Count; i++)
+		{
+			var item = items[i];
+			if (sourceItemToPrevItems.TryGetValue(item, out var prevItems))
+				foreach (var prevItem in prevItems)
+					if (i < items.IndexOf(prevItem))
+					{
+						throw new BlahOrdererSortingException(
+							null,
+							null,
+							prevItem,
+							item,
+							result
+						);
+					}
+		}
+
 		return result;
 	}
 	
