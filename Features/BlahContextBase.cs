@@ -30,9 +30,9 @@ public abstract class BlahContextBase
 #if UNITY_EDITOR
 			BlahFeaturesValidator.Validate(feature);
 #endif
-
-			foreach (var serviceType in feature.Services)
-				_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
+			if (feature.Services != null)
+				foreach (var serviceType in feature.Services)
+					_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
 		}
 		_servicesContext.FinalizeInit();
 
