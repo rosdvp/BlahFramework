@@ -29,6 +29,8 @@ internal static class BlahEditorFeaturesPatcher
 			
 			BlahReflection.FindFeatureDependencies(feature, services, consumers, producers, true);
 			
+			consumers.ExceptWith(producers);
+			
 			bool isServicesPatchRequired  = feature.Services?.SetEquals(services) != true;
 			bool isConsumersPatchRequired = feature.ConsumingFromOutside?.SetEquals(consumers) != true;
 			bool isProducersPatchRequired = feature.Producing?.SetEquals(producers) != true;
