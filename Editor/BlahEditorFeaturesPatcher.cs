@@ -11,8 +11,13 @@ namespace Blah.Editor
 {
 internal static class BlahEditorFeaturesPatcher
 {
-	[MenuItem("Blah/Experimental/Patch features")]
-	public static void FillFeatures()
+	[MenuItem("Blah/Experimental/Smart Patch Features")]
+	public static void SmartPatchFeatures() => PatchFeatures(false);
+
+	[MenuItem("Blah/Experimental/Force Patch Features")]
+	public static void ForcePatchFeatures() => PatchFeatures(true);
+	
+	private static void PatchFeatures(bool isForced)
 	{
 		var typeNameToFilePath = new Dictionary<string, string>();
 		FillTypeNameToFilePathMap(Application.dataPath, "Feature", typeNameToFilePath);
@@ -31,9 +36,9 @@ internal static class BlahEditorFeaturesPatcher
 			
 			consumers.ExceptWith(producers);
 			
-			bool isServicesPatchRequired  = feature.Services?.SetEquals(services) != true;
-			bool isConsumersPatchRequired = feature.ConsumingFromOutside?.SetEquals(consumers) != true;
-			bool isProducersPatchRequired = feature.Producing?.SetEquals(producers) != true;
+			bool isServicesPatchRequired  = isForced || feature.Services?.SetEquals(services) != true;
+			bool isConsumersPatchRequired = isForced || feature.ConsumingFromOutside?.SetEquals(consumers) != true;
+			bool isProducersPatchRequired = isForced || feature.Producing?.SetEquals(producers) != true;
 			if (!isServicesPatchRequired &&
 			    !isConsumersPatchRequired &&
 			    !isProducersPatchRequired)
@@ -57,9 +62,9 @@ internal static class BlahEditorFeaturesPatcher
 			{
 				PatchFeature(
 					filePath,
-					isServicesPatchRequired ? services : null,
-					isConsumersPatchRequired ? consumers : null,
-					isProducersPatchRequired ? producers : null
+					isForced || isServicesPatchRequired ? services : null,
+					isForced || isConsumersPatchRequired ? consumers : null,
+					isForced || isProducersPatchRequired ? producers : null
 				);
 				patchedFeaturesFilesPaths.Add(filePath);
 
@@ -92,24 +97,38 @@ internal static class BlahEditorFeaturesPatcher
 		string file = File.ReadAllText(filePath);
 
 		if (services != null)
-			file = PatchStr(file, servicesPattern, services);
+			file = PatchStr(file, servicesPattern, services, false);
 		if (consumers != null)
-			file = PatchStr(file, consumersPattern, consumers);
+			file = PatchStr(file, consumersPattern, consumers, true);
 		if (producers != null)
-			file = PatchStr(file, producersPattern, producers);
+			file = PatchStr(file, producersPattern, producers, true);
 
 		File.WriteAllText(filePath, file, Encoding.UTF8);
 	}
 
-	private static string PatchStr(string str, string pattern, HashSet<Type> types)
+	private static string PatchStr(string str, string pattern, HashSet<Type> types, bool withBeautify)
 	{
 		var sb = new StringBuilder();
 		if (types.Count > 0)
 		{
 			sb.AppendLine("{ get; } = new()");
 			sb.AppendLine("{");
-			foreach (var type in types)
-				sb.AppendLine($"typeof({type.Name}),");
+
+			if (withBeautify)
+			{
+				var list = new List<Type>(types);
+				list.Sort((a, b) => string.Compare(a.Name, b.Name, StringComparison.Ordinal));
+				for (var i = 0; i < list.Count; i++)
+				{
+					if (i > 0 && list[i - 1].Name[..2] != list[i].Name[..2])
+						sb.AppendLine();
+					sb.AppendLine($"typeof({list[i].Name}),");
+				}
+			}
+			else
+				foreach (var type in types)
+					sb.AppendLine($"typeof({type.Name})");
+			
 			sb.AppendLine("};");
 		}
 		else
