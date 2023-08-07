@@ -127,7 +127,7 @@ internal static class BlahEditorFeaturesPatcher
 			}
 			else
 				foreach (var type in types)
-					sb.AppendLine($"typeof({type.Name})");
+					sb.AppendLine($"typeof({type.Name}),");
 			
 			sb.AppendLine("};");
 		}
