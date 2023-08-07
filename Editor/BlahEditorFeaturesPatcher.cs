@@ -30,8 +30,8 @@ internal static class BlahEditorFeaturesPatcher
 			BlahReflection.FindFeatureDependencies(feature, services, consumers, producers, true);
 			
 			bool isServicesPatchRequired  = feature.Services?.SetEquals(services) != true;
-			bool isConsumersPatchRequired = feature.Consumers?.SetEquals(consumers) != true;
-			bool isProducersPatchRequired = feature.Producers?.SetEquals(producers) != true;
+			bool isConsumersPatchRequired = feature.ConsumingFromOutside?.SetEquals(consumers) != true;
+			bool isProducersPatchRequired = feature.Producing?.SetEquals(producers) != true;
 			if (!isServicesPatchRequired &&
 			    !isConsumersPatchRequired &&
 			    !isProducersPatchRequired)
@@ -84,8 +84,8 @@ internal static class BlahEditorFeaturesPatcher
 		HashSet<Type> producers)
 	{
 		const string servicesPattern  = "(HashSet<Type>.*?Services)(.|\n)*?(public)";
-		const string consumersPattern = "(HashSet<Type>.*?Consumers)(.|\n)*?(public)";
-		const string producersPattern = "(HashSet<Type>.*?Producers)(.|\n)*?(public)";
+		const string consumersPattern = "(HashSet<Type>.*?ConsumingFromOutside)(.|\n)*?(public)";
+		const string producersPattern = "(HashSet<Type>.*?Producing)(.|\n)*?(public)";
 
 		string file = File.ReadAllText(filePath);
 

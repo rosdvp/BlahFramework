@@ -23,7 +23,6 @@ internal class TestValidator
 		catch (BlahFeatureValidatorException exc)
 		{
 			Assert.AreEqual(feature, exc.Feature);
-			Assert.AreEqual(typeof(MockFeatureInvalidSignalConsumer.MockInvalidSystem), exc.SystemType);
 			Assert.AreEqual(typeof(MockFeatureInvalidSignalConsumer.MockInvalidSignal), exc.InvalidType);
 		}
 	}
@@ -40,7 +39,6 @@ internal class TestValidator
 		catch (BlahFeatureValidatorException exc)
 		{
 			Assert.AreEqual(feature, exc.Feature);
-			Assert.AreEqual(typeof(MockFeatureInvalidSignalProducer.MockInvalidSystem), exc.SystemType);
 			Assert.AreEqual(typeof(MockFeatureInvalidSignalProducer.MockInvalidSignal), exc.InvalidType);
 		}
 	}
@@ -57,7 +55,6 @@ internal class TestValidator
 		catch (BlahFeatureValidatorException exc)
 		{
 			Assert.AreEqual(feature, exc.Feature);
-			Assert.AreEqual(typeof(MockFeatureInvalidDataConsumer.MockInvalidSystem), exc.SystemType);
 			Assert.AreEqual(typeof(MockFeatureInvalidDataConsumer.MockInvalidData), exc.InvalidType);
 		}
 	}
@@ -74,7 +71,6 @@ internal class TestValidator
 		catch (BlahFeatureValidatorException exc)
 		{
 			Assert.AreEqual(feature, exc.Feature);
-			Assert.AreEqual(typeof(MockFeatureInvalidDataProducer.MockInvalidSystem), exc.SystemType);
 			Assert.AreEqual(typeof(MockFeatureInvalidDataProducer.MockInvalidData), exc.InvalidType);
 		}
 	}
@@ -91,7 +87,6 @@ internal class TestValidator
 		catch (BlahFeatureValidatorException exc)
 		{
 			Assert.AreEqual(feature, exc.Feature);
-			Assert.AreEqual(typeof(MockFeatureInvalidService.MockInvalidSystem), exc.SystemType);
 			Assert.AreEqual(typeof(MockFeatureInvalidService.MockInvalidService), exc.InvalidType);
 		}
 	}
@@ -108,7 +103,6 @@ internal class TestValidator
 		catch (BlahFeatureValidatorException exc)
 		{
 			Assert.AreEqual(feature, exc.Feature);
-			Assert.AreEqual(null, exc.SystemType);
 			Assert.AreEqual(typeof(MockFeatureExcessiveSignalConsumer.MockInvalidSignal), exc.InvalidType);
 		}
 	}

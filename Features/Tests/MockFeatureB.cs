@@ -8,12 +8,12 @@ namespace Blah.Features.Tests
 {
 internal class MockFeatureB : BlahFeatureBase
 {
-	public override HashSet<Type> Consumers { get; } = new()
+	public override HashSet<Type> ConsumingFromOutside { get; } = new()
 	{
 		typeof(MockEventA),
 	};
 
-	public override HashSet<Type> Producers { get; } = new()
+	public override HashSet<Type> Producing { get; } = new()
 	{
 		typeof(MockDataB)
 	};

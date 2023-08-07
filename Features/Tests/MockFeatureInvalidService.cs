@@ -8,9 +8,9 @@ namespace Blah.Features.Tests
 {
 internal class MockFeatureInvalidService : BlahFeatureBase
 {
-	public override HashSet<Type> Consumers { get; }
+	public override HashSet<Type> ConsumingFromOutside { get; }
 
-	public override HashSet<Type> Producers { get; }
+	public override HashSet<Type> Producing { get; }
 
 	public override IReadOnlyList<Type> Systems { get; } = new[]
 	{

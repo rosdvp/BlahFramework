@@ -8,12 +8,12 @@ namespace Blah.Features.Tests
 {
 internal class MockFeatureExcessiveSignalConsumer : BlahFeatureBase
 {
-	public override HashSet<Type> Consumers { get; } = new()
+	public override HashSet<Type> ConsumingFromOutside { get; } = new()
 	{
 		typeof(MockInvalidSignal),
 	};
 
-	public override HashSet<Type> Producers { get; }
+	public override HashSet<Type> Producing { get; }
 
 	public override IReadOnlyList<Type> Systems { get; } = new[]
 	{

@@ -14,44 +14,49 @@ public static class BlahFeaturesValidator
 	{
 		if (feature.Systems == null)
 			return;
-		
-		_usedService.Clear();
-		_usedConsumers.Clear();
-		_usedProducers.Clear();
 
-		foreach (var system in feature.Systems)
-		foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
-			if (kind is BlahReflection.EKind.Service)
-			{
-				_usedService.Add(type);
-				if (feature.Services?.Contains(type) != true)
-					throw new BlahFeatureValidatorException(feature, system, type);
-			}
-			else if (kind is BlahReflection.EKind.SignalConsumer or BlahReflection.EKind.DataConsumer)
-			{
-				_usedConsumers.Add(type);
-				if (feature.Consumers?.Contains(type) != true)
-					throw new BlahFeatureValidatorException(feature, system, type);
-			}
-			else if (kind is BlahReflection.EKind.SignalProducer or BlahReflection.EKind.DataProducer)
-			{
-				_usedProducers.Add(type);
-				if (feature.Producers?.Contains(type) != true)
-					throw new BlahFeatureValidatorException(feature, system, type);
-			}
-		
-		if (feature.Services != null)
-			foreach (var service in feature.Services)
-				if (!_usedService.Contains(service))
-					throw new BlahFeatureValidatorException(feature, null, service);
-		if (feature.Consumers != null)
-			foreach (var consumer in feature.Consumers)
-				if (!_usedConsumers.Contains(consumer))
-					throw new BlahFeatureValidatorException(feature, null, consumer);
-		if (feature.Producers != null)
-			foreach (var producer in feature.Producers)
-				if (!_usedProducers.Contains(producer))
-					throw new BlahFeatureValidatorException(feature, null, producer);
+		BlahReflection.FindFeatureDependencies(
+			feature,
+			_usedService,
+			_usedConsumers,
+			_usedProducers,
+			true
+		);
+
+		if (feature.Services == null || !_usedService.SetEquals(feature.Services))
+		{
+			if (_usedService != null)
+				foreach (var service in _usedService)
+					if (feature.Services?.Contains(service) != true)
+						throw new BlahFeatureValidatorException(feature, service, true);
+			if (feature.Services != null)
+				foreach (var service in feature.Services)
+					if (!_usedService.Contains(service))
+						throw new BlahFeatureValidatorException(feature, service, false);
+		}
+
+		_usedConsumers.ExceptWith(_usedProducers);
+		if (feature.ConsumingFromOutside == null || !_usedConsumers.SetEquals(feature.ConsumingFromOutside))
+		{
+			foreach (var consumer in _usedConsumers)
+				if (feature.ConsumingFromOutside?.Contains(consumer) != true)
+					throw new BlahFeatureValidatorException(feature, consumer, true);
+			if (feature.ConsumingFromOutside != null)
+				foreach (var consumer in feature.ConsumingFromOutside)
+					if (!_usedConsumers.Contains(consumer))
+						throw new BlahFeatureValidatorException(feature, consumer, false);
+		}
+
+		if (feature.Producing == null || !_usedProducers.SetEquals(feature.Producing))
+		{
+			foreach (var producer in _usedProducers)
+				if (feature.Producing?.Contains(producer) != true)
+					throw new BlahFeatureValidatorException(feature, producer, true);
+			if (feature.Producing != null)
+				foreach (var producer in feature.Producing)
+					if (!_usedProducers.Contains(producer))
+						throw new BlahFeatureValidatorException(feature, producer, false);
+		}
 	}
 }
 
@@ -59,17 +64,15 @@ public static class BlahFeaturesValidator
 public class BlahFeatureValidatorException : Exception
 {
 	public readonly BlahFeatureBase Feature;
-	public readonly Type            SystemType;
 	public readonly Type            InvalidType;
 
-	internal BlahFeatureValidatorException(BlahFeatureBase feature, Type systemType, Type invalidType)
+	internal BlahFeatureValidatorException(BlahFeatureBase feature, Type invalidType, bool isNotUsed)
 		: base($"in feature {feature.GetType().Name}, " +
-		       (systemType == null
+		       (isNotUsed 
 			       ? $"no system uses {invalidType.Name}"
-			       : $"system {systemType.Name} not allowed to use {invalidType.Name}"))
+			       : $"usage of {invalidType.Name} is not allowed"))
 	{
 		Feature     = feature;
-		SystemType  = systemType;
 		InvalidType = invalidType;
 	}
 }
