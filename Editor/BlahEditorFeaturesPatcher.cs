@@ -36,9 +36,9 @@ internal static class BlahEditorFeaturesPatcher
 			
 			consumers.ExceptWith(producers);
 			
-			bool isServicesPatchRequired  = isForced || feature.Services?.SetEquals(services) != true;
-			bool isConsumersPatchRequired = isForced || feature.ConsumingFromOutside?.SetEquals(consumers) != true;
-			bool isProducersPatchRequired = isForced || feature.Producing?.SetEquals(producers) != true;
+			bool isServicesPatchRequired  = isForced || !IsSame(feature.Services, services);
+			bool isConsumersPatchRequired = isForced || !IsSame(feature.ConsumingFromOutside, consumers);
+			bool isProducersPatchRequired = isForced || !IsSame(feature.Producing, producers);
 			if (!isServicesPatchRequired &&
 			    !isConsumersPatchRequired &&
 			    !isProducersPatchRequired)
@@ -62,9 +62,9 @@ internal static class BlahEditorFeaturesPatcher
 			{
 				PatchFeature(
 					filePath,
-					isForced || isServicesPatchRequired ? services : null,
-					isForced || isConsumersPatchRequired ? consumers : null,
-					isForced || isProducersPatchRequired ? producers : null
+					isServicesPatchRequired ? services : null,
+					isConsumersPatchRequired ? consumers : null,
+					isProducersPatchRequired ? producers : null
 				);
 				patchedFeaturesFilesPaths.Add(filePath);
 
@@ -157,5 +157,9 @@ internal static class BlahEditorFeaturesPatcher
 		foreach (string subDirPath in Directory.GetDirectories(rootPath))
 			FillTypeNameToFilePathMap(subDirPath, searchFileNameStart, typeNameToFilePath);
 	}
+
+	private static bool IsSame(HashSet<Type> a, HashSet<Type> b)
+		=> a == null && b == null ||
+		   a != null && b != null && !a.SetEquals(b);
 }
 }
