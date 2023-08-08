@@ -23,7 +23,7 @@ public static class BlahFeaturesValidator
 			true
 		);
 
-		if (feature.Services == null || !_usedService.SetEquals(feature.Services))
+		if (!IsSame(_usedService, feature.Services))
 		{
 			if (_usedService != null)
 				foreach (var service in _usedService)
@@ -36,7 +36,7 @@ public static class BlahFeaturesValidator
 		}
 
 		_usedConsumers.ExceptWith(_usedProducers);
-		if (feature.ConsumingFromOutside == null || !_usedConsumers.SetEquals(feature.ConsumingFromOutside))
+		if (!IsSame(_usedConsumers, feature.ConsumingFromOutside))
 		{
 			foreach (var consumer in _usedConsumers)
 				if (feature.ConsumingFromOutside?.Contains(consumer) != true)
@@ -47,7 +47,7 @@ public static class BlahFeaturesValidator
 						throw new BlahFeatureValidatorException(feature, consumer, false);
 		}
 
-		if (feature.Producing == null || !_usedProducers.SetEquals(feature.Producing))
+		if (!IsSame(_usedProducers, feature.Producing))
 		{
 			foreach (var producer in _usedProducers)
 				if (feature.Producing?.Contains(producer) != true)
@@ -58,6 +58,12 @@ public static class BlahFeaturesValidator
 						throw new BlahFeatureValidatorException(feature, producer, false);
 		}
 	}
+
+	private static bool IsSame(HashSet<Type> a, HashSet<Type> b) =>
+		a == null && b == null ||
+		a is { Count: 0 } && b == null ||
+		a == null && b is { Count: 0 } ||
+		a != null && b != null && a.SetEquals(b);
 }
 
 

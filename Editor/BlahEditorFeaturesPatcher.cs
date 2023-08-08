@@ -158,8 +158,10 @@ internal static class BlahEditorFeaturesPatcher
 			FillTypeNameToFilePathMap(subDirPath, searchFileNameStart, typeNameToFilePath);
 	}
 
-	private static bool IsSame(HashSet<Type> a, HashSet<Type> b)
-		=> a == null && b == null ||
-		   a != null && b != null && !a.SetEquals(b);
+	private static bool IsSame(HashSet<Type> a, HashSet<Type> b) =>
+		a == null && b == null ||
+		a is { Count             : 0 } && b == null ||
+		a == null && b is { Count: 0 } ||
+		a != null && b != null && a.SetEquals(b);
 }
 }
