@@ -10,12 +10,12 @@ public struct BlahEcsEntity
 
 	public void Destroy() => World.DestroyEntity(Id);
 
-	public ref T Add<T>() => ref World.AddComp<T>(this);
+	public ref T Add<T>() where T : IBlahEntryEcs => ref World.AddComp<T>(this);
 
-	public void Remove<T>() => World.RemoveComp<T>(this);
+	public void Remove<T>() where T : IBlahEntryEcs => World.RemoveComp<T>(this);
 
-	public ref T Get<T>() => ref World.GetComp<T>(this);
+	public ref T Get<T>() where T : IBlahEntryEcs => ref World.GetComp<T>(this);
 
-	public bool Has<T>() => World.HasComp<T>(this);
+	public bool Has<T>() where T : IBlahEntryEcs => World.HasComp<T>(this);
 }
 }

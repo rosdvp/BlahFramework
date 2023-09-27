@@ -313,17 +313,17 @@ internal class TestsCore
 	}
 	
 
-	private struct CompA
+	private struct CompA : IBlahEntryEcs
 	{
 		public int Val;
 	}
 
-	private struct CompB
+	private struct CompB : IBlahEntryEcs
 	{
 		public int Val;
 	}
 
-	private struct CompC
+	private struct CompC : IBlahEntryEcs
 	{
 		public int Val;
 	}

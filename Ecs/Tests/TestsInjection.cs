@@ -83,7 +83,7 @@ internal class TestsInjection
 		public BlahEcsFilter<MockCompB, MockCompA> Filter3  => _filter3;
 	}
 
-	private struct MockCompA { }
-	private struct MockCompB { }
+	private struct MockCompA : IBlahEntryEcs { }
+	private struct MockCompB : IBlahEntryEcs { }
 }
 }

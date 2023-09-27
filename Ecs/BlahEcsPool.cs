@@ -9,7 +9,7 @@ public interface IBlahEcsPool
 	void Remove(int entityId);
 }
 
-public class BlahEcsPool<T> : IBlahEcsPool
+public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
 {
 	private BlahSet<T> _set = new(1, 1);
 

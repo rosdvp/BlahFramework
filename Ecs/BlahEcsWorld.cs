@@ -47,7 +47,7 @@ public class BlahEcsWorld
 	}
 
 
-	internal ref T AddComp<T>(BlahEcsEntity entity)
+	internal ref T AddComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
 	{
 		var pool = GetPool<T>();
 
@@ -67,7 +67,7 @@ public class BlahEcsWorld
 		return ref pool.Get(entity.Id);
 	}
 
-	internal void RemoveComp<T>(BlahEcsEntity entity)
+	internal void RemoveComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
 	{
 		var pool = GetPool<T>();
 
@@ -86,7 +86,7 @@ public class BlahEcsWorld
 				filter.OnIncCompAddedOrExcRemoved(entity);
 	}
 
-	internal ref T GetComp<T>(BlahEcsEntity entity)
+	internal ref T GetComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
 	{
 		var pool = GetPool<T>();
 		if (!pool.Has(entity.Id))
@@ -94,7 +94,7 @@ public class BlahEcsWorld
 		return ref pool.Get(entity.Id);
 	}
 
-	internal bool HasComp<T>(BlahEcsEntity entity)
+	internal bool HasComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
 	{
 		return GetPool<T>().Has(entity.Id);
 	}
@@ -167,7 +167,7 @@ public class BlahEcsWorld
 	}
 
 
-	private BlahEcsPool<T> GetPool<T>()
+	private BlahEcsPool<T> GetPool<T>() where T : IBlahEntryEcs
 	{
 		var type = typeof(T);
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
