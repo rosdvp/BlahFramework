@@ -4,17 +4,21 @@ namespace Blah.Common
 {
 public class BlahSet<T>
 {
+	private readonly int _ptrsOffset;
+	
 	private T[] _entries;
 	private int _entriesCount;
 
 	private int[] _releasedPtrs;
 	private int   _releasedCount;
 	
-	public BlahSet(int baseCapacity, int firstPtr)
+	public BlahSet(int baseCapacity, int ptrsOffset)
 	{
-		_entries       = new T[baseCapacity + firstPtr];
-		_entriesCount  = firstPtr;
-		_releasedPtrs  = new int[_entries.Length];
+		_ptrsOffset = ptrsOffset;
+		
+		_entries       = new T[baseCapacity];
+		_entriesCount  = 0;
+		_releasedPtrs  = new int[baseCapacity];
 		_releasedCount = 0;
 	}
 
@@ -32,14 +36,14 @@ public class BlahSet<T>
 			Array.Resize(ref _entries, newLength);
 			Array.Resize(ref _releasedPtrs, newLength);
 		}
-		return _entriesCount++;
+		return _ptrsOffset + _entriesCount++;
 	}
 
-	public ref T Get(int ptr) => ref _entries[ptr];
+	public ref T Get(int ptr) => ref _entries[ptr - _ptrsOffset];
 
 	public void Remove(int ptr)
 	{
-		_releasedPtrs[_releasedCount++] = ptr;
+		_releasedPtrs[_releasedCount++] = ptr - _ptrsOffset;
 	}
 
 	public void RemoveAll()

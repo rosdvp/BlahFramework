@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using Blah.Common;
 
 namespace Blah.Ecs
 {
 public class BlahEcs
 {
-	private BlahSet<BlahEcsEntity> _entitiesSet        = new(1, 1);
-	private int[]                  _aliveEntitiesIds   = new int[1];
-	private int                    _aliveEntitiesCount = 0;
-
+	private BlahEcsEntities _entities;
+	
 	private List<IBlahEcsPool>             _compPools      = new();
 	private Dictionary<Type, IBlahEcsPool> _compTypeToPool = new();
 
@@ -18,23 +15,15 @@ public class BlahEcs
 	private Dictionary<Type, List<BlahEcsFilter>> _incCompToFilters = new();
 	private Dictionary<Type, List<BlahEcsFilter>> _excCompToFilters = new();
 
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	public ref BlahEcsEntity CreateEntity()
+
+	public BlahEcs()
 	{
-		int id = _entitiesSet.Add();
-
-		if (_aliveEntitiesIds.Length == _aliveEntitiesCount)
-			Array.Resize(ref _aliveEntitiesIds, _aliveEntitiesCount * 2);
-		
-		_aliveEntitiesIds[_aliveEntitiesCount++] = id;
-
-		ref var entity = ref _entitiesSet.Get(id);
-		entity.World = this;
-		entity.Id    = id;
-
-		return ref _entitiesSet.Get(id);
+		_entities = new BlahEcsEntities(this);
 	}
+	
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+	public ref BlahEcsEntity CreateEntity() => ref _entities.Create();
 
 	internal void DestroyEntity(BlahEcsEntity entity)
 	{
@@ -44,6 +33,8 @@ public class BlahEcs
 		
 		foreach (var filter in _filters)
 			filter.OnIncCompRemovedOrExcAdded(entity);
+		
+		_entities.Destroy(entity.Id);
 	}
 
 
@@ -100,10 +91,6 @@ public class BlahEcs
 	}
 
 
-	internal (BlahSet<BlahEcsEntity> set, int[] alivePtrs, int aliveCounts) GetEntities() 
-		=> (_entitiesSet, _aliveEntitiesIds, _aliveEntitiesCount);
-
-
 	public BlahEcsFilterProxy GetFilter<T>(Type[] incCompTypes, Type[] excCompTypes) where T : BlahEcsFilterProxy
 	{
 		SortTypes(ref incCompTypes);
@@ -136,7 +123,7 @@ public class BlahEcs
 					excCompsPools[i] = GetPool(excCompTypes[i]);
 			}
 
-			filter = new BlahEcsFilter(this, incCompsPools, excCompsPools);
+			filter = new BlahEcsFilter(_entities, incCompsPools, excCompsPools);
 			_filters.Add(filter);
 			_hashToFilter[hash] = filter;
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using UnityEngine;
 
 namespace Blah.Ecs
 {
@@ -30,7 +29,7 @@ public class BlahEcsFilterProxy
 		public Enumerator(BlahEcsFilter owner)
 		{
 			_owner  = owner;
-			_cursor = 0; // entities starts from 1, but we need 0 for first MoveNext
+			_cursor = -1;
 			
 			(_entities, _entitiesCount) = _owner.BeginIteration();
 		}

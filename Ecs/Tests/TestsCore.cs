@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Blah.Ecs.Tests
 {
 internal class TestsCore
 {
 	[Test]
-	public void Test_AddComp_ValueSame([Range(1, 10)] int count)
+	public void Test_AddComp_ValueSame([NUnit.Framework.Range(1, 10)] int count)
 	{
 		var ecs = new BlahEcs();
 
@@ -78,7 +79,7 @@ internal class TestsCore
 	
 
 	[Test]
-	public void Test_AddComp_FilterUpdated([Range(1, 10)] int count)
+	public void Test_AddComp_FilterUpdated([NUnit.Framework.Range(1, 10)] int count)
 	{
 		var ecs  = new BlahEcs();
 		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
@@ -306,6 +307,28 @@ internal class TestsCore
 		foreach (var e1 in filter1)
 			Assert.IsTrue(expected.Remove(e1.Get<CompA>().Val));
 	}
+
+	[Test]
+	public void Test_DestroyEntity_SameFilterUpdated()
+	{
+		var ecs    = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+
+		for (var i = 0; i < 20; i++)
+		{
+			Debug.Log($"iter {i}");
+			
+			ecs.CreateEntity().Add<CompA>().Val = 1;
+            
+			foreach (var ent in filter)
+				if (ent.Get<CompA>().Val == 5)
+					ent.Destroy();
+
+			foreach (var ent in filter)
+				ent.Get<CompA>().Val += 1;
+		}
+	}
+	
 	
 
 	private struct CompA : IBlahEntryEcs

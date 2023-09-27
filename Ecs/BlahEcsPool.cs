@@ -11,22 +11,21 @@ public interface IBlahEcsPool
 
 public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
 {
-	private BlahSet<T> _set = new(1, 1);
+	private readonly BlahSet<T> _set = new(1, 0);
 
-	private int[] _entityIdToPtr = new int[2];
-	
+	private int[] _entityIdToPtr = { -1 };
+
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public void Add(int entityId)
 	{
-		if (entityId >= _entityIdToPtr.Length)
-			Array.Resize(ref _entityIdToPtr, entityId * 2);
+		BlahArrayHelper.ResizeOnDemand(ref _entityIdToPtr, entityId, -1);
 		
 		int ptr = _set.Add();
 		_entityIdToPtr[entityId] = ptr;
 	}
 
-	public bool Has(int entityId) => entityId < _entityIdToPtr.Length && _entityIdToPtr[entityId] != 0;
+	public bool Has(int entityId) => entityId < _entityIdToPtr.Length && _entityIdToPtr[entityId] != -1;
 
 	public ref T Get(int entityId)
 	{
@@ -36,7 +35,7 @@ public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
 	public void Remove(int entityId)
 	{
 		_set.Remove(_entityIdToPtr[entityId]);
-		_entityIdToPtr[entityId] = 0;
+		_entityIdToPtr[entityId] = -1;
 	}
 }
 }

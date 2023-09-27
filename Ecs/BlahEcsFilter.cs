@@ -1,4 +1,5 @@
 ﻿using System;
+using Blah.Common;
 
 namespace Blah.Ecs
 {
@@ -7,9 +8,10 @@ public class BlahEcsFilter
 	private readonly IBlahEcsPool[] _incCompsPools;
 	private readonly IBlahEcsPool[] _excCompsPools;
 
-	private BlahEcsEntity[] _entities      = new BlahEcsEntity[2];
-	private int[]           _entityIdToIdx = new int[2];
-	private int             _entitiesCount = 1; //0 stays for null in _entityIdToIdx
+	private BlahEcsEntity[] _entities = new BlahEcsEntity[1];
+	private int             _entitiesCount;
+
+	private int[] _entityIdToIdx = { -1 };
 
 	private DelayedOp[] _delayedOps = new DelayedOp[1];
 	private int         _delayedOpsCount;
@@ -18,12 +20,12 @@ public class BlahEcsFilter
     
 	
 	
-	public BlahEcsFilter(BlahEcs world, IBlahEcsPool[] incCompsPools, IBlahEcsPool[] excCompsPools)
+	public BlahEcsFilter(BlahEcsEntities entities, IBlahEcsPool[] incCompsPools, IBlahEcsPool[] excCompsPools)
 	{
 		_incCompsPools = incCompsPools;
 		_excCompsPools = excCompsPools;
 
-		(var set, int[] alivePtrs, int aliveCount) = world.GetEntities();
+		(var set, int[] alivePtrs, int aliveCount) = entities.GetAllAlive();
 		for (var i = 0; i < aliveCount; i++)
 		{
 			ref var entity = ref set.Get(alivePtrs[i]);
@@ -34,15 +36,14 @@ public class BlahEcsFilter
 	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	private bool Has(int entityId) => entityId < _entityIdToIdx.Length && _entityIdToIdx[entityId] != 0;
+	private bool Has(int entityId) => entityId < _entityIdToIdx.Length && _entityIdToIdx[entityId] != -1;
     
 	
 	internal void OnIncCompAddedOrExcRemoved(BlahEcsEntity entity)
 	{
 		if (_goingIteratorsCount > 0)
 		{
-			if (_delayedOps.Length == _delayedOpsCount)
-				Array.Resize(ref _delayedOps, _delayedOpsCount * 2);
+			BlahArrayHelper.ResizeOnDemand(ref _delayedOps, _delayedOpsCount);
 			ref var op = ref _delayedOps[_delayedOpsCount++];
 			op.Entity   = entity;
 			op.IsTryAdd = true;
@@ -57,8 +58,7 @@ public class BlahEcsFilter
 	{
 		if (_goingIteratorsCount > 0)
 		{
-			if (_delayedOps.Length == _delayedOpsCount)
-				Array.Resize(ref _delayedOps, _delayedOpsCount * 2);
+			BlahArrayHelper.ResizeOnDemand(ref _delayedOps, _delayedOpsCount);
 			ref var op = ref _delayedOps[_delayedOpsCount++];
 			op.Entity   = entity;
 			op.IsTryAdd = false;
@@ -82,10 +82,8 @@ public class BlahEcsFilter
 
 	private void AddEntity(BlahEcsEntity entity)
 	{
-		if (_entities.Length == _entitiesCount)
-			Array.Resize(ref _entities, _entitiesCount * 2);
-		if (entity.Id >= _entityIdToIdx.Length)
-			Array.Resize(ref _entityIdToIdx, entity.Id * 2);
+		BlahArrayHelper.ResizeOnDemand(ref _entities, _entitiesCount);
+		BlahArrayHelper.ResizeOnDemand(ref _entityIdToIdx, entity.Id, -1);
 
 		int idx = _entitiesCount++;
 		_entities[idx]            = entity;
@@ -98,11 +96,19 @@ public class BlahEcsFilter
 			return;
 		
 		int idx = _entityIdToIdx[entityId];
-		_entityIdToIdx[entityId] = 0;
-		if (_entitiesCount == 2)
-			_entitiesCount = 1;
+		_entityIdToIdx[entityId] = -1;
+
+		if (_entitiesCount == 1)
+		{
+			_entitiesCount = 0;
+		}
 		else
+		{
+			int lastEntityId = _entities[_entitiesCount - 1].Id;
+			_entityIdToIdx[lastEntityId] = idx;
+			
 			_entities[idx] = _entities[--_entitiesCount];
+		}
 	}
 
 
