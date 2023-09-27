@@ -40,6 +40,11 @@ public struct BlahEcsEntity
 		return a.Id > b.Id;
 	}
 
+	public override string ToString()
+	{
+		return Id.ToString();
+	}
+
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public static BlahEcsEntity Null { get; } = new()
