@@ -1,27 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Blah.Injection
 {
 public class BlahInjector
 {
-	private readonly HashSet<Type>            _injectableFieldBaseTypes = new();
-	private readonly Dictionary<Type, Source> _fieldBaseTypeToSource    = new();
-	private readonly Dictionary<Type, object> _fieldTypeToObject        = new();
+	private readonly Dictionary<Type, Source> _injectableFieldTypeToSource = new();
+	private readonly Dictionary<Type, object> _fieldTypeToObject           = new();
 
 	public void AddSource(
-		object obj,
-		Type   fieldBaseType,
-		string methodBaseName)
+		object  obj,
+		Type    fieldBaseType,
+		string  methodBaseName,
+		EMethodType methodType)
 	{
-		_injectableFieldBaseTypes.Add(fieldBaseType);
-		_fieldBaseTypeToSource.TryAdd(
+		_injectableFieldTypeToSource.TryAdd(
 			fieldBaseType,
 			new Source
 			{
 				Obj            = obj,
-				MethodBaseName = methodBaseName
+				MethodBaseName = methodBaseName,
+				MethodType = methodType
 			}
 		);
 	}
@@ -38,51 +39,81 @@ public class BlahInjector
 				BindingFlags.NonPublic
 			);
 			foreach (var field in fields)
-			{
-				var fieldType = field.FieldType;
-				var fieldBaseType = fieldType.IsGenericType
-					? fieldType.GetGenericTypeDefinition()
-					: fieldType.BaseType;
-
-				if (!_injectableFieldBaseTypes.Contains(fieldBaseType))
-					continue;
-
-				if (!_fieldTypeToObject.TryGetValue(fieldType, out object obj))
-				{
-					obj = RetrieveFromSource(
-						fieldBaseType,
-						fieldType.IsGenericType
-							? fieldType.GenericTypeArguments[0]
-							: fieldType
-					);
-					_fieldTypeToObject[fieldType] = obj;
-				}
-				field.SetValue(target, obj);
-			}
+				TryInjectIntoField(target, field);
 
 			targetType = targetType.BaseType;
 		}
 	}
 
-	private object RetrieveFromSource(Type fieldBaseType, Type methodGenericType)
+	private void TryInjectIntoField(object target, FieldInfo field)
 	{
-		if (!_fieldBaseTypeToSource.TryGetValue(fieldBaseType, out var source))
-			throw new Exception($"source for field base type {fieldBaseType.Name} is not added");
+		var fieldType = field.FieldType;
+		if (_fieldTypeToObject.TryGetValue(fieldType, out object obj))
+		{
+			field.SetValue(target, obj);	
+			return;
+		}
 
+		var source = TryFindSource(fieldType);
+		if (source == null)
+			return;
+
+		obj = RetrieveFromSource(source, fieldType);
+		field.SetValue(target, obj);
+		
+		_fieldTypeToObject[fieldType] = obj;
+	}
+
+	private Source TryFindSource(Type fieldType)
+	{
+		Source source = null;
+		
+		if (_injectableFieldTypeToSource.TryGetValue(fieldType, out source))
+			return source;
+
+		if (fieldType.IsGenericType &&
+		    _injectableFieldTypeToSource.TryGetValue(fieldType.GetGenericTypeDefinition(), out source))
+			return source;
+		
+		if (fieldType.BaseType != null && 
+		    _injectableFieldTypeToSource.TryGetValue(fieldType.BaseType, out source))
+			return source;
+		
+		return null;
+	}
+
+	private object RetrieveFromSource(Source source, Type fieldType)
+	{
 		var method = source.Obj.GetType().GetMethod(source.MethodBaseName);
 		if (method == null)
 			throw new Exception($"source {source.Obj.GetType().Name} does not have " +
 			                    $"base method with name {source.MethodBaseName}");
-		
-		method = method.MakeGenericMethod(methodGenericType);
 
+		if (source.MethodType == EMethodType.Simple) { }
+		else if (source.MethodType == EMethodType.GenericAcceptFieldType)
+		{
+			method = method.MakeGenericMethod(fieldType);
+		}
+		else if (source.MethodType == EMethodType.GenericAcceptGenericArgument)
+		{
+			method = method.MakeGenericMethod(fieldType.GenericTypeArguments[0]);
+		}
+		
 		return method.Invoke(source.Obj, null);
 	}
 
 	private class Source
 	{
-		public object Obj;
-		public string MethodBaseName;
+		public object  Obj;
+		public string  MethodBaseName;
+		public EMethodType MethodType;
+	}
+
+	public enum EMethodType
+	{
+		Simple,
+		GenericAcceptFieldType,
+		GenericAcceptGenericArgument,
 	}
 }
 }

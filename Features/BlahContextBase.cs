@@ -36,13 +36,8 @@ public abstract class BlahContextBase
 		}
 		_servicesContext.FinalizeInit();
 
-		var injector = new BlahInjector();
-		injector.AddSource(_servicesContext, typeof(BlahServiceBase), nameof(BlahServicesContext.Get));
-		injector.AddSource(_poolsContext, typeof(IBlahSignalConsumer<>), nameof(BlahPoolsContext.GetSignalConsumer));
-		injector.AddSource(_poolsContext, typeof(IBlahSignalProducer<>), nameof(BlahPoolsContext.GetSignalProducer));
-		injector.AddSource(_poolsContext, typeof(IBlahDataConsumer<>), nameof(BlahPoolsContext.GetDataConsumer));
-		injector.AddSource(_poolsContext, typeof(IBlahDataProducer<>), nameof(BlahPoolsContext.GetDataProducer));
-
+		var injector = BuildInjector();
+		
 		var tempSystemsTypes = new List<Type>();
 		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
 		{
@@ -70,6 +65,7 @@ public abstract class BlahContextBase
 			}
 		}
 	}
+	
 
 	public BlahPoolsContext    Pools    => _poolsContext;
 	public BlahServicesContext Services => _servicesContext;
@@ -92,8 +88,42 @@ public abstract class BlahContextBase
 		_isRequestedSwitchSystemsGroupWithPoolsRemoveAll = withPoolsRemoveAll;
 	}
 
-
+	
 	protected abstract Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; }
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+
+	private BlahInjector BuildInjector()
+	{
+		var injector = new BlahInjector();
+		injector.AddSource(_servicesContext,
+		                   typeof(BlahServiceBase),
+		                   nameof(BlahServicesContext.Get),
+		                   BlahInjector.EMethodType.GenericAcceptFieldType
+		);
+		injector.AddSource(_poolsContext,
+		                   typeof(IBlahSignalConsumer<>),
+		                   nameof(BlahPoolsContext.GetSignalConsumer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		injector.AddSource(_poolsContext,
+		                   typeof(IBlahSignalProducer<>),
+		                   nameof(BlahPoolsContext.GetSignalProducer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		injector.AddSource(_poolsContext,
+		                   typeof(IBlahDataConsumer<>),
+		                   nameof(BlahPoolsContext.GetDataConsumer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		injector.AddSource(_poolsContext,
+		                   typeof(IBlahDataProducer<>),
+		                   nameof(BlahPoolsContext.GetDataProducer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		return injector;
+	}
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------

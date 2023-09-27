@@ -9,11 +9,13 @@ public struct BlahEcsEntity
 	//-----------------------------------------------------------
 
 	public void Destroy() => World.DestroyEntity(Id);
-	
-	public ref T AddComp<T>() => ref World.GetPool<T>().Add(Id);
 
-	public void RemoveComp<T>() => World.GetPool<T>().Remove(Id);
+	public ref T Add<T>() => ref World.AddComp<T>(this);
 
-	public bool HasComp<T>() => World.GetPool<T>().Has(Id);
+	public void Remove<T>() => World.RemoveComp<T>(this);
+
+	public ref T Get<T>() => ref World.GetComp<T>(this);
+
+	public bool Has<T>() => World.HasComp<T>(this);
 }
 }

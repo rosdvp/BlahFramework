@@ -4,24 +4,24 @@ namespace Blah.Ecs
 {
 public class BlahEcsFilter
 {
-	private readonly IBlahEcsPool[] _incCompPools;
-	private readonly IBlahEcsPool[] _excCompPools;
+	private readonly IBlahEcsPool[] _incCompsPools;
+	private readonly IBlahEcsPool[] _excCompsPools;
 
 	private BlahEcsEntity[] _entities      = new BlahEcsEntity[2];
-	private int[]           _entityIdToIdx = new int[1];
-	private int             _entitiesCount = 1;
+	private int[]           _entityIdToIdx = new int[2];
+	private int             _entitiesCount = 1; //0 stays for null in _entityIdToIdx
 
 	private DelayedOp[] _delayedOps = new DelayedOp[1];
 	private int         _delayedOpsCount;
 
 	private int _goingIteratorsCount;
-
-	public BlahEcsFilter() { }
-
-	public BlahEcsFilter(BlahEcsWorld world, IBlahEcsPool[] incCompPools, IBlahEcsPool[] excCompPools)
+    
+	
+	
+	public BlahEcsFilter(BlahEcsWorld world, IBlahEcsPool[] incCompsPools, IBlahEcsPool[] excCompsPools)
 	{
-		_incCompPools = incCompPools;
-		_excCompPools = excCompPools;
+		_incCompsPools = incCompsPools;
+		_excCompsPools = excCompsPools;
 
 		(var set, int[] alivePtrs, int aliveCount) = world.GetEntities();
 		for (var i = 0; i < aliveCount; i++)
@@ -31,12 +31,13 @@ public class BlahEcsFilter
 				AddEntity(entity);
 		}
 	}
+	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	private bool Has(int entityId) => entityId < _entityIdToIdx.Length && _entityIdToIdx[entityId] != 0;
-
+    
 	
-	private void OnCompIncAddedOrExcRemoved(BlahEcsEntity entity)
+	internal void OnIncCompAddedOrExcRemoved(BlahEcsEntity entity)
 	{
 		if (_goingIteratorsCount > 0)
 		{
@@ -47,12 +48,12 @@ public class BlahEcsFilter
 			op.IsTryAdd = true;
 			return;
 		}
-
+        
 		if (!Has(entity.Id) && IsSuitable(entity.Id))
 			AddEntity(entity);
 	}
 
-	private void OnCompIncRemovedOrExcAdded(BlahEcsEntity entity)
+	internal void OnIncCompRemovedOrExcAdded(BlahEcsEntity entity)
 	{
 		if (_goingIteratorsCount > 0)
 		{
@@ -64,23 +65,22 @@ public class BlahEcsFilter
 			return;
 		}
 		
-		if (!Has(entity.Id))
-			return;
-		
-		int idx = _entityIdToIdx[entity.Id];
-		_entityIdToIdx[entity.Id] = 0;
-		if (_entitiesCount == 2)
-			_entitiesCount = 1;
-		else
-			_entities[idx] = _entities[--_entitiesCount];
+        TryRemoveEntity(entity.Id);
 	}
+
+	internal void ForceTryRemoveEntity(int entityId)
+	{
+		TryRemoveEntity(entityId);
+	}
+	
+	
 
 	private bool IsSuitable(int entityId)
 	{
-		foreach (var pool in _incCompPools)
+		foreach (var pool in _incCompsPools)
 			if (!pool.Has(entityId))
 				return false;
-		foreach (var pool in _excCompPools)
+		foreach (var pool in _excCompsPools)
 			if (pool.Has(entityId))
 				return false;
 		return true;
@@ -98,6 +98,19 @@ public class BlahEcsFilter
 		_entityIdToIdx[entity.Id] = idx;
 	}
 
+	private void TryRemoveEntity(int entityId)
+	{
+		if (!Has(entityId))
+			return;
+		
+		int idx = _entityIdToIdx[entityId];
+		_entityIdToIdx[entityId] = 0;
+		if (_entitiesCount == 2)
+			_entitiesCount = 1;
+		else
+			_entities[idx] = _entities[--_entitiesCount];
+	}
+
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
@@ -106,9 +119,9 @@ public class BlahEcsFilter
 		for (var i = 0; i < _delayedOpsCount; i++)
 		{
 			if (_delayedOps[i].IsTryAdd)
-				OnCompIncAddedOrExcRemoved(_delayedOps[i].Entity);
+				OnIncCompAddedOrExcRemoved(_delayedOps[i].Entity);
 			else
-				OnCompIncRemovedOrExcAdded(_delayedOps[i].Entity);
+				OnIncCompRemovedOrExcAdded(_delayedOps[i].Entity);
 		}
 		_delayedOpsCount = 0;
 	}

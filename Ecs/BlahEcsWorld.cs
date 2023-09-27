@@ -6,95 +6,199 @@ namespace Blah.Ecs
 {
 public class BlahEcsWorld
 {
-	private BlahSet<BlahEcsEntity> _entitiesSet;
-	private int[]                  _aliveEntitiesPtrs;
-	private int                    _aliveEntitiesCount;
+	private BlahSet<BlahEcsEntity> _entitiesSet        = new(1, 1);
+	private int[]                  _aliveEntitiesIds   = new int[1];
+	private int                    _aliveEntitiesCount = 0;
 
 	private List<IBlahEcsPool>             _compPools      = new();
 	private Dictionary<Type, IBlahEcsPool> _compTypeToPool = new();
 
-	private Dictionary<int, BlahEcsFilter> _hashToFilter = new();
+	private List<BlahEcsFilter>                   _filters          = new();
+	private Dictionary<int, BlahEcsFilter>        _hashToFilter     = new();
+	private Dictionary<Type, List<BlahEcsFilter>> _incCompToFilters = new();
+	private Dictionary<Type, List<BlahEcsFilter>> _excCompToFilters = new();
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public ref BlahEcsEntity CreateEntity()
 	{
-		int ptr = _entitiesSet.Add();
+		int id = _entitiesSet.Add();
+
+		if (_aliveEntitiesIds.Length == _aliveEntitiesCount)
+			Array.Resize(ref _aliveEntitiesIds, _aliveEntitiesCount * 2);
 		
-		_aliveEntitiesPtrs[_aliveEntitiesCount++] = ptr;
+		_aliveEntitiesIds[_aliveEntitiesCount++] = id;
 
-		ref var entity = ref _entitiesSet.Get(ptr);
+		ref var entity = ref _entitiesSet.Get(id);
 		entity.World = this;
-		entity.Id    = ptr;
+		entity.Id    = id;
 
-		return ref _entitiesSet.Get(ptr);
+		return ref _entitiesSet.Get(id);
 	}
 
-	public void DestroyEntity(int entityId)
+	internal void DestroyEntity(int entityId)
 	{
 		foreach (var pool in _compPools)
 			if (pool.Has(entityId))
 				pool.Remove(entityId);
+		
+		foreach (var filter in _filters)
+			filter.ForceTryRemoveEntity(entityId);
 	}
 
-	internal BlahEcsPool<T> GetPool<T>()
+
+	internal ref T AddComp<T>(BlahEcsEntity entity)
+	{
+		var pool = GetPool<T>();
+
+		if (pool.Has(entity.Id))
+			throw new Exception($"entity {entity.Id} already have {nameof(T)}");
+		
+		pool.Add(entity.Id);
+
+		var compType = typeof(T);
+		if (_incCompToFilters.TryGetValue(compType, out var filters))
+			foreach (var filter in filters)
+				filter.OnIncCompAddedOrExcRemoved(entity);
+		if (_excCompToFilters.TryGetValue(compType, out filters))
+			foreach (var filter in filters)
+				filter.OnIncCompRemovedOrExcAdded(entity);
+
+		return ref pool.Get(entity.Id);
+	}
+
+	internal void RemoveComp<T>(BlahEcsEntity entity)
+	{
+		var pool = GetPool<T>();
+
+		if (!pool.Has(entity.Id))
+			throw new Exception($"entity {entity.Id} does not have {nameof(T)}");
+		
+		pool.Remove(entity.Id);
+
+		var compType = typeof(T);
+		if (_incCompToFilters.TryGetValue(compType, out var filters))
+			foreach (var filter in filters)
+				filter.OnIncCompRemovedOrExcAdded(entity);
+		
+		if (_excCompToFilters.TryGetValue(compType, out filters))
+			foreach (var filter in filters)
+				filter.OnIncCompAddedOrExcRemoved(entity);
+	}
+
+	internal ref T GetComp<T>(BlahEcsEntity entity)
+	{
+		var pool = GetPool<T>();
+		if (!pool.Has(entity.Id))
+			throw new Exception($"entity {entity.Id} does not have {nameof(T)}");
+		return ref pool.Get(entity.Id);
+	}
+
+	internal bool HasComp<T>(BlahEcsEntity entity)
+	{
+		return GetPool<T>().Has(entity.Id);
+	}
+
+
+	internal (BlahSet<BlahEcsEntity> set, int[] alivePtrs, int aliveCounts) GetEntities() 
+		=> (_entitiesSet, _aliveEntitiesIds, _aliveEntitiesCount);
+
+
+	public BlahEcsFilterProxy GetFilter<T>(Type[] incCompTypes, Type[] excCompTypes) where T : BlahEcsFilterProxy
+	{
+		SortTypes(ref incCompTypes);
+
+		int hash = incCompTypes[0].GetHashCode();
+		for (var i = 1; i < incCompTypes.Length; i++)
+			hash = HashCode.Combine(hash, incCompTypes[i]);
+		hash *= 31;
+		if (excCompTypes != null)
+		{
+			SortTypes(ref excCompTypes);
+
+			for (var i = 0; i < excCompTypes.Length; i++)
+				hash = HashCode.Combine(hash, excCompTypes[i]);
+		}
+
+		if (!_hashToFilter.TryGetValue(hash, out var filter))
+		{
+			var incCompsPools = new IBlahEcsPool[incCompTypes.Length];
+			for (var i = 0; i < incCompsPools.Length; i++)
+				incCompsPools[i] = GetPool(incCompTypes[i]);
+
+			IBlahEcsPool[] excCompsPools = null;
+			if (excCompTypes == null)
+				excCompsPools = Array.Empty<IBlahEcsPool>();
+			else
+			{
+				excCompsPools = new IBlahEcsPool[excCompTypes.Length];
+				for (var i = 0; i < excCompsPools.Length; i++)
+					excCompsPools[i] = GetPool(excCompTypes[i]);
+			}
+
+			filter = new BlahEcsFilter(this, incCompsPools, excCompsPools);
+			_filters.Add(filter);
+			_hashToFilter[hash] = filter;
+
+			foreach (var type in incCompTypes)
+			{
+				if (!_incCompToFilters.TryGetValue(type, out var filters))
+				{
+					filters                 = new List<BlahEcsFilter>();
+					_incCompToFilters[type] = filters;
+				}
+				filters.Add(filter);
+			}
+			if (excCompTypes != null)
+				foreach (var type in excCompTypes)
+				{
+					if (!_excCompToFilters.TryGetValue(type, out var filters))
+					{
+						filters                 = new List<BlahEcsFilter>();
+						_excCompToFilters[type] = filters;
+					}
+					filters.Add(filter);
+				}
+		}
+
+		var proxy = Activator.CreateInstance<T>();
+		proxy.Finalize(filter);
+		return proxy;
+	}
+
+
+	private BlahEcsPool<T> GetPool<T>()
 	{
 		var type = typeof(T);
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
 		{
 			pool = new BlahEcsPool<T>();
+
 			_compPools.Add(pool);
 			_compTypeToPool[type] = pool;
 		}
 		return (BlahEcsPool<T>)pool;
 	}
 
-	internal IBlahEcsPool GetPool(Type type)
+	private IBlahEcsPool GetPool(Type type)
 	{
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
 		{
 			var poolType = typeof(BlahEcsPool<>).MakeGenericType(type);
 			pool = (IBlahEcsPool)Activator.CreateInstance(poolType);
+			
 			_compPools.Add(pool);
 			_compTypeToPool[type] = pool;
 		}
 		return pool;
 	}
-	
-	internal (BlahSet<BlahEcsEntity> set, int[] alivePtrs, int aliveCounts) GetEntities() 
-		=> (_entitiesSet, _aliveEntitiesPtrs, _aliveEntitiesCount);
-
-
-	public BlahEcsFilter GetFilter(Type[] incCompTypes, Type[] excCompTypes)
+    
+	private void SortTypes(ref Type[] types)
 	{
-		int hash = incCompTypes[0].GetHashCode();
-		for (var i = 1; i < incCompTypes.Length; i++)
-			hash = HashCode.Combine(hash, incCompTypes[i]);
-		hash *= 31;
-		if (excCompTypes != null)
-			for (var i = 0; i < excCompTypes.Length; i++)
-				hash = HashCode.Combine(hash, excCompTypes[i]);
-
-		if (!_hashToFilter.TryGetValue(hash, out var filter))
-		{
-			var incCompPools = new IBlahEcsPool[incCompTypes.Length];
-			for (var i = 0; i < incCompPools.Length; i++)
-				incCompPools[i] = GetPool(incCompTypes[i]);
-
-			IBlahEcsPool[] excCompPools = null;
-			if (excCompTypes == null)
-				excCompPools = Array.Empty<IBlahEcsPool>();
-			else
-			{
-				excCompPools = new IBlahEcsPool[excCompTypes.Length];
-				for (var i = 0; i < excCompPools.Length; i++)
-					excCompPools[i] = GetPool(excCompTypes[i]);
-			}
-
-			filter              = new BlahEcsFilter(this, incCompPools, excCompPools);
-			_hashToFilter[hash] = filter;
-		}
-		return filter;
+		Array.Sort(
+			types,
+			(a, b) => a.GetHashCode().CompareTo(b.GetHashCode())
+		);
 	}
 }
 }

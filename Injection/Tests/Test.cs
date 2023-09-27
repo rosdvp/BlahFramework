@@ -83,18 +83,29 @@ internal class Test
 		Assert.NotNull(targetChild.ChildItemB2);
 		Assert.AreEqual(targetChild.ParentItem1, targetChild.ChildItem1);
 	}
-	
-	
+
+
 
 	private BlahInjector BuildInjector()
 	{
 		var source = new MockSource();
-		
+
 		var injector = new BlahInjector();
-		injector.AddSource(source, typeof(MockInhItemBase), nameof(MockSource.GetInhItem));
-		injector.AddSource(source, typeof(MockGenItemA<>), nameof(MockSource.GetGenItemA));
-		injector.AddSource(source, typeof(MockGenItemB<>), nameof(MockSource.GetGenItemB));
-		
+		injector.AddSource(source,
+		                   typeof(MockInhItemBase),
+		                   nameof(MockSource.GetInhItem),
+		                   BlahInjector.EMethodType.GenericAcceptFieldType
+		);
+		injector.AddSource(source,
+		                   typeof(MockGenItemA<>),
+		                   nameof(MockSource.GetGenItemA),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		injector.AddSource(source,
+		                   typeof(MockGenItemB<>),
+		                   nameof(MockSource.GetGenItemB),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
 		return injector;
 	}
 
