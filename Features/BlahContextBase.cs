@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Blah.Ecs;
 using Blah.Injection;
 using Blah.Ordering;
 using Blah.Pools;
@@ -12,10 +13,10 @@ public abstract class BlahContextBase
 {
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	private BlahPoolsContext _poolsContext = new();
-	
+	private BlahPoolsContext    _poolsContext = new();
 	private BlahServicesContext _servicesContext;
 	private BlahSystemsContext  _systemsContext;
+	private BlahEcsWorld        _ecs = new();
 
 	private bool _isRequestedSwitchSystemsGroupWithPoolsRemoveAll;
 
@@ -122,6 +123,19 @@ public abstract class BlahContextBase
 		                   nameof(BlahPoolsContext.GetDataProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
+
+		var ecsSource = new BlahEcsInjectSource(_ecs);
+		injector.AddSource(ecsSource,
+		                   typeof(BlahEcsWorld),
+		                   nameof(BlahEcsInjectSource.GetWorld),
+		                   BlahInjector.EMethodType.Simple
+		);
+		injector.AddSource(ecsSource,
+		                   typeof(BlahEcsFilterProxy),
+		                   nameof(BlahEcsInjectSource.GetFilter),
+		                   BlahInjector.EMethodType.GenericAcceptFieldType
+		);
+		
 		return injector;
 	}
 
