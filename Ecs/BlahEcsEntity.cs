@@ -17,5 +17,17 @@ public struct BlahEcsEntity
 	public ref T Get<T>() where T : IBlahEntryEcs => ref World.GetComp<T>(this);
 
 	public bool Has<T>() where T : IBlahEntryEcs => World.HasComp<T>(this);
+
+
+
+	public static bool operator==(BlahEcsEntity a, BlahEcsEntity b)
+	{
+		return a.Id == b.Id;
+	}
+
+	public static bool operator !=(BlahEcsEntity a, BlahEcsEntity b)
+	{
+		return a.Id != b.Id;
+	}
 }
 }
