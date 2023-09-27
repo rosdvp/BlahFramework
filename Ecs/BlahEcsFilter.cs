@@ -18,7 +18,7 @@ public class BlahEcsFilter
     
 	
 	
-	public BlahEcsFilter(BlahEcsWorld world, IBlahEcsPool[] incCompsPools, IBlahEcsPool[] excCompsPools)
+	public BlahEcsFilter(BlahEcs world, IBlahEcsPool[] incCompsPools, IBlahEcsPool[] excCompsPools)
 	{
 		_incCompsPools = incCompsPools;
 		_excCompsPools = excCompsPools;
@@ -67,13 +67,7 @@ public class BlahEcsFilter
 		
         TryRemoveEntity(entity.Id);
 	}
-
-	internal void ForceTryRemoveEntity(int entityId)
-	{
-		TryRemoveEntity(entityId);
-	}
-	
-	
+    
 
 	private bool IsSuitable(int entityId)
 	{
@@ -133,40 +127,16 @@ public class BlahEcsFilter
 	}
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public Enumerator GetEnumerator()
+	internal (BlahEcsEntity[] entities, int entitiesCount) BeginIteration()
 	{
-		_goingIteratorsCount += 1;
-		return new Enumerator(this, _entities, _entitiesCount);
+		_goingIteratorsCount++;
+		return (_entities, _entitiesCount);
 	}
 
-	private void OnIterationEnd()
+	internal void EndIteration()
 	{
 		if (--_goingIteratorsCount == 0 && _delayedOpsCount > 0)
 			ApplyDelayedOps();
-	}
-	
-
-	public struct Enumerator : IDisposable
-	{
-		private readonly BlahEcsFilter    _owner;
-		private readonly BlahEcsEntity[] _entities;
-		private readonly int             _entitiesCount;
-
-		private int _cursor;
-
-		public Enumerator(BlahEcsFilter owner, BlahEcsEntity[] entities, int entitiesCount)
-		{
-			_owner         = owner;
-			_entities      = entities;
-			_entitiesCount = entitiesCount;
-			_cursor        = 0; // entities starts from 1, but we need 0 for first MoveNext
-		}
-		
-		public BlahEcsEntity Current => _entities[_cursor];
-
-		public bool MoveNext() => ++_cursor < _entitiesCount;
-
-		public void Dispose() => _owner.OnIterationEnd();
 	}
 }
 }

@@ -2,14 +2,14 @@
 {
 public class BlahEcsInjectSource
 {
-	private readonly BlahEcsWorld _world;
+	private readonly BlahEcs _world;
 	
-	public BlahEcsInjectSource(BlahEcsWorld world)
+	public BlahEcsInjectSource(BlahEcs world)
 	{
 		_world = world;
 	}
 
-	public BlahEcsWorld GetWorld() => _world;
+	public BlahEcs GetWorld() => _world;
 
 	public object GetFilter<T>() where T : BlahEcsFilterProxy
 	{

@@ -10,12 +10,12 @@ internal class TestsCore
 	[Test]
 	public void Test_AddComp_ValueSame([Range(1, 10)] int count)
 	{
-		var world = new BlahEcsWorld();
+		var ecs = new BlahEcs();
 
 		var entities = new BlahEcsEntity[count];
 		for (var i = 0; i < count; i++)
 		{
-			entities[i] = world.CreateEntity();
+			entities[i] = ecs.CreateEntity();
 			
 			entities[i].Add<CompA>().Val = i + 1;
 			
@@ -27,10 +27,10 @@ internal class TestsCore
 	[Test]
 	public void Test_ReAddComp_NoThrow()
 	{
-		var world  = new BlahEcsWorld();
-		var filter = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var ecs  = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
 
-		var ent = world.CreateEntity();
+		var ent = ecs.CreateEntity();
 
 		ent.Add<CompA>();
 		ent.Remove<CompA>();
@@ -43,25 +43,25 @@ internal class TestsCore
 	[Test]
 	public void Test_SameCompsInFilters_FiltersSame()
 	{
-		var world   = new BlahEcsWorld();
-		var filter1 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB) }, null);
-		var filter2 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB) }, null);
-		var filter3 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB), typeof(CompA) }, null);
+		var ecs   = new BlahEcs();
+		var filter1 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB) }, null);
+		var filter2 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB) }, null);
+		var filter3 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB), typeof(CompA) }, null);
 		
 		Assert.IsTrue(filter1.IsSame(filter2));
 		Assert.IsTrue(filter1.IsSame(filter3));
 		Assert.IsTrue(filter2.IsSame(filter3));
 
-		var filter4 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB), typeof(CompC) }, null);
-		var filter5 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, new[] { typeof(CompB) });
+		var filter4 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB), typeof(CompC) }, null);
+		var filter5 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, new[] { typeof(CompB) });
 		Assert.IsFalse(filter1.IsSame(filter4));
 		Assert.IsFalse(filter1.IsSame(filter5));
 		
-		var filter6 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, new[] { typeof(CompB), typeof(CompC) });
-		var filter7 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, new[] { typeof(CompC), typeof(CompB) });
+		var filter6 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, new[] { typeof(CompB), typeof(CompC) });
+		var filter7 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, new[] { typeof(CompC), typeof(CompB) });
 		Assert.IsTrue(filter6.IsSame(filter7));
 
-		var filter8 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, new[] { typeof(CompA), typeof(CompC) });
+		var filter8 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, new[] { typeof(CompA), typeof(CompC) });
 		Assert.IsFalse(filter7.IsSame(filter8));
 	}
 	
@@ -69,8 +69,8 @@ internal class TestsCore
 	[Test]
 	public void Test_EmptyFilters()
 	{
-		var world  = new BlahEcsWorld();
-		var filter = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var ecs  = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
 		
 		foreach (var e in filter)
 			Assert.Fail();
@@ -80,12 +80,12 @@ internal class TestsCore
 	[Test]
 	public void Test_AddComp_FilterUpdated([Range(1, 10)] int count)
 	{
-		var world  = new BlahEcsWorld();
-		var filter = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var ecs  = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
 
 		for (var i = 0; i < count; i++)
 		{
-			var ent = world.CreateEntity();
+			var ent = ecs.CreateEntity();
 			ent.Add<CompA>().Val = i + 1;
 
 			var expected = Enumerable.Range(1, i + 1).ToList();
@@ -100,12 +100,12 @@ internal class TestsCore
 	[Test]
 	public void Test_MultipleEntitiesRemoveCompOfOne_FilterUpdated()
 	{
-		var world  = new BlahEcsWorld();
-		var filter = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var ecs  = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
 
-		var ent1 = world.CreateEntity();
-		var ent2 = world.CreateEntity();
-		var ent3 = world.CreateEntity();
+		var ent1 = ecs.CreateEntity();
+		var ent2 = ecs.CreateEntity();
+		var ent3 = ecs.CreateEntity();
 		
 		ent1.Add<CompA>().Val = 1;
 		ent2.Add<CompA>().Val = 2;
@@ -128,16 +128,16 @@ internal class TestsCore
 	[Test]
 	public void Test_SwitchCompAToB_FiltersUpdated()
 	{
-		var world   = new BlahEcsWorld();
-		var filterA = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
-		var filterB = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, null);
+		var ecs   = new BlahEcs();
+		var filterA = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var filterB = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, null);
 
 		foreach (var e in filterA)
 			Assert.Fail();
 		foreach (var e in filterB)
 			Assert.Fail();
 
-		var ent = world.CreateEntity();
+		var ent = ecs.CreateEntity();
 		ent.Add<CompA>();
 
 		var iterationsCount = 0;
@@ -161,11 +161,11 @@ internal class TestsCore
 	[Test]
 	public void Test_AddExtraComp_StillInFilter()
 	{
-		var world   = new BlahEcsWorld();
-		var filterA = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
-		var filterB = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, null);
+		var ecs   = new BlahEcs();
+		var filterA = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var filterB = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, null);
 
-		var ent = world.CreateEntity();
+		var ent = ecs.CreateEntity();
 		ent.Add<CompA>().Val = 2;
 		ent.Add<CompB>().Val = 3;
 
@@ -191,10 +191,10 @@ internal class TestsCore
 	[Test]
 	public void Test_AddCompThenRemove_FilterUpdated()
 	{
-		var world  = new BlahEcsWorld();
-		var filter = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var ecs  = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
 
-		var ent = world.CreateEntity();
+		var ent = ecs.CreateEntity();
 		ent.Add<CompA>().Val = 2;
 
 		foreach (var e in filter)
@@ -217,13 +217,13 @@ internal class TestsCore
 	[Test]
 	public void Test_DelayedCreateFilter_FilterUpdated()
 	{
-		var world  = new BlahEcsWorld();
+		var ecs  = new BlahEcs();
 
-		var ent = world.CreateEntity();
+		var ent = ecs.CreateEntity();
 		ent.Add<CompA>().Val = 2;
         
-		var filterA = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
-		var filterB = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, null);
+		var filterA = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var filterB = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompB) }, null);
 
 		var iterationsCount = 0;
 		foreach (var e in filterA)
@@ -240,12 +240,12 @@ internal class TestsCore
 	[Test]
 	public void Test_RemoveCompDuringIteration_FilterUpdated()
 	{
-		var world  = new BlahEcsWorld();
-		var filter = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var ecs  = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
 
-		world.CreateEntity().Add<CompA>().Val = 1;
-		world.CreateEntity().Add<CompA>().Val = 2;
-		world.CreateEntity().Add<CompA>().Val = 3;
+		ecs.CreateEntity().Add<CompA>().Val = 1;
+		ecs.CreateEntity().Add<CompA>().Val = 2;
+		ecs.CreateEntity().Add<CompA>().Val = 3;
 
 		int iterationsCount = 0;
 		foreach (var e in filter)
@@ -267,49 +267,44 @@ internal class TestsCore
 	[Test]
 	public void Test_DestroyEntity_FiltersUpdated()
 	{
-		var world   = new BlahEcsWorld();
-		var filter1 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
-		var filter2 = world.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB) }, null);
+		var ecs   = new BlahEcs();
+		var filter1 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+		var filter2 = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA), typeof(CompB) }, null);
 
-		var ent = world.CreateEntity();
-		ent.Add<CompA>().Val = 1;
-		ent.Add<CompB>().Val = 2;
+		var ent1 = ecs.CreateEntity();
+		ent1.Add<CompA>().Val = 1;
+		ent1.Add<CompB>().Val = 11;
+		var ent2 = ecs.CreateEntity();
+		ent2.Add<CompA>().Val = 2;
+		ent2.Add<CompB>().Val = 22;
+		var ent3 = ecs.CreateEntity();
+		ent3.Add<CompA>().Val = 3;
+		ent3.Add<CompB>().Val = 33;
+
+		var expected = new List<int> { 11, 22, 33};
 
 		var iterationsCount = 0;
 		foreach (var e1 in filter1)
 		{
-			e1.Destroy();
+			if (e1.Get<CompA>().Val == 2)
+			{
+				expected.Remove(22);
+				e1.Destroy();
+			}
 
+			var expectedInIter = new List<int>(expected);
 			foreach (var e2 in filter2)
+				Assert.IsTrue(expectedInIter.Remove(e2.Get<CompB>().Val));
+			if (expectedInIter.Count > 0)
 				Assert.Fail();
 
 			iterationsCount += 1;
 		}
-		Assert.AreEqual(1, iterationsCount);
-		
-		foreach (var e1 in filter1)
-			Assert.Fail();
+		Assert.AreEqual(3, iterationsCount);
 
-		ent = world.CreateEntity();
-		ent.Add<CompA>().Val = 3;
-		ent.Add<CompB>().Val = 4;
-
-		iterationsCount = 0;
+		expected = new List<int>() { 1, 3 };
 		foreach (var e1 in filter1)
-		{
-			Assert.AreEqual(3, e1.Get<CompA>().Val);
-			iterationsCount += 1;
-		}
-		Assert.AreEqual(1, iterationsCount);
-		
-		iterationsCount = 0;
-		foreach (var e1 in filter1)
-		{
-			Assert.AreEqual(3, e1.Get<CompA>().Val);
-			Assert.AreEqual(4, e1.Get<CompB>().Val);
-			iterationsCount += 1;
-		}
-		Assert.AreEqual(1, iterationsCount);
+			Assert.IsTrue(expected.Remove(e1.Get<CompA>().Val));
 	}
 	
 

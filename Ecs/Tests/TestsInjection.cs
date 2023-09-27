@@ -9,9 +9,9 @@ internal class TestsInjection
 	[Test]
 	public void TestLight()
 	{
-		var world = new BlahEcsWorld();
+		var ecs = new BlahEcs();
 
-		object rawFilter = world.GetFilter<BlahEcsFilter<MockCompA>>(
+		object rawFilter = ecs.GetFilter<BlahEcsFilter<MockCompA>>(
 			new[] { typeof(MockCompA) },
 			null
 		);
@@ -23,16 +23,16 @@ internal class TestsInjection
 	[Test]
 	public void TestFull()
 	{
-		var world = new BlahEcsWorld();
+		var ecs = new BlahEcs();
 
 		var system1 = new MockSystem();
 		var system2 = new MockSystem();
 
-		var source = new BlahEcsInjectSource(world);
+		var source = new BlahEcsInjectSource(ecs);
 
 		var injector = new BlahInjector();
 		injector.AddSource(source,
-		                   typeof(BlahEcsWorld),
+		                   typeof(BlahEcs),
 		                   nameof(BlahEcsInjectSource.GetWorld),
 		                   BlahInjector.EMethodType.Simple
 		);
@@ -46,7 +46,7 @@ internal class TestsInjection
 		injector.InjectInto(system2);
 
 
-		Assert.NotNull(system1.World);
+		Assert.NotNull(system1.ecs);
 		Assert.NotNull(system1.Filter1);
 		Assert.NotNull(system1.Filter2A);
 		Assert.NotNull(system1.Filter2B);
@@ -57,7 +57,7 @@ internal class TestsInjection
 		Assert.IsTrue(system1.Filter2A.IsSame(system1.Filter2B));
 		Assert.IsTrue(system1.Filter2A.IsSame(system1.Filter3));
 
-		Assert.AreSame(system1.World, system2.World);
+		Assert.AreSame(system1.ecs, system2.ecs);
 		Assert.IsTrue(system1.Filter1.IsSame(system2.Filter1));
 		Assert.IsTrue(system1.Filter2A.IsSame(system2.Filter2A));
 		Assert.IsTrue(system1.Filter2B.IsSame(system2.Filter2B));
@@ -68,7 +68,7 @@ internal class TestsInjection
 
 	private class MockSystem
 	{
-		private BlahEcsWorld _world;
+		private BlahEcs _ecs;
 
 		private BlahEcsFilter<MockCompA>            _filter1;
 		private BlahEcsFilter<MockCompA, MockCompB> _filter2A;
@@ -76,7 +76,7 @@ internal class TestsInjection
 		private BlahEcsFilter<MockCompB, MockCompA> _filter3;
 
 
-		public BlahEcsWorld                        World    => _world;
+		public BlahEcs                        ecs    => _ecs;
 		public BlahEcsFilter<MockCompA>            Filter1  => _filter1;
 		public BlahEcsFilter<MockCompA, MockCompB> Filter2A => _filter2A;
 		public BlahEcsFilter<MockCompA, MockCompB> Filter2B => _filter2B;

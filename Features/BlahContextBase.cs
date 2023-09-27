@@ -16,7 +16,7 @@ public abstract class BlahContextBase
 	private BlahPoolsContext    _poolsContext = new();
 	private BlahServicesContext _servicesContext;
 	private BlahSystemsContext  _systemsContext;
-	private BlahEcsWorld        _ecs = new();
+	private BlahEcs        _ecs = new();
 
 	private bool _isRequestedSwitchSystemsGroupWithPoolsRemoveAll;
 
@@ -126,7 +126,7 @@ public abstract class BlahContextBase
 
 		var ecsSource = new BlahEcsInjectSource(_ecs);
 		injector.AddSource(ecsSource,
-		                   typeof(BlahEcsWorld),
+		                   typeof(BlahEcs),
 		                   nameof(BlahEcsInjectSource.GetWorld),
 		                   BlahInjector.EMethodType.Simple
 		);

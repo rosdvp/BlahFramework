@@ -4,7 +4,7 @@ using Blah.Common;
 
 namespace Blah.Ecs
 {
-public class BlahEcsWorld
+public class BlahEcs
 {
 	private BlahSet<BlahEcsEntity> _entitiesSet        = new(1, 1);
 	private int[]                  _aliveEntitiesIds   = new int[1];
@@ -36,14 +36,14 @@ public class BlahEcsWorld
 		return ref _entitiesSet.Get(id);
 	}
 
-	internal void DestroyEntity(int entityId)
+	internal void DestroyEntity(BlahEcsEntity entity)
 	{
 		foreach (var pool in _compPools)
-			if (pool.Has(entityId))
-				pool.Remove(entityId);
+			if (pool.Has(entity.Id))
+				pool.Remove(entity.Id);
 		
 		foreach (var filter in _filters)
-			filter.ForceTryRemoveEntity(entityId);
+			filter.OnIncCompRemovedOrExcAdded(entity);
 	}
 
 

@@ -2,13 +2,13 @@
 {
 public struct BlahEcsEntity
 {
-	internal BlahEcsWorld World;
+	internal BlahEcs World;
 	internal int          Id;
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 
-	public void Destroy() => World.DestroyEntity(Id);
+	public void Destroy() => World.DestroyEntity(this);
 
 	public ref T Add<T>() where T : IBlahEntryEcs => ref World.AddComp<T>(this);
 
