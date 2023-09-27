@@ -328,6 +328,40 @@ internal class TestsCore
 				ent.Get<CompA>().Val += 1;
 		}
 	}
+
+	[Test]
+	public void Test_DestroyAllEntitiesThenCreate_SameFilterUpdated()
+	{
+		var ecs    = new BlahEcs();
+		var filter = ecs.GetFilter<BlahEcsFilterProxy>(new[] { typeof(CompA) }, null);
+
+		for (var i = 0; i < 10; i++)
+		{
+			ecs.CreateEntity().Add<CompA>().Val = i;
+		}
+
+		foreach (var ent in filter)
+		{
+			ent.Destroy();
+		}
+
+		for (var i = 10; i < 20; i++)
+		{
+			ecs.CreateEntity().Add<CompA>().Val = i;
+		}
+
+		int iterationsCount = 0;
+		var expected        = Enumerable.Range(10, 10).ToList();
+		foreach (var ent in filter)
+		{
+			Assert.IsTrue(expected.Remove(ent.Get<CompA>().Val));
+			iterationsCount += 1;
+		}
+		Assert.AreEqual(10, iterationsCount);
+		
+		foreach (int exp in expected)
+			Assert.Fail($"{exp} left");
+	}
 	
 	
 

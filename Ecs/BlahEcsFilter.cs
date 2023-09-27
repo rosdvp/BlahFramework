@@ -1,5 +1,6 @@
 ﻿using System;
 using Blah.Common;
+using UnityEngine;
 
 namespace Blah.Ecs
 {
@@ -98,15 +99,15 @@ public class BlahEcsFilter
 		int idx = _entityIdToIdx[entityId];
 		_entityIdToIdx[entityId] = -1;
 
-		if (_entitiesCount == 1)
+		if (idx == _entitiesCount -1)
 		{
-			_entitiesCount = 0;
+			_entitiesCount -= 1;
 		}
 		else
 		{
 			int lastEntityId = _entities[_entitiesCount - 1].Id;
 			_entityIdToIdx[lastEntityId] = idx;
-			
+            
 			_entities[idx] = _entities[--_entitiesCount];
 		}
 	}
