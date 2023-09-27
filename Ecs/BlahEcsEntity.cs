@@ -30,6 +30,16 @@ public struct BlahEcsEntity
 		return a.Id != b.Id;
 	}
 
+	public static bool operator <(BlahEcsEntity a, BlahEcsEntity b)
+	{
+		return a.Id < b.Id;
+	}
+	
+	public static bool operator >(BlahEcsEntity a, BlahEcsEntity b)
+	{
+		return a.Id > b.Id;
+	}
+
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public static BlahEcsEntity Null { get; } = new()
