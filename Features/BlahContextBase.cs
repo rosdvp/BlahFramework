@@ -18,7 +18,7 @@ public abstract class BlahContextBase
 	private BlahSystemsContext  _systemsContext;
 	private BlahEcs        _ecs = new();
 
-	private bool _isRequestedSwitchSystemsGroupWithPoolsRemoveAll;
+	private bool _isRequestedSwitchWithClear;
 
 	public void Init(IBlahServicesInitData servicesInitData, IBlahSystemsInitData systemsInitData)
 	{
@@ -74,22 +74,23 @@ public abstract class BlahContextBase
 	public void Run()
 	{
 		if (_systemsContext.IsSwitchGroupRequested &&
-		    _isRequestedSwitchSystemsGroupWithPoolsRemoveAll)
+		    _isRequestedSwitchWithClear)
 		{
-			_poolsContext.RemoveAll();
+			_poolsContext.Clear();
+			_ecs.Clear();
 		}
 
 		_systemsContext.Run();
 		_poolsContext.ToNextFrame();
 	}
 
-	public void RequestSwitchSystemsGroup(int? groupId, bool withPoolsRemoveAll)
+	public void RequestSwitchSystemsGroup(int? groupId, bool withClear)
 	{
 		_systemsContext.RequestSwitchGroup(groupId);
-		_isRequestedSwitchSystemsGroupWithPoolsRemoveAll = withPoolsRemoveAll;
+		_isRequestedSwitchWithClear = withClear;
 	}
 
-	
+
 	protected abstract Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; }
 
 	//-----------------------------------------------------------

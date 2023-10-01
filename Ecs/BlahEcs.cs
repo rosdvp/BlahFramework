@@ -91,6 +91,17 @@ public class BlahEcs
 	}
 
 
+	public void Clear()
+	{
+		_entities.Clear();
+		foreach (var pool in _compPools)
+			pool.Clear();
+		foreach (var filter in _filters)
+			filter.Clear();
+	}
+	
+	
+
 	public BlahEcsFilterProxy GetFilter<T>(Type[] incCompTypes, Type[] excCompTypes) where T : BlahEcsFilterProxy
 	{
 		SortTypes(ref incCompTypes);

@@ -7,6 +7,7 @@ public interface IBlahEcsPool
 {
 	bool Has(int    entityId);
 	void Remove(int entityId);
+	void Clear();
 }
 
 public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
@@ -36,6 +37,13 @@ public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
 	{
 		_set.Remove(_entityIdToPtr[entityId]);
 		_entityIdToPtr[entityId] = -1;
+	}
+
+	public void Clear()
+	{
+		_set.RemoveAll();
+		for (var i = 0; i < _entityIdToPtr.Length; i++)
+			_entityIdToPtr[i] = -1;
 	}
 }
 }

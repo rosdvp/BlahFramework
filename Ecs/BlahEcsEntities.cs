@@ -60,5 +60,15 @@ public class BlahEcsEntities
 
 	public (BlahSet<BlahEcsEntity> entities, int[] aliveIds, int aliveCount) GetAllAlive() 
 		=> (_set, _aliveIds, _aliveCount);
+
+
+	public void Clear()
+	{
+		_aliveCount = 0;
+		for (var i = 0; i < _idToAliveIdx.Length; i++)
+			_idToAliveIdx[i] = -1;
+		
+		_set.RemoveAll();
+	}
 }
 }

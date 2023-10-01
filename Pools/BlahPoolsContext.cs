@@ -73,7 +73,7 @@ public class BlahPoolsContext
 	/// <summary>
 	/// Clear all entries.
 	/// </summary>
-	public void RemoveAll()
+	public void Clear()
 	{
 		for (var i = 0; i < _all.Count; i++)
 			_all[i].RemoveAll();

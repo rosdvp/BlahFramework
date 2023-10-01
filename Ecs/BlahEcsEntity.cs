@@ -1,4 +1,6 @@
-﻿namespace Blah.Ecs
+﻿using System;
+
+namespace Blah.Ecs
 {
 public struct BlahEcsEntity
 {
@@ -29,6 +31,13 @@ public struct BlahEcsEntity
 	{
 		return a.Id != b.Id;
 	}
+    
+	public bool Equals(BlahEcsEntity other) => Id == other.Id;
+
+	public override bool Equals(object obj) => obj is BlahEcsEntity other && Equals(other);
+
+	public override int GetHashCode() => Id.GetHashCode();
+
 
 	public static bool operator <(BlahEcsEntity a, BlahEcsEntity b)
 	{

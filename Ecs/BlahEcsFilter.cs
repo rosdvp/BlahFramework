@@ -113,6 +113,15 @@ public class BlahEcsFilter
 	}
 
 
+	internal void Clear()
+	{
+		_entitiesCount   = 0;
+		_delayedOpsCount = 0;
+
+		for (var i = 0; i < _entityIdToIdx.Length; i++)
+			_entityIdToIdx[i] = -1;
+	}
+	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	private void ApplyDelayedOps()
