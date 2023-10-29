@@ -39,13 +39,11 @@ public static class BlahAotPoolsAndServices
 			{
 				sb.AppendLine($"services.Get<{type.FullName}>();");
 			}
-
-			string content = TEMPLATE.Replace("[CODEGEN]", sb.ToString());
-
-			CreateDirIfNotExists();
-			File.WriteAllText(PATH, content);
-			AssetDatabase.ImportAsset(PATH);
 		}
+		string content = TEMPLATE.Replace("[CODEGEN]", sb.ToString());
+		CreateDirIfNotExists();
+		File.WriteAllText(PATH, content);
+		AssetDatabase.ImportAsset(PATH);
 	}
 
 
