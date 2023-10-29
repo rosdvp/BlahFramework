@@ -84,10 +84,10 @@ public abstract class BlahContextBase
 		_poolsContext.ToNextFrame();
 	}
 
-	public void RequestSwitchSystemsGroup(int? groupId, bool withClear)
+	public void RequestSwitchSystemsGroup(int? groupId, bool withPoolsClear)
 	{
 		_systemsContext.RequestSwitchGroup(groupId);
-		_isRequestedSwitchWithClear = withClear;
+		_isRequestedSwitchWithClear = withPoolsClear;
 	}
 
 

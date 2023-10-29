@@ -49,7 +49,7 @@ public static class BlahReflection
 		}
 	}
 
-	public static object GetContextFeaturesBySystemsGroups(object context)
+	public static object GetContextFeaturesGroups(object context)
 	{
 		var prop = context.GetType().GetProperty(
 			"FeaturesBySystemsGroups",
@@ -134,7 +134,38 @@ public static class BlahReflection
 			type = type.BaseType;
 		}
 	}
-
+	
+	public static IEnumerable<Type> EnumerateGameTypes()
+	{
+		var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+		foreach (var assembly in assemblies)
+		{
+			if (!assembly.FullName.StartsWith("Unity") &&
+			    !assembly.FullName.StartsWith("System") &&
+			    !assembly.FullName.StartsWith("Blah"))
+			{
+				foreach (var type in assembly.GetTypes())
+					yield return type;
+			}
+		}
+	}
+    
+	public static T InstantiateGameType<T>() where T: class
+	{
+		var targetType = typeof(T);
+		foreach (var type in EnumerateGameTypes())
+			if (type == targetType)
+				return (T)Activator.CreateInstance(type);
+		return null;
+	}
+	
+	public static IEnumerable<T> InstantiateGameTypesWithBaseType<T>()
+	{
+		var baseType = typeof(T);
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == baseType)
+				yield return (T)Activator.CreateInstance(type);
+	}
 
 
 	public enum EKind

@@ -1,26 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Blah.Features;
 using Blah.Ordering;
 using Blah.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Blah.Editor
+namespace Blah.Features.Editor
 {
 internal static class BlahEditorSystemsOrdering
 {
-	[MenuItem("Blah/Report/Systems ordering issues")]
+	[MenuItem("Blah/Features/Report systems ordering issues")]
 	public static void ReportIssues()
 	{
 		var sb = new StringBuilder();
 		sb.AppendLine("--- systems ordering issues ---");
-		
-		var context = BlahEditorHelper.FindGameContext();
+
+		var context = BlahReflection.InstantiateGameType<BlahContextBase>();
 
 		var featuresBySystemsGroups =
-			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesBySystemsGroups(context);
+			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesGroups(context);
 		foreach ((int groupId, var features) in featuresBySystemsGroups)
 		{
 			var systems = new List<Type>();

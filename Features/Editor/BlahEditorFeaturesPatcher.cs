@@ -7,14 +7,14 @@ using Blah.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Blah.Editor
+namespace Blah.Features.Editor
 {
 internal static class BlahEditorFeaturesPatcher
 {
-	[MenuItem("Blah/Experimental/Smart Patch Features")]
+	[MenuItem("Blah/Features/Smart Patch")]
 	public static void SmartPatchFeatures() => PatchFeatures(false);
 
-	[MenuItem("Blah/Experimental/Force Patch Features")]
+	[MenuItem("Blah/Features/Force Patch")]
 	public static void ForcePatchFeatures() => PatchFeatures(true);
 	
 	private static void PatchFeatures(bool isForced)
@@ -28,7 +28,7 @@ internal static class BlahEditorFeaturesPatcher
 		var consumers = new HashSet<Type>();
 		var producers = new HashSet<Type>();
 
-		foreach (var feature in BlahEditorHelper.EnumerateGameFeatures())
+		foreach (var feature in BlahReflection.InstantiateGameTypesWithBaseType<BlahFeatureBase>())
 		{
 			string featureTypeName = feature.GetType().Name;
 			
