@@ -135,7 +135,7 @@ internal static class BlahEditorFeaturesPatcher
 		{
 			sb.AppendLine("{ get; }");
 		}
-		return Regex.Replace(str, pattern, $"\t$1{sb}$3", RegexOptions.Multiline);
+		return Regex.Replace(str, pattern, $"$1{sb}$3", RegexOptions.Multiline);
 	}
 
 
