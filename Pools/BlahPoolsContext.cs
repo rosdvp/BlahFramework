@@ -38,14 +38,14 @@ public class BlahPoolsContext
 		return (IBlahSignalProducer<T>)AddPool(new BlahSignalPool<T>());
 	}
 
-	public IBlahSignalConsumer<T> GetSignalConsumerNextFrame<T>() where T: IBlahEntryNextFrameSignal
+	public IBlahSignalNextFrameConsumer<T> GetSignalNextFrameConsumer<T>() where T: IBlahEntryNextFrameSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSignalConsumer<T>)cached;
-		return (IBlahSignalConsumer<T>)AddPool(new BlahSignalNextFramePool<T>());
+			return (IBlahSignalNextFrameConsumer<T>)cached;
+		return (IBlahSignalNextFrameConsumer<T>)AddPool(new BlahSignalNextFramePool<T>());
 	}
 
-	public IBlahSignalNextFrameProducer<T> GetSignalProducerNextFrame<T>() where T: IBlahEntryNextFrameSignal
+	public IBlahSignalNextFrameProducer<T> GetSignalNextFrameProducer<T>() where T: IBlahEntryNextFrameSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
 			return (IBlahSignalNextFrameProducer<T>)cached;

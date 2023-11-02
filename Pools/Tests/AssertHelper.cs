@@ -23,35 +23,38 @@ internal static class AssertHelper
 	}
 
 	public static void CheckContent<T>(IBlahSignalConsumer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntrySignalConsumable, IMockEntry 
+		where T: IBlahEntrySignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	
 	public static void CheckContent<T>(IBlahSignalProducer<T> pool, params int[] expectedValues) 
 		where T: IBlahEntrySignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
 	
+	public static void CheckContent<T>(IBlahSignalNextFrameConsumer<T> pool, params int[] expectedValues) 
+		where T: IBlahEntryNextFrameSignal, IMockEntry 
+	{
+		CheckContent((BlahPool<T>)pool, expectedValues);
+	}
 	public static void CheckContent<T>(IBlahSignalNextFrameProducer<T> pool, params int[] expectedValues) 
 		where T: IBlahEntryNextFrameSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-
-	
+    
+	public static void CheckContent<T>(IBlahDataConsumer<T> pool, params int[] expectedValues)
+		where T : IBlahEntryData, IMockEntry
+	{
+		CheckContent((BlahPool<T>)pool, expectedValues);
+	}
 	public static void CheckContent<T>(IBlahDataProducer<T> pool, params int[] expectedValues)
 		where T : IBlahEntryData, IMockEntry
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
 	
-	public static void CheckContent<T>(IBlahDataConsumer<T> pool, params int[] expectedValues)
-		where T : IBlahEntryData, IMockEntry
-	{
-		CheckContent((BlahPool<T>)pool, expectedValues);
-	}
 
 	private static void CheckContent<T>(BlahPool<T> pool, params int[] expectedValues) where T: IMockEntry
 	{

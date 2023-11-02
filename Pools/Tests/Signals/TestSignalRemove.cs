@@ -79,8 +79,8 @@ internal class TestSignalRemove
     public void TestRemoveWithNextFrame()
     {
         var context  = new BlahPoolsContext();
-        var consumer = context.GetSignalConsumerNextFrame<MockSignalNextFrameEntry>();
-        var producer = context.GetSignalProducerNextFrame<MockSignalNextFrameEntry>();
+        var consumer = context.GetSignalNextFrameConsumer<MockSignalNextFrameEntry>();
+        var producer = context.GetSignalNextFrameProducer<MockSignalNextFrameEntry>();
 
         for (var i = 0; i < 10; i++)
         {

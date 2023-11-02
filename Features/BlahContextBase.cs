@@ -115,6 +115,14 @@ public abstract class BlahContextBase
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
 		injector.AddSource(_poolsContext,
+		                   typeof(IBlahSignalNextFrameConsumer<>),
+		                   nameof(BlahPoolsContext.GetSignalNextFrameConsumer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
+		injector.AddSource(_poolsContext,
+		                   typeof(IBlahSignalNextFrameProducer<>),
+		                   nameof(BlahPoolsContext.GetSignalNextFrameProducer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
+		injector.AddSource(_poolsContext,
 		                   typeof(IBlahDataConsumer<>),
 		                   nameof(BlahPoolsContext.GetDataConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument

@@ -13,7 +13,7 @@ internal class TestSignalNextFrame
         int[] frame3 = data.Frame3;
         
         var context  = new BlahPoolsContext();
-        var producer = context.GetSignalProducerNextFrame<MockSignalNextFrameEntry>();
+        var producer = context.GetSignalNextFrameProducer<MockSignalNextFrameEntry>();
 
         for (var iter = 0; iter < 3; iter++)
         {

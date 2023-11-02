@@ -22,7 +22,7 @@ internal class BlahSignalPool<T> :
 
 internal class BlahSignalNextFramePool<T> :
 	BlahPool<T>,
-	IBlahSignalConsumer<T>,
+	IBlahSignalNextFrameConsumer<T>,
 	IBlahSignalNextFrameProducer<T> where T : IBlahEntryNextFrameSignal
 {
 	public BlahSignalNextFramePool() : base(true) { }
