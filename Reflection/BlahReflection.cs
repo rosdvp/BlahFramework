@@ -39,6 +39,10 @@ public static class BlahReflection
 					yield return (EKind.SignalConsumer, genArgType);
 				else if (genBaseType == typeof(IBlahSignalProducer<>))
 					yield return (EKind.SignalProducer, genArgType);
+				else if (genBaseType == typeof(IBlahSignalNextFrameConsumer<>))
+					yield return (EKind.SignalNextFrameConsumer, genArgType);
+				else if (genBaseType == typeof(IBlahSignalNextFrameProducer<>))
+					yield return (EKind.SignalNextFrameProducer, genArgType);
 				else if (genBaseType == typeof(IBlahDataConsumer<>))
 					yield return (EKind.DataConsumer, genArgType);
 				else if (genBaseType == typeof(IBlahDataProducer<>))
@@ -113,10 +117,12 @@ public static class BlahReflection
 					services.Add(type);
 					break;
 				case EKind.SignalConsumer:
+                case EKind.SignalNextFrameConsumer:
 				case EKind.DataConsumer:
 					consumers.Add(type);
 					break;
 				case EKind.SignalProducer:
+                case EKind.SignalNextFrameProducer:
 				case EKind.DataProducer:
 					producers.Add(type);
 					break;
@@ -173,6 +179,8 @@ public static class BlahReflection
 		Service,
 		SignalConsumer,
 		SignalProducer,
+		SignalNextFrameConsumer,
+		SignalNextFrameProducer,
 		DataConsumer,
 		DataProducer
 	}
