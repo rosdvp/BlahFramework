@@ -32,8 +32,8 @@ public static class BlahAotPoolsAndServices
 			}
 			if (Array.IndexOf(interfaces, typeof(IBlahEntryNextFrameSignal)) != -1)
 			{
-				sb.AppendLine($"pools.GetSignalConsumerNextFrame<{type.FullName}>();");
-				sb.AppendLine($"pools.GetSignalProducerNextFrame<{type.FullName}>();");
+				sb.AppendLine($"pools.GetSignalNextFrameConsumer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetSignalNextFrameProducer<{type.FullName}>();");
 			}
 			if (type.BaseType == typeof(BlahServiceBase))
 			{
