@@ -112,7 +112,7 @@ internal static class BlahEditorFeaturesPatcher
 		if (types.Count > 0)
 		{
 			sb.AppendLine("{ get; } = new()");
-			sb.AppendLine("{");
+			sb.AppendLine("\t{");
 
 			if (withBeautify)
 			{
@@ -129,13 +129,13 @@ internal static class BlahEditorFeaturesPatcher
 				foreach (var type in types)
 					sb.AppendLine($"\ttypeof({type.Name}),");
 			
-			sb.AppendLine("};");
+			sb.AppendLine("\t};");
 		}
 		else
 		{
 			sb.AppendLine("{ get; }");
 		}
-		return Regex.Replace(str, pattern, $"$1{sb}$3", RegexOptions.Multiline);
+		return Regex.Replace(str, pattern, $"\t$1{sb}$3", RegexOptions.Multiline);
 	}
 
 
