@@ -122,12 +122,12 @@ internal static class BlahEditorFeaturesPatcher
 				{
 					if (i > 0 && list[i - 1].Name[..2] != list[i].Name[..2])
 						sb.AppendLine();
-					sb.AppendLine($"typeof({list[i].Name}),");
+					sb.AppendLine($"\t\ttypeof({list[i].Name}),");
 				}
 			}
 			else
 				foreach (var type in types)
-					sb.AppendLine($"typeof({type.Name}),");
+					sb.AppendLine($"\ttypeof({type.Name}),");
 			
 			sb.AppendLine("};");
 		}
