@@ -11,7 +11,7 @@ internal static class AssertHelper
 	public static void CheckPoolLength<T>(T target, int expectedLength)
 	{
 		var type = target.GetType().BaseType;
-		var fieldSet = type.GetField("_set",
+		var fieldSet = type.GetField("Entries",
 		                             BindingFlags.NonPublic | BindingFlags.Instance
 		);
 		object set = fieldSet.GetValue(target);
@@ -33,12 +33,12 @@ internal static class AssertHelper
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
 	
-	public static void CheckContent<T>(IBlahSignalNextFrameConsumer<T> pool, params int[] expectedValues) 
+	public static void CheckContent<T>(IBlahNfSignalConsumer<T> pool, params int[] expectedValues) 
 		where T: IBlahEntryNextFrameSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahSignalNextFrameProducer<T> pool, params int[] expectedValues) 
+	public static void CheckContent<T>(IBlahNfSignalProducer<T> pool, params int[] expectedValues) 
 		where T: IBlahEntryNextFrameSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);

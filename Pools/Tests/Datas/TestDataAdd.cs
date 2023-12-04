@@ -19,9 +19,10 @@ internal class TestDataAdd
             for (var j = 0; j < 5; j++)
             {
                 AssertHelper.CheckContent(consumer, 1, 2);
-                context.ToNextFrame();
+                context.OnNextFrame();
             }
-            consumer.RemoveAll();
+            foreach (ref var entry in consumer)
+                consumer.Remove();
             AssertHelper.CheckContent(consumer);
         }
         AssertHelper.CheckPoolLength(consumer, 2);

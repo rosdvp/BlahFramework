@@ -81,7 +81,7 @@ public abstract class BlahContextBase
 		}
 
 		_systemsContext.Run();
-		_poolsContext.ToNextFrame();
+		_poolsContext.OnNextFrame();
 	}
 
 	public void RequestSwitchSystemsGroup(int? groupId, bool withPoolsClear)
@@ -115,11 +115,11 @@ public abstract class BlahContextBase
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
 		injector.AddSource(_poolsContext,
-		                   typeof(IBlahSignalNextFrameConsumer<>),
+		                   typeof(IBlahNfSignalConsumer<>),
 		                   nameof(BlahPoolsContext.GetSignalNextFrameConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
 		injector.AddSource(_poolsContext,
-		                   typeof(IBlahSignalNextFrameProducer<>),
+		                   typeof(IBlahNfSignalProducer<>),
 		                   nameof(BlahPoolsContext.GetSignalNextFrameProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
 		injector.AddSource(_poolsContext,

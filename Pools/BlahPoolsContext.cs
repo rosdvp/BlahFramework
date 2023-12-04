@@ -38,36 +38,32 @@ public class BlahPoolsContext
 		return (IBlahSignalProducer<T>)AddPool(new BlahSignalPool<T>());
 	}
 
-	public IBlahSignalNextFrameConsumer<T> GetSignalNextFrameConsumer<T>() where T: IBlahEntryNextFrameSignal
+	public IBlahNfSignalConsumer<T> GetSignalNextFrameConsumer<T>() where T: IBlahEntryNextFrameSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSignalNextFrameConsumer<T>)cached;
-		return (IBlahSignalNextFrameConsumer<T>)AddPool(new BlahSignalNextFramePool<T>());
+			return (IBlahNfSignalConsumer<T>)cached;
+		return (IBlahNfSignalConsumer<T>)AddPool(new BlahNfSignalPool<T>());
 	}
 
-	public IBlahSignalNextFrameProducer<T> GetSignalNextFrameProducer<T>() where T: IBlahEntryNextFrameSignal
+	public IBlahNfSignalProducer<T> GetSignalNextFrameProducer<T>() where T: IBlahEntryNextFrameSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSignalNextFrameProducer<T>)cached;
-		return (IBlahSignalNextFrameProducer<T>)AddPool(new BlahSignalNextFramePool<T>());
+			return (IBlahNfSignalProducer<T>)cached;
+		return (IBlahNfSignalProducer<T>)AddPool(new BlahNfSignalPool<T>());
 	}
 
 
 	private BlahPool<T> AddPool<T>(BlahPool<T> pool)
 	{
-		_map[typeof(T)] = pool;
-		_all.Add(pool);
+		_map[typeof(T)] = (IBlahPoolInternal)pool;
+		_all.Add((IBlahPoolInternal)pool);
 		return pool;
 	}
 
-	/// <summary>
-	/// Clear current frame, and switch to next frame.<br/>
-	/// Entries produced via <see cref="IBlahSignalNextFrameProducer{T}"/> will become available.
-	/// </summary>
-	public void ToNextFrame()
+	public void OnNextFrame()
 	{
 		for (var i = 0; i < _all.Count; i++)
-			_all[i].ToNextFrame();
+			_all[i].OnNextFrame();
 	}
 
 	/// <summary>

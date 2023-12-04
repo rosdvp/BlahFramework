@@ -16,7 +16,7 @@ internal class TestSignalRemoveThenAdd
             for (var j = 0; j < 5; j++)
             {
                 if (i != 0) 
-                    context.ToNextFrame();
+                    context.OnNextFrame();
                 AssertHelper.CheckContent(consumer);
             }
 

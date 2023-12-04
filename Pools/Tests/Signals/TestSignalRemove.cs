@@ -35,7 +35,7 @@ internal class TestSignalRemove
                 expectedValues.Remove(val);
             AssertHelper.CheckContent(consumer, expectedValues.ToArray());
             
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(consumer);
         }
 
@@ -84,11 +84,11 @@ internal class TestSignalRemove
 
         for (var i = 0; i < 10; i++)
         {
-            producer.AddNextFrame().Val = 1;
-            producer.AddNextFrame().Val = 2;
-            context.ToNextFrame();
+            producer.AddNf().Val = 1;
+            producer.AddNf().Val = 2;
+            context.OnNextFrame();
 
-            producer.AddNextFrame().Val = 3;
+            producer.AddNf().Val = 3;
 
             AssertHelper.CheckContent(consumer, 1, 2);
 
@@ -97,10 +97,10 @@ internal class TestSignalRemove
                     consumer.Remove();
             AssertHelper.CheckContent(consumer, 2);
 
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(consumer, 3);
 
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(consumer);
         }
         AssertHelper.CheckPoolLength(consumer, 4); // 1 2 4

@@ -39,9 +39,9 @@ public static class BlahReflection
 					yield return (EKind.SignalConsumer, genArgType);
 				else if (genBaseType == typeof(IBlahSignalProducer<>))
 					yield return (EKind.SignalProducer, genArgType);
-				else if (genBaseType == typeof(IBlahSignalNextFrameConsumer<>))
+				else if (genBaseType == typeof(IBlahNfSignalConsumer<>))
 					yield return (EKind.SignalNextFrameConsumer, genArgType);
-				else if (genBaseType == typeof(IBlahSignalNextFrameProducer<>))
+				else if (genBaseType == typeof(IBlahNfSignalProducer<>))
 					yield return (EKind.SignalNextFrameProducer, genArgType);
 				else if (genBaseType == typeof(IBlahDataConsumer<>))
 					yield return (EKind.DataConsumer, genArgType);

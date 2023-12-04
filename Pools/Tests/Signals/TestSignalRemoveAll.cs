@@ -18,10 +18,9 @@ internal class TestSignalRemoveAll
             producer.Add().Val = 3;
             AssertHelper.CheckContent(consumer, 1, 2, 3);
 
-            consumer.RemoveAll();
-            AssertHelper.CheckContent(consumer);
+            context.OnNextFrame();
             
-            context.ToNextFrame();
+            AssertHelper.CheckContent(consumer);
         }
         
         AssertHelper.CheckPoolLength(consumer, 4); //1 2 4

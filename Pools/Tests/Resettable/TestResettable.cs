@@ -14,7 +14,7 @@ internal class TestResettable
         public int Y;
     }
     
-    private struct ResettableSignal : IBlahEntrySignal, IBlahEntryAutoReset
+    private struct ResettableSignal : IBlahEntrySignal
     {
         public int        IntVal;
         public string     StrVal;
@@ -44,7 +44,7 @@ internal class TestResettable
             Assert.AreEqual(3, ev.ClassVal.Y);
         }
 
-        context.ToNextFrame();
+        context.OnNextFrame();
         Assert.AreEqual(true, consumer.IsEmpty);
 
         producer.Add();

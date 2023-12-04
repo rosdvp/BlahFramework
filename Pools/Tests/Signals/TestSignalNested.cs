@@ -60,7 +60,7 @@ internal class TestSignalNested
 
 			AssertHelper.CheckContent(consumer, 1, 2, 3, 4, 5, 6);
 			
-			context.ToNextFrame();
+			context.OnNextFrame();
 		}
 	}
 	
@@ -108,7 +108,7 @@ internal class TestSignalNested
 
 			AssertHelper.CheckContent(consumer, expectedValues.ToArray());
 			
-			context.ToNextFrame();
+			context.OnNextFrame();
 		}
 	}
 }

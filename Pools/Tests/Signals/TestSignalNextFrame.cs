@@ -18,24 +18,24 @@ internal class TestSignalNextFrame
         for (var iter = 0; iter < 3; iter++)
         {
             foreach (int val in frame1)
-                producer.AddNextFrame().Val = val;
+                producer.AddNf().Val = val;
             AssertHelper.CheckContent(producer);
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(producer, frame1);
 
             foreach (int val in frame2)
-                producer.AddNextFrame().Val = val;
+                producer.AddNf().Val = val;
             AssertHelper.CheckContent(producer, frame1);
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(producer, frame2);
 
             foreach (int val in frame3)
-                producer.AddNextFrame().Val = val;
+                producer.AddNf().Val = val;
             AssertHelper.CheckContent(producer, frame2);
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(producer, frame3);
 
-            context.ToNextFrame();
+            context.OnNextFrame();
             AssertHelper.CheckContent(producer);
         }
     }
