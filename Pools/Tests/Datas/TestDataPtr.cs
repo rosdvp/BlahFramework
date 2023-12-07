@@ -7,6 +7,21 @@ namespace Blah.Pools.Tests.Datas
 internal class TestDataPtr
 {
 	[Test]
+	public void TestNewPtr_PtrInvalid()
+	{
+		var context  = new BlahPoolsContext();
+		var producer = context.GetDataProducer<MockDataEntry>();
+		var consumer = context.GetDataConsumer<MockDataEntry>();
+
+		var ptr = new BlahDataPtr();
+		Assert.IsFalse(consumer.IsPtrValid(ptr));
+		producer.Add();
+		Assert.IsFalse(consumer.IsPtrValid(ptr));
+		producer.Add();
+		Assert.IsFalse(consumer.IsPtrValid(ptr));
+	}
+	
+	[Test]
 	public void TestAddWithPtr_ValuesEqual()
 	{
 		var context  = new BlahPoolsContext();
