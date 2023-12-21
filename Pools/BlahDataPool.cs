@@ -80,6 +80,11 @@ internal class BlahDataPool<T> :
 		return true;
 	}
 
+	public bool IsPtrValid(BlahDataPtr? ptr)
+	{
+		return ptr != null && IsPtrValid(ptr.Value);
+	}
+
 	public ref T Get(BlahDataPtr ptr)
 	{
 		if (!IsPtrValid(ptr))
