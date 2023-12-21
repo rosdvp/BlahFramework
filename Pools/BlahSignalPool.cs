@@ -11,7 +11,7 @@ public interface IBlahSignalConsumer<T> where T : IBlahEntrySignal
 
 	public BlahPool<T>.Enumerator GetEnumerator();
 
-	public void Remove(int iteratorLevel = 0);
+	public void Remove(int iteratorLevel = -1);
 
 	public ref T GetAny();
 	public void Sort(Comparison<T> comp);

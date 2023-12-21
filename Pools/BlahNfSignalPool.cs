@@ -16,7 +16,7 @@ public interface IBlahNfSignalConsumer<T> where T : IBlahEntryNextFrameSignal
 
 	public BlahPool<T>.Enumerator GetEnumerator();
 
-	public void Remove(int iteratorLevel = 0);
+	public void Remove(int iteratorLevel = -1);
 
 	public ref T GetAny();
 }

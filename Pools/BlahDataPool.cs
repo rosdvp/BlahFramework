@@ -13,14 +13,14 @@ public interface IBlahDataConsumer<T> where T : IBlahEntryData
 	public BlahPool<T>.Enumerator GetEnumerator();
 	
 	
-	public BlahDataPtr GetPtr(int       iteratorLevel = 0);
+	public BlahDataPtr GetPtr(int       iteratorLevel = -1);
 	public bool IsPtrValid(BlahDataPtr  ptr);
 	public bool IsPtrValid(BlahDataPtr? ptr);
 	public ref T Get(BlahDataPtr        ptr);
 	public ref T Get(BlahDataPtr?       ptr);
-	
-	
-	public void Remove(int         iteratorLevel = 0);
+
+
+	public void Remove(int         iteratorLevel = -1);
 	public void Remove(BlahDataPtr ptr);
 
 	public ref T GetAny();
@@ -59,8 +59,10 @@ internal class BlahDataPool<T> :
 
 	public BlahDataPtr GetPtr(int iteratorLevel)
 	{
-		if (iteratorLevel >= GoingIteratorsCount)
-			throw new Exception($"current max iterator level is {GoingIteratorsCount - 1}");
+		if (iteratorLevel == -1)
+			iteratorLevel = GoingIteratorsCount - 1;
+		else if (iteratorLevel >= GoingIteratorsCount)
+			throw new Exception($"current max level is {GoingIteratorsCount - 1}, but {iteratorLevel} passed");
 
 		int cursor   = IteratorCursorByLevel[iteratorLevel];
 		int alivePtr = AliveEntriesPtrs[cursor];

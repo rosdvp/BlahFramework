@@ -51,8 +51,10 @@ public class BlahPool<T> : IBlahPoolInternal
 
 	public void Remove(int iteratorLevel)
 	{
-		if (iteratorLevel >= GoingIteratorsCount)
-			throw new Exception($"current max level is {GoingIteratorsCount - 1}");
+		if (iteratorLevel == -1)
+			iteratorLevel = GoingIteratorsCount - 1;
+		else if (iteratorLevel < 0 || iteratorLevel >= GoingIteratorsCount)
+			throw new Exception($"current max level is {GoingIteratorsCount - 1}, but {iteratorLevel} passed");
 
 		int cursor   = IteratorCursorByLevel[iteratorLevel];
 		int alivePtr = AliveEntriesPtrs[cursor];
