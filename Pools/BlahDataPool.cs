@@ -13,9 +13,10 @@ public interface IBlahDataConsumer<T> where T : IBlahEntryData
 	public BlahPool<T>.Enumerator GetEnumerator();
 	
 	
-	public BlahDataPtr GetPtr(int      iteratorLevel = 0);
-	public bool IsPtrValid(BlahDataPtr ptr);
-	public ref T Get(BlahDataPtr       ptr);
+	public BlahDataPtr GetPtr(int       iteratorLevel = 0);
+	public bool IsPtrValid(BlahDataPtr  ptr);
+	public bool IsPtrValid(BlahDataPtr? ptr);
+	public ref T Get(BlahDataPtr        ptr);
 	
 	
 	public void Remove(int         iteratorLevel = 0);
