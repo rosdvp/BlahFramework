@@ -68,6 +68,8 @@ internal class BlahDataPool<T> :
 
 	public bool IsPtrValid(BlahDataPtr ptr)
 	{
+		if (ptr.DataType != typeof(T))
+			return false;
 		if (ptr.EntryPtr >= _entryPtrToSetPtr.Length)
 			return false;
 		int setPtr = _entryPtrToSetPtr[ptr.EntryPtr];
@@ -98,6 +100,7 @@ internal class BlahDataPool<T> :
 		int setPtr = _set.Add();
 
 		ref var dataPtr = ref _set.Get(setPtr);
+		dataPtr.DataType =  typeof(T);
 		dataPtr.EntryPtr =  entryPtr;
 		dataPtr.Gen      += 1;
 

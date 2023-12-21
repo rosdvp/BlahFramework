@@ -12,6 +12,13 @@ internal struct MockDataEntry : IBlahEntryData, IMockEntry
 	public int Value => Val;
 }
 
+internal struct MockDataEntryB : IBlahEntryData, IMockEntry
+{
+	public int Val;
+
+	public int Value => Val;
+}
+
 internal struct MockSignalEntry : IBlahEntrySignal, IMockEntry
 {
 	public int Val;

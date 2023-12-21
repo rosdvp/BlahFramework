@@ -4,13 +4,14 @@ namespace Blah.Pools
 {
 public struct BlahDataPtr : IEquatable<BlahDataPtr>
 {
-	internal int Gen;
-	internal int EntryPtr;
+	internal Type DataType;
+	internal int  Gen;
+	internal int  EntryPtr;
 
 
 	public static bool operator ==(BlahDataPtr a, BlahDataPtr b)
 	{
-		return a.EntryPtr == b.EntryPtr && a.Gen == b.Gen;
+		return a.DataType == b.DataType && a.EntryPtr == b.EntryPtr && a.Gen == b.Gen;
 	}
 
 	public static bool operator !=(BlahDataPtr a, BlahDataPtr b)
@@ -20,7 +21,7 @@ public struct BlahDataPtr : IEquatable<BlahDataPtr>
     
 	public bool Equals(BlahDataPtr other)
 	{
-		return Gen == other.Gen && EntryPtr == other.EntryPtr;
+		return DataType == other.DataType && Gen == other.Gen && EntryPtr == other.EntryPtr;
 	}
 
 	public override bool Equals(object obj)
@@ -30,7 +31,7 @@ public struct BlahDataPtr : IEquatable<BlahDataPtr>
 
 	public override int GetHashCode()
 	{
-		return HashCode.Combine(Gen, EntryPtr);
+		return HashCode.Combine(DataType, Gen, EntryPtr);
 	}
 }
 }

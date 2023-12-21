@@ -20,6 +20,25 @@ internal class TestDataPtr
 		producer.Add();
 		Assert.IsFalse(consumer.IsPtrValid(ptr));
 	}
+
+	[Test]
+	public void TestPtrFromDiffPool_PtrInvalid()
+	{
+		var context   = new BlahPoolsContext();
+		var producerA = context.GetDataProducer<MockDataEntry>();
+		var consumerA = context.GetDataConsumer<MockDataEntry>();
+		var producerB = context.GetDataProducer<MockDataEntryB>();
+		var consumerB = context.GetDataConsumer<MockDataEntryB>();
+
+		producerA.Add(out var ptrA);
+		producerB.Add(out var ptrB);
+		
+		Assert.IsTrue(consumerA.IsPtrValid(ptrA));
+		Assert.IsTrue(consumerB.IsPtrValid(ptrB));
+		
+		Assert.IsFalse(consumerA.IsPtrValid(ptrB));
+		Assert.IsFalse(consumerB.IsPtrValid(ptrA));
+	}
 	
 	[Test]
 	public void TestAddWithPtr_ValuesEqual()
