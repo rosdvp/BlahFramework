@@ -17,6 +17,7 @@ public interface IBlahDataConsumer<T> where T : IBlahEntryData
 	public bool IsPtrValid(BlahDataPtr  ptr);
 	public bool IsPtrValid(BlahDataPtr? ptr);
 	public ref T Get(BlahDataPtr        ptr);
+	public ref T Get(BlahDataPtr?       ptr);
 	
 	
 	public void Remove(int         iteratorLevel = 0);
@@ -91,6 +92,13 @@ internal class BlahDataPool<T> :
 		if (!IsPtrValid(ptr))
 			throw new Exception("ptr is invalid");
 		return ref Entries.Get(ptr.EntryPtr);
+	}
+
+	public ref T Get(BlahDataPtr? ptr)
+	{
+		if (ptr == null)
+			throw new Exception("ptr is null");
+		return ref Get(ptr.Value);
 	}
 
 	public void Remove(BlahDataPtr ptr)
