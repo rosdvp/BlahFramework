@@ -11,12 +11,19 @@ public interface IBlahDataConsumer<T> where T : IBlahEntryData
 	public int  Count   { get; }
 
 	public BlahPool<T>.Enumerator GetEnumerator();
-	
-	
-	public BlahDataPtr GetPtr(int       iteratorLevel = -1);
+
+	/// <returns>Pointer to current data in most nested foreach loop</returns>
+	public BlahDataPtr GetPtr(int iteratorLevel = -1);
+	/// <returns>True if such data exists.</returns>
 	public bool IsPtrValid(BlahDataPtr  ptr);
+	/// <returns>True if ptr is not null and such data exists.</returns>
 	public bool IsPtrValid(BlahDataPtr? ptr);
 	public ref T Get(BlahDataPtr        ptr);
+	/// <remarks>
+	/// Method exists to simplify using nullable BlahDataPtr.<br/>
+	/// It is implied that <see cref="IsPtrValid(Blah.Pools.BlahDataPtr?)"/> is used beforehand.
+	/// </remarks>
+	/// <exception cref="NullReferenceException">Ptr is null.</exception>
 	public ref T Get(BlahDataPtr?       ptr);
 
 
