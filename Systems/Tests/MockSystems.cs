@@ -49,7 +49,7 @@ internal abstract class MockBaseSystem : IBlahSystem
 		RunCount += 1;
 	}
 
-	public void Resume()
+	public void Resume(IBlahSystemsInitData initData)
 	{
 		if (ResumeOrder == -1)
 			ResumeOrder = NextResumeOrder++;
@@ -80,10 +80,12 @@ internal abstract class MockBaseSystem : IBlahSystem
 
 internal class MockInitSystem : MockBaseSystem, IBlahInitSystem { }
 
-internal class MockFullSystem : MockBaseSystem, IBlahInitSystem, IBlahRunSystem, IBlahResumePauseSystem { }
+internal class MockFullSystem : 
+	MockBaseSystem, IBlahInitSystem, IBlahRunSystem, IBlahResumeSystem, IBlahPauseSystem { }
 
 
-internal class MockFullWithSwitchToBSystem : MockBaseSystem, IBlahInitSystem, IBlahRunSystem, IBlahResumePauseSystem
+internal class MockFullWithSwitchToBSystem : 
+	MockBaseSystem, IBlahInitSystem, IBlahRunSystem, IBlahResumeSystem, IBlahPauseSystem
 {
 	public override void Run()
 	{
@@ -92,7 +94,8 @@ internal class MockFullWithSwitchToBSystem : MockBaseSystem, IBlahInitSystem, IB
 	}
 }
 
-internal class MockFullWithSwitchToCSystem : MockBaseSystem, IBlahInitSystem, IBlahRunSystem, IBlahResumePauseSystem
+internal class MockFullWithSwitchToCSystem 
+	: MockBaseSystem, IBlahInitSystem, IBlahRunSystem, IBlahResumeSystem, IBlahPauseSystem
 {
 	public override void Run()
 	{

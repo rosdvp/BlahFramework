@@ -18,12 +18,12 @@ public abstract class BlahContextBase
 	private BlahSystemsContext  _systemsContext;
 	private BlahEcs        _ecs = new();
 
-	private bool _isRequestedSwitchWithClear;
+	private bool _isRequestedSwitchWithPoolsClear;
 
 	public void Init(IBlahServicesInitData servicesInitData, IBlahSystemsInitData systemsInitData)
 	{
 		_servicesContext = new BlahServicesContext(servicesInitData);
-		_systemsContext  = new BlahSystemsContext(systemsInitData);
+		_systemsContext  = new BlahSystemsContext(systemsInitData, OnSwitchGroupBetweenPauseAndResume);
 
 		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
 		foreach (var feature in features)
@@ -73,21 +73,33 @@ public abstract class BlahContextBase
 
 	public void Run()
 	{
-		if (_systemsContext.IsSwitchGroupRequested &&
-		    _isRequestedSwitchWithClear)
-		{
-			_poolsContext.Clear();
-			_ecs.Clear();
-		}
-
 		_systemsContext.Run();
 		_poolsContext.OnNextFrame();
 	}
 
+	
+	/// <summary>
+	/// Sets the <paramref name="groupId"/> active, and the current one - inactive<br/>
+	/// On next Run:
+	/// For current group, <see cref="IBlahResumePauseSystem.Pause"/> will be called.<br/>
+	/// For new group <see cref="IBlahInitSystem.Init"/> and <see cref="IBlahResumePauseSystem.Resume"/>
+	/// will be called.
+	/// </summary>
+	/// <param name="withPoolsClear">If true, clear all pools after Pause.</param>
 	public void RequestSwitchSystemsGroup(int? groupId, bool withPoolsClear)
 	{
 		_systemsContext.RequestSwitchGroup(groupId);
-		_isRequestedSwitchWithClear = withPoolsClear;
+		_isRequestedSwitchWithPoolsClear = withPoolsClear;
+	}
+
+	private void OnSwitchGroupBetweenPauseAndResume()
+	{
+		if (!_isRequestedSwitchWithPoolsClear)
+			return;
+		_isRequestedSwitchWithPoolsClear = false;
+		
+		_poolsContext.Clear();
+		_ecs.Clear();
 	}
 
 

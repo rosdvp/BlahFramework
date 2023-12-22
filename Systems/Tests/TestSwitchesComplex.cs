@@ -18,7 +18,7 @@ internal class TestSwitchesComplex
 			new MockFullSystem(),
 		};
 		var initData = new MockSystemsInitData();
-		var context  = new BlahSystemsContext(initData);
+		var context  = new BlahSystemsContext(initData, null);
 		initData.Context = context;
 		
 		context.AddGroup((int)EMockGroupId.GroupA).AddSystem(systems[0]);
@@ -58,7 +58,7 @@ internal class TestSwitchesComplex
 			new MockFullSystem(),
 		};
 		var initData = new MockSystemsInitData();
-		var context  = new BlahSystemsContext(initData);
+		var context  = new BlahSystemsContext(initData, null);
 		initData.Context = context;
 
 		context.AddGroup((int)EMockGroupId.GroupA)

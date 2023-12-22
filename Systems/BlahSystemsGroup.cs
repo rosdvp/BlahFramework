@@ -5,10 +5,11 @@ namespace Blah.Systems
 {
 public class BlahSystemsGroup
 {
-	private readonly List<IBlahSystem>         _allSystems         = new();
-	private readonly List<IBlahInitSystem>        _initSystems        = new();
-	private readonly List<IBlahRunSystem>         _runSystems         = new();
-	private readonly List<IBlahResumePauseSystem> _resumePauseSystems = new();
+	private readonly List<IBlahSystem>       _allSystems    = new();
+	private readonly List<IBlahInitSystem>   _initSystems   = new();
+	private readonly List<IBlahRunSystem>    _runSystems    = new();
+	private readonly List<IBlahPauseSystem>  _pauseSystems  = new();
+	private readonly List<IBlahResumeSystem> _resumeSystems = new();
 	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
@@ -30,8 +31,10 @@ public class BlahSystemsGroup
 			_initSystems.Add(initSystem);
 		if (system is IBlahRunSystem runSystem)
 			_runSystems.Add(runSystem);
-		if (system is IBlahResumePauseSystem resumePauseSystem)
-			_resumePauseSystems.Add(resumePauseSystem);
+		if (system is IBlahPauseSystem pauseSystem)
+			_pauseSystems.Add(pauseSystem);
+		if (system is IBlahResumeSystem resumeSystem)
+			_resumeSystems.Add(resumeSystem);
 		return this;
 	}
 
@@ -44,15 +47,15 @@ public class BlahSystemsGroup
 			_initSystems[i].Init(initData);
 	}
 
-	internal void ResumeSystems()
+	internal void ResumeSystems(IBlahSystemsInitData initData)
 	{
 		if (!_isInited)
 			throw new Exception("Group is not inited!");
 		if (_isActive)
 			throw new Exception("Group is already active!");
 		_isActive = true;
-		for (var i = 0; i < _resumePauseSystems.Count; i++)
-			_resumePauseSystems[i].Resume();
+		for (var i = 0; i < _resumeSystems.Count; i++)
+			_resumeSystems[i].Resume(initData);
 	}
 
 	internal void PauseSystems()
@@ -62,8 +65,8 @@ public class BlahSystemsGroup
 		if (!_isActive)
 			throw new Exception("Group is already inactive!");
 		_isActive = false;
-		for (var i = 0; i < _resumePauseSystems.Count; i++)
-			_resumePauseSystems[i].Pause();
+		for (var i = 0; i < _pauseSystems.Count; i++)
+			_pauseSystems[i].Pause();
 	}
 	
 	internal void RunSystems()

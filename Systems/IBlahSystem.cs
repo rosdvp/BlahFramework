@@ -25,14 +25,18 @@ public interface IBlahRunSystem : IBlahSystem
 	public void Run();
 }
 
-public interface IBlahResumePauseSystem : IBlahSystem
+public interface IBlahResumeSystem : IBlahSystem
 {
 	/// <summary>
 	/// Called each time the system's group become active.<br/>
 	/// Called after <see cref="IBlahInitSystem.Init"/>.<br/>
 	/// Called before <see cref="IBlahRunSystem.Run"/>.<br/>
 	/// </summary>
-	public void Resume();
+	public void Resume(IBlahSystemsInitData initData);
+}
+
+public interface IBlahPauseSystem : IBlahSystem
+{
 	/// <summary>
 	/// Called each time the system's group become inactive.<br/>
 	/// After call, <see cref="IBlahRunSystem.Run"/> will not be called until <see cref="Resume"/>.

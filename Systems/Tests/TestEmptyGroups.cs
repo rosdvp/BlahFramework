@@ -7,7 +7,7 @@ internal class TestEmptyGroups
 	[Test]
 	public void Test_SwitchToA_ABecomesActive()
 	{
-		var context = new BlahSystemsContext(null);
+		var context = new BlahSystemsContext(null, null);
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
@@ -23,7 +23,7 @@ internal class TestEmptyGroups
 	[Test]
 	public void Test_SwitchToB_BBecomesActive()
 	{
-		var context = new BlahSystemsContext(null);
+		var context = new BlahSystemsContext(null, null);
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
@@ -39,7 +39,7 @@ internal class TestEmptyGroups
 	[Test]
 	public void Test_SwitchToBAndRun_BIsActive()
 	{
-		var context = new BlahSystemsContext(null);
+		var context = new BlahSystemsContext(null, null);
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
@@ -57,7 +57,7 @@ internal class TestEmptyGroups
 	[Test]
 	public void Test_SwitchToBThenToAThenRun_ABecomesActive()
 	{
-		var context = new BlahSystemsContext(null);
+		var context = new BlahSystemsContext(null, null);
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
@@ -72,7 +72,7 @@ internal class TestEmptyGroups
 	[Test]
 	public void Test_SwitchToBThenToAThenToNo_NoIsActive()
 	{
-		var context = new BlahSystemsContext(null);
+		var context = new BlahSystemsContext(null, null);
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		

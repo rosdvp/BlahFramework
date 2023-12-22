@@ -73,7 +73,8 @@ internal static class BlahEditorFeaturesValidation
 				featuresInProject.Add(type);
 			else if (type.GetInterface(nameof(IBlahInitSystem)) != null ||
 			         type.GetInterface(nameof(IBlahRunSystem)) != null ||
-			         type.GetInterface(nameof(IBlahResumePauseSystem)) != null)
+			         type.GetInterface(nameof(IBlahPauseSystem)) != null ||
+			         type.GetInterface(nameof(IBlahResumeSystem)) != null)
 				systemsInProject.Add(type);
 
 		foreach (var feature in featuresInProject)

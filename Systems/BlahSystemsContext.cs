@@ -7,23 +7,31 @@ namespace Blah.Systems
 public class BlahSystemsContext
 {
 	private readonly Dictionary<int, BlahSystemsGroup> _groupsMap = new();
-	private readonly IBlahSystemsInitData              _systemsInitData;
 
-	/// <param name="systemsInitData">This data will be passed to <see cref="IBlahInitSystem.Init"/></param>
-	public BlahSystemsContext(IBlahSystemsInitData systemsInitData)
+	private readonly IBlahSystemsInitData _systemsInitData;
+
+	private readonly Action _cbBetweenPauseAndResume;
+
+	/// <param name="systemsInitData">
+	/// Passed to systems' Init.
+	/// </param>
+	/// <param name="cbBetweenPauseAndResume">
+	/// Invoked after old group pause and before new group resume.
+	/// </param>
+	public BlahSystemsContext(IBlahSystemsInitData systemsInitData, Action cbBetweenPauseAndResume)
 	{
 		_systemsInitData = systemsInitData;
+
+		_cbBetweenPauseAndResume = cbBetweenPauseAndResume;
 	}
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	private BlahSystemsGroup _activeGroup;
 
+	private bool _isSwitchRequested;
 	private int? _requestedSwitchGroupId;
-
-	public int? ActiveGroupId { get; private set; }
-
-	public bool IsSwitchGroupRequested { get; private set; }
+	public  int? ActiveGroupId { get; private set; }
 
 	/// <summary>
 	/// Creates new group to add systems to.<br/>
@@ -38,16 +46,6 @@ public class BlahSystemsContext
 		return group;
 	}
 
-	/// <summary>
-	/// Sets the <paramref name="groupId"/> active, and the current one - inactive<br/>
-	/// For current group, <see cref="IBlahResumePauseSystem.Pause"/> will be called.<br/>
-	/// For new group <see cref="IBlahInitSystem.Init"/> and <see cref="IBlahResumePauseSystem.Resume"/>
-	/// will be called.
-	/// </summary>
-	/// <remarks>
-	/// If <see cref="Run"/> is performing, switch will happen at the end of <see cref="Run"/>.<br/>
-	/// Else, switch will happen immediately. 
-	/// </remarks>
 	public void RequestSwitchGroup(int? groupId)
 	{
 		if (groupId == ActiveGroupId)
@@ -56,7 +54,7 @@ public class BlahSystemsContext
 		if (groupId == null || _groupsMap.TryGetValue(groupId.Value, out _))
 		{
 			_requestedSwitchGroupId = groupId;
-			IsSwitchGroupRequested  = true;
+			_isSwitchRequested      = true;
 		}
 		else
 			throw new Exception($"Group with id {groupId} does not exists.");
@@ -66,6 +64,9 @@ public class BlahSystemsContext
 	private void PerformSwitch()
 	{
 		_activeGroup?.PauseSystems();
+		
+		_cbBetweenPauseAndResume?.Invoke();
+		
 		if (_requestedSwitchGroupId == null)
 		{
 			_activeGroup = null;
@@ -74,7 +75,7 @@ public class BlahSystemsContext
 		{
 			_activeGroup = _groupsMap[_requestedSwitchGroupId.Value];
 			_activeGroup.TryInitSystems(_systemsInitData);
-			_activeGroup.ResumeSystems();
+			_activeGroup.ResumeSystems(_systemsInitData);
 		}
 		ActiveGroupId = _requestedSwitchGroupId;
 	}
@@ -84,12 +85,11 @@ public class BlahSystemsContext
 	/// </summary>
 	public void Run()
 	{
-		if (IsSwitchGroupRequested)
+		if (_isSwitchRequested)
 		{
 			PerformSwitch();
-			IsSwitchGroupRequested = false;
+			_isSwitchRequested = false;
 		}
-
 		_activeGroup?.RunSystems();
 	}
 
