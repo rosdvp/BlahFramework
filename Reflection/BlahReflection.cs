@@ -165,6 +165,15 @@ public static class BlahReflection
 				return (T)Activator.CreateInstance(type);
 		return null;
 	}
+
+	public static T InstantiateGameTypeWithBaseType<T>() where T : class
+	{
+		var baseType = typeof(T);
+		foreach (var type in EnumerateGameTypes())
+			if (type.BaseType == baseType)
+				return (T)Activator.CreateInstance(type);
+		return null;
+	}
 	
 	public static IEnumerable<T> InstantiateGameTypesWithBaseType<T>()
 	{

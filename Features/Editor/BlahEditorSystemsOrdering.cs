@@ -16,8 +16,8 @@ internal static class BlahEditorSystemsOrdering
 		var sb = new StringBuilder();
 		sb.AppendLine("--- systems ordering issues ---");
 
-		var context = BlahReflection.InstantiateGameTypesWithBaseType<BlahContextBase>();
-
+		var context = BlahReflection.InstantiateGameTypeWithBaseType<BlahContextBase>();
+		
 		var featuresBySystemsGroups =
 			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesGroups(context);
 		foreach ((int groupId, var features) in featuresBySystemsGroups)
