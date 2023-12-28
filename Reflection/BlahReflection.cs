@@ -55,7 +55,8 @@ public static class BlahReflection
 
 	public static object GetContextFeaturesGroups(object context)
 	{
-		var prop = context.GetType().GetProperty(
+		var type = context.GetType();
+		var prop = type.GetProperty(
 			"FeaturesBySystemsGroups",
 			BindingFlags.Instance |
 			BindingFlags.Public |
