@@ -135,6 +135,14 @@ public abstract class BlahContextBase
 		                   nameof(BlahPoolsContext.GetNfSignalProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
 		injector.AddSource(_poolsContext,
+		                   typeof(IBlahSoloSignalConsumer<>),
+		                   nameof(BlahPoolsContext.GetSoloSignalConsumer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
+		injector.AddSource(_poolsContext,
+		                   typeof(IBlahSoloSignalProducer<>),
+		                   nameof(BlahPoolsContext.GetSoloSignalProducer),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
+		injector.AddSource(_poolsContext,
 		                   typeof(IBlahDataConsumer<>),
 		                   nameof(BlahPoolsContext.GetDataConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
