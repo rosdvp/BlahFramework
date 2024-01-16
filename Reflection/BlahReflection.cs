@@ -40,9 +40,13 @@ public static class BlahReflection
 				else if (genBaseType == typeof(IBlahSignalProducer<>))
 					yield return (EKind.SignalProducer, genArgType);
 				else if (genBaseType == typeof(IBlahNfSignalConsumer<>))
-					yield return (EKind.SignalNextFrameConsumer, genArgType);
+					yield return (EKind.NfSignalConsumer, genArgType);
 				else if (genBaseType == typeof(IBlahNfSignalProducer<>))
-					yield return (EKind.SignalNextFrameProducer, genArgType);
+					yield return (EKind.NfSignalProducer, genArgType);
+				else if (genBaseType == typeof(IBlahSoloSignalConsumer<>))
+					yield return (EKind.SoloSignalConsumer, genArgType);
+				else if (genBaseType == typeof(IBlahSoloSignalProducer<>))
+					yield return (EKind.SoloSignalProducer, genArgType);
 				else if (genBaseType == typeof(IBlahDataConsumer<>))
 					yield return (EKind.DataConsumer, genArgType);
 				else if (genBaseType == typeof(IBlahDataProducer<>))
@@ -118,12 +122,14 @@ public static class BlahReflection
 					services.Add(type);
 					break;
 				case EKind.SignalConsumer:
-                case EKind.SignalNextFrameConsumer:
+                case EKind.NfSignalConsumer:
+                case EKind.SoloSignalConsumer:
 				case EKind.DataConsumer:
 					consumers.Add(type);
 					break;
 				case EKind.SignalProducer:
-                case EKind.SignalNextFrameProducer:
+                case EKind.NfSignalProducer:
+                case EKind.SoloSignalProducer:
 				case EKind.DataProducer:
 					producers.Add(type);
 					break;
@@ -189,10 +195,12 @@ public static class BlahReflection
 		Service,
 		SignalConsumer,
 		SignalProducer,
-		SignalNextFrameConsumer,
-		SignalNextFrameProducer,
+		NfSignalConsumer,
+		NfSignalProducer,
+		SoloSignalConsumer,
+		SoloSignalProducer,
 		DataConsumer,
-		DataProducer
+		DataProducer,
 	}
 }
 }

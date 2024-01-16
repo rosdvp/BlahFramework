@@ -29,7 +29,7 @@ internal class BlahSignalPool<T> :
 {
 	public override void OnNextFrame()
 	{
-		RemoveAll();
+		Clear();
 	}
 }
 }

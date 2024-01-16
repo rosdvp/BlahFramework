@@ -54,14 +54,14 @@ internal class BlahNfSignalPool<T> :
 		}
 		else
 		{
-			Entries.RemoveAll();
+			Entries.Clear();
 			AliveEntriesCount = 0;
 		}
 	}
 
-	public override void RemoveAll()
+	public override void Clear()
 	{
-		base.RemoveAll();
+		base.Clear();
 		_nextFrameCount = 0;
 	}
 }

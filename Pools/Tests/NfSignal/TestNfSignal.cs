@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 
-namespace Blah.Pools.Tests.Signals
+namespace Blah.Pools.Tests.NfSignal
 {
-internal class TestSignalNextFrame
+internal class TestNfSignal
 {
     [TestCaseSource(nameof(GetTestCases))]
     public void Test(TestCaseData data)
@@ -13,7 +13,7 @@ internal class TestSignalNextFrame
         int[] frame3 = data.Frame3;
         
         var context  = new BlahPoolsContext();
-        var producer = context.GetSignalNextFrameProducer<MockSignalNextFrameEntry>();
+        var producer = context.GetNfSignalProducer<MockSignalNextFrameEntry>();
 
         for (var iter = 0; iter < 3; iter++)
         {

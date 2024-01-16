@@ -141,10 +141,10 @@ internal class BlahDataPool<T> :
 	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public override void RemoveAll()
+	public override void Clear()
 	{
-		base.RemoveAll();
-		_set.RemoveAll();
+		base.Clear();
+		_set.Clear();
 		for (var i = 0; i < _entryPtrToSetPtr.Length; i++)
 			_entryPtrToSetPtr[i] = -1;
 	}

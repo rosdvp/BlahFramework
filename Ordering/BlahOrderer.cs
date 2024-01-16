@@ -16,9 +16,9 @@ public static class BlahOrderer
 
 		foreach (var system in systems)
 			foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
-				if (kind == BlahReflection.EKind.SignalConsumer)
+				if (kind is BlahReflection.EKind.SignalConsumer or BlahReflection.EKind.SoloSignalConsumer)
 					cache.AddConsumingSystem(system, type);
-				else if (kind == BlahReflection.EKind.SignalProducer)
+				else if (kind is BlahReflection.EKind.SignalProducer or BlahReflection.EKind.SoloSignalProducer)
 					cache.AddProducingSystem(system, type);
 
 		foreach (var system in systems)

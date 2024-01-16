@@ -41,7 +41,7 @@ public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
 
 	public void Clear()
 	{
-		_set.RemoveAll();
+		_set.Clear();
 		for (var i = 0; i < _entityIdToPtr.Length; i++)
 			_entityIdToPtr[i] = -1;
 	}

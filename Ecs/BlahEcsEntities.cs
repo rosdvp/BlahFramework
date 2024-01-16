@@ -68,7 +68,7 @@ public class BlahEcsEntities
 		for (var i = 0; i < _idToAliveIdx.Length; i++)
 			_idToAliveIdx[i] = -1;
 		
-		_set.RemoveAll();
+		_set.Clear();
 	}
 }
 }

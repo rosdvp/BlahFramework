@@ -6,7 +6,7 @@ namespace Blah.Pools
 internal interface IBlahPoolInternal
 {
     void OnNextFrame();
-	void RemoveAll();
+	void Clear();
 }
 
 public class BlahPool<T> : IBlahPoolInternal
@@ -131,9 +131,9 @@ public class BlahPool<T> : IBlahPoolInternal
 	//-----------------------------------------------------------
 	public virtual void OnNextFrame() { }
 
-	public virtual void RemoveAll()
+	public virtual void Clear()
 	{
-		Entries.RemoveAll();
+		Entries.Clear();
 		AliveEntriesCount = 0;
 		_delayedOpsCount  = 0;
 	}

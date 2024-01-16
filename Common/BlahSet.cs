@@ -46,7 +46,7 @@ public class BlahSet<T>
 		_releasedPtrs[_releasedCount++] = ptr - _ptrsOffset;
 	}
 
-	public void RemoveAll()
+	public void Clear()
 	{
 		_entriesCount  = 0;
 		_releasedCount = 0;
