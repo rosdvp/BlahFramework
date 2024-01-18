@@ -32,14 +32,15 @@ internal class TestsCore
 	{
 		var ecs    = new BlahEcs();
 		var write  = ecs.GetWrite<CompA>();
+		var read   = ecs.GetRead<CompA>();
 		var filter = GetFilter(ecs, new[] { typeof(CompA) }, null);
 
 		var ent = ecs.CreateEntity();
 
 		write.Add(ent);
-		write.Remove(ent);
+		read.Remove(ent);
 		write.Add(ent);
-		write.Remove(ent);
+		read.Remove(ent);
 	}
 
 	
@@ -126,7 +127,7 @@ internal class TestsCore
 			Assert.IsTrue(expected.Remove(read.Get(e).Val));
         Assert.Zero(expected.Count);
 
-        write.Remove(ent2);
+        read.Remove(ent2);
         
         expected = new List<int> { 1, 3 };
         foreach (var e in filter)
@@ -140,6 +141,7 @@ internal class TestsCore
 	{
 		var ecs     = new BlahEcs();
 		var writeA  = ecs.GetWrite<CompA>();
+		var readA   = ecs.GetRead<CompA>();
 		var writeB  = ecs.GetWrite<CompB>();
 		var filterA = GetFilter(ecs, new[] {typeof(CompA) }, null);
 		var filterB = GetFilter(ecs, new[] {typeof(CompB) }, null);
@@ -159,7 +161,7 @@ internal class TestsCore
 		foreach (var e in filterB)
 			Assert.Fail();
         
-		writeA.Remove(ent);
+		readA.Remove(ent);
 		writeB.Add(ent);
 
 		foreach (var e in filterA)
@@ -219,7 +221,7 @@ internal class TestsCore
 		foreach (var e in filter)
 			Assert.AreEqual(2, read.Get(e).Val);
         
-		write.Remove(ent);
+		read.Remove(ent);
 		foreach (var e in filter)
 			Assert.Fail();
 
@@ -275,7 +277,7 @@ internal class TestsCore
 		{
 			if (read.Get(e).Val == 2)
 			{
-				write.Remove(e);
+				read.Remove(e);
 				Assert.IsFalse(read.Has(e));
 			}
 			iterationsCount += 1;

@@ -12,18 +12,18 @@ internal interface IBlahEcsCompInternal
 
 public interface IBlahEcsCompRead<T> where T: IBlahEntryEcs
 {
-	public bool Has(BlahEcsEntity   ent);
-	public bool Has(BlahEcsEntity?  ent);
-	public ref T Get(BlahEcsEntity  ent);
-	public ref T Get(BlahEcsEntity? ent);
+	public bool Has(BlahEcsEntity     ent);
+	public bool Has(BlahEcsEntity?    ent);
+	public ref T Get(BlahEcsEntity    ent);
+	public ref T Get(BlahEcsEntity?   ent);
+	public void Remove(BlahEcsEntity  ent);
+	public void Remove(BlahEcsEntity? ent);
 }
 
 public interface IBlahEcsCompWrite<T> where T: IBlahEntryEcs
 {
 	public ref T Add(BlahEcsEntity    ent);
 	public ref T Add(BlahEcsEntity?   ent);
-	public void Remove(BlahEcsEntity  ent);
-	public void Remove(BlahEcsEntity? ent);
 }
 
 public class BlahEcsPool<T> : 
