@@ -5,21 +5,25 @@ namespace Blah.Ecs
 {
 internal interface IBlahEcsCompInternal
 {
-	bool Has(BlahEcsEntity    entityId);
-	void RemoveWithoutCb(BlahEcsEntity entityId);
+	bool Has(BlahEcsEntity             ent);
+	void RemoveWithoutCb(BlahEcsEntity ent);
 	void Clear();
 }
 
 public interface IBlahEcsCompRead<T> where T: IBlahEntryEcs
 {
-	public bool Has(BlahEcsEntity  ent);
-	public ref T Get(BlahEcsEntity ent);
+	public bool Has(BlahEcsEntity   ent);
+	public bool Has(BlahEcsEntity?  ent);
+	public ref T Get(BlahEcsEntity  ent);
+	public ref T Get(BlahEcsEntity? ent);
 }
 
 public interface IBlahEcsCompWrite<T> where T: IBlahEntryEcs
 {
-	public ref T Add(BlahEcsEntity   ent);
-	public void Remove(BlahEcsEntity ent);
+	public ref T Add(BlahEcsEntity    ent);
+	public ref T Add(BlahEcsEntity?   ent);
+	public void Remove(BlahEcsEntity  ent);
+	public void Remove(BlahEcsEntity? ent);
 }
 
 public class BlahEcsPool<T> : 
@@ -59,9 +63,21 @@ public class BlahEcsPool<T> :
 		return ref _set.Get(ptr);
 	}
 
+	public ref T Add(BlahEcsEntity? ent)
+	{
+		if (ent == null)
+			throw new Exception($"ent is null");
+		return ref Add(ent.Value);
+	}
+
 	public bool Has(BlahEcsEntity ent)
 	{
 		return ent.Id < _entityIdToPtr.Length && _entityIdToPtr[ent.Id] != -1;
+	}
+
+	public bool Has(BlahEcsEntity? ent)
+	{
+		return ent != null && Has(ent.Value);
 	}
 
 	public ref T Get(BlahEcsEntity ent)
@@ -71,12 +87,26 @@ public class BlahEcsPool<T> :
 		return ref _set.Get(_entityIdToPtr[ent.Id]);
 	}
 
+	public ref T Get(BlahEcsEntity? ent)
+	{
+		if (ent == null)
+			throw new Exception($"ent is null");
+		return ref Get(ent.Value);
+	}
+
 	public void Remove(BlahEcsEntity ent)
 	{
 		if (!Has(ent))
 			throw new Exception($"{ent} does not have {typeof(T).Name}");
 		RemoveWithoutCb(ent);
 		_cbRemoved.Invoke(typeof(T), ent);
+	}
+
+	public void Remove(BlahEcsEntity? ent)
+	{
+		if (ent == null)
+			throw new Exception($"ent is null");
+		Remove(ent.Value);
 	}
 
 	public void RemoveWithoutCb(BlahEcsEntity ent)
