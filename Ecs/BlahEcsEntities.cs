@@ -3,23 +3,24 @@ using Blah.Common;
 
 namespace Blah.Ecs
 {
-public class BlahEcsEntities
+internal class BlahEcsEntities
 {
-	private readonly BlahEcs _ecs;
+	private readonly BlahSet<BlahEcsEntity> _set;
 	
-	private readonly BlahSet<BlahEcsEntity> _set = new(1, 0);
-	
-	private int[] _aliveIds = new int[1];
+	private int[] _aliveIds;
 	private int   _aliveCount;
 
-	private int[] _idToAliveIdx = { -1 };
+	private int[] _idToAliveIdx;
+	private int[] _idToAliveGen;
 
-
-	public BlahEcsEntities(BlahEcs ecs)
+	public BlahEcsEntities(int baseCapacity)
 	{
-		_ecs = ecs;
+		_set          = new BlahSet<BlahEcsEntity>(baseCapacity, 0);
+		_aliveIds     = new int[baseCapacity];
+		_idToAliveIdx = new int[baseCapacity];
+		_idToAliveGen      = new int[baseCapacity];
 	}
-	
+
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public ref BlahEcsEntity Create()
@@ -31,31 +32,36 @@ public class BlahEcsEntities
 		
 		_aliveIds[aliveIdx] = id;
 		
-		BlahArrayHelper.ResizeOnDemand(ref _idToAliveIdx, id, -1);
+		BlahArrayHelper.ResizeOnDemand(ref _idToAliveIdx, id);
 		_idToAliveIdx[id] = aliveIdx;
+		BlahArrayHelper.ResizeOnDemand(ref _idToAliveIdx, id);
+		_idToAliveGen[id] += 1; 
 
 		ref var entity = ref _set.Get(id);
-		entity.Ecs = _ecs;
-		entity.Id  = id;
+		entity.Id  =  id;
+		entity.Gen += _idToAliveGen[id];
 
 		return ref entity;
 	}
 
-	public bool IsAlive(int id) => id != -1 && id < _idToAliveIdx.Length && _idToAliveIdx[id] != -1;
-
-	public void Destroy(int id)
+	public bool IsAlive(BlahEcsEntity ent)
 	{
-		if (!IsAlive(id))
+		return ent.Gen != 0 && ent.Id < _idToAliveGen.Length && ent.Gen == _idToAliveGen[ent.Id];
+	}
+
+	public void Destroy(BlahEcsEntity ent)
+	{
+		if (!IsAlive(ent))
 			return;
 
 		if (_aliveCount == 1)
 			_aliveCount = 0;
 		else
-			_aliveIds[_idToAliveIdx[id]] = _aliveIds[--_aliveCount];
+			_aliveIds[_idToAliveIdx[ent.Id]] = _aliveIds[--_aliveCount];
 
-		_idToAliveIdx[id] = -1;
+		_idToAliveGen[ent.Id] += 1;
 		
-		_set.Remove(id);
+		_set.Remove(ent.Id);
 	}
 
 	public (BlahSet<BlahEcsEntity> entities, int[] aliveIds, int aliveCount) GetAllAlive() 

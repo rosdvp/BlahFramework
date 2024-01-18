@@ -2,21 +2,29 @@
 {
 public class BlahEcsInjectSource
 {
-	private readonly BlahEcs _world;
+	private readonly BlahEcs _ecs;
 	
-	public BlahEcsInjectSource(BlahEcs world)
+	public BlahEcsInjectSource(BlahEcs ecs)
 	{
-		_world = world;
+		_ecs = ecs;
 	}
 
-	public BlahEcs GetWorld() => _world;
+	public BlahEcs GetEcs() => _ecs;
 
-	public object GetFilter<T>() where T : BlahEcsFilterProxy
+	public IBlahEcsCompRead<T> GetRead<T>() where T : IBlahEntryEcs
+		=> _ecs.GetRead<T>();
+
+	public IBlahEcsCompWrite<T> GetWrite<T>() where T : IBlahEntryEcs
+		=> _ecs.GetWrite<T>();
+		
+	public object GetFilter<T>() where T : BlahEcsFilter, new()
 	{
 		var type          = typeof(T);
 		var incCompsTypes = type.GenericTypeArguments;
-		var filter        = _world.GetFilter<T>(incCompsTypes, null);
 
+		var core   = _ecs.GetFilterCore(incCompsTypes, null);
+		var filter = new T();
+		filter.Set(core);
 		return filter;
 	}
 }

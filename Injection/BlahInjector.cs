@@ -10,6 +10,8 @@ public class BlahInjector
 	private readonly Dictionary<Type, Source> _injectableFieldTypeToSource = new();
 	private readonly Dictionary<Type, object> _fieldTypeToObject           = new();
 
+	private readonly object[] _tempParams1 = new object[1];
+
 	public void AddSource(
 		object  obj,
 		Type    fieldBaseType,
@@ -58,7 +60,7 @@ public class BlahInjector
 		if (source == null)
 			return;
 
-		obj = RetrieveFromSource(source, fieldType);
+		obj = RetrieveFromSource(source, field);
 		field.SetValue(target, obj);
 		
 		_fieldTypeToObject[fieldType] = obj;
@@ -82,21 +84,26 @@ public class BlahInjector
 		return null;
 	}
 
-	private object RetrieveFromSource(Source source, Type fieldType)
+	private object RetrieveFromSource(Source source, FieldInfo field)
 	{
 		var method = source.Obj.GetType().GetMethod(source.MethodBaseName);
 		if (method == null)
 			throw new Exception($"source {source.Obj.GetType().Name} does not have " +
 			                    $"base method with name {source.MethodBaseName}");
 
-		if (source.MethodType == EMethodType.Simple) { }
-		else if (source.MethodType == EMethodType.GenericAcceptFieldType)
+		if (source.MethodType == EMethodType.GenericAcceptFieldType)
 		{
-			method = method.MakeGenericMethod(fieldType);
+			method = method.MakeGenericMethod(field.FieldType);
 		}
 		else if (source.MethodType == EMethodType.GenericAcceptGenericArgument)
 		{
-			method = method.MakeGenericMethod(fieldType.GenericTypeArguments[0]);
+			method = method.MakeGenericMethod(field.FieldType.GenericTypeArguments[0]);
+		}
+
+		if (source.MethodType == EMethodType.SimpleAcceptFieldInfo)
+		{
+			_tempParams1[0] = field;
+			return method.Invoke(source.Obj, _tempParams1);
 		}
 		
 		return method.Invoke(source.Obj, null);
@@ -114,6 +121,7 @@ public class BlahInjector
 		Simple,
 		GenericAcceptFieldType,
 		GenericAcceptGenericArgument,
+		SimpleAcceptFieldInfo,
 	}
 }
 }

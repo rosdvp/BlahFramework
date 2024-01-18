@@ -1,158 +1,78 @@
 ﻿using System;
-using Blah.Common;
-using UnityEngine;
 
 namespace Blah.Ecs
 {
-public class BlahEcsFilter
+public class BlahEcsFilter : IEquatable<BlahEcsFilter>
 {
-	private readonly IBlahEcsPool[] _incCompsPools;
-	private readonly IBlahEcsPool[] _excCompsPools;
+	private BlahEcsFilterCore _filter;
 
-	private BlahEcsEntity[] _entities = new BlahEcsEntity[1];
-	private int             _entitiesCount;
-
-	private int[] _entityIdToIdx = { -1 };
-
-	private DelayedOp[] _delayedOps = new DelayedOp[1];
-	private int         _delayedOpsCount;
-
-	private int _goingIteratorsCount;
-    
-	
-	
-	public BlahEcsFilter(BlahEcsEntities entities, IBlahEcsPool[] incCompsPools, IBlahEcsPool[] excCompsPools)
+	public void Set(BlahEcsFilterCore filter)
 	{
-		_incCompsPools = incCompsPools;
-		_excCompsPools = excCompsPools;
-
-		(var set, int[] alivePtrs, int aliveCount) = entities.GetAllAlive();
-		for (var i = 0; i < aliveCount; i++)
-		{
-			ref var entity = ref set.Get(alivePtrs[i]);
-			if (IsSuitable(entity.Id))
-				AddEntity(entity);
-		}
+		_filter = filter;
 	}
 	
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	private bool Has(int entityId) => entityId < _entityIdToIdx.Length && _entityIdToIdx[entityId] != -1;
-    
 	
-	internal void OnIncCompAddedOrExcRemoved(BlahEcsEntity entity)
+	public Enumerator GetEnumerator() => new(_filter);
+
+	public struct Enumerator : IDisposable
 	{
-		if (_goingIteratorsCount > 0)
+		private readonly BlahEcsFilterCore _owner;
+		private readonly BlahEcsEntity[]   _entities;
+		private readonly int               _entitiesCount;
+
+		private int _cursor;
+
+		public Enumerator(BlahEcsFilterCore owner)
 		{
-			BlahArrayHelper.ResizeOnDemand(ref _delayedOps, _delayedOpsCount);
-			ref var op = ref _delayedOps[_delayedOpsCount++];
-			op.Entity   = entity;
-			op.IsTryAdd = true;
-			return;
+			_owner                      = owner;
+			(_entities, _entitiesCount) = owner.BeginIteration();
+			_cursor = -1;
 		}
-        
-		if (!Has(entity.Id) && IsSuitable(entity.Id))
-			AddEntity(entity);
-	}
 
-	internal void OnIncCompRemovedOrExcAdded(BlahEcsEntity entity)
-	{
-		if (_goingIteratorsCount > 0)
+		public BlahEcsEntity Current => _entities[_cursor];
+
+		public bool MoveNext() => ++_cursor < _entitiesCount;
+
+		public void Dispose()
 		{
-			BlahArrayHelper.ResizeOnDemand(ref _delayedOps, _delayedOpsCount);
-			ref var op = ref _delayedOps[_delayedOpsCount++];
-			op.Entity   = entity;
-			op.IsTryAdd = false;
-			return;
-		}
-		
-        TryRemoveEntity(entity.Id);
-	}
-    
-
-	private bool IsSuitable(int entityId)
-	{
-		foreach (var pool in _incCompsPools)
-			if (!pool.Has(entityId))
-				return false;
-		foreach (var pool in _excCompsPools)
-			if (pool.Has(entityId))
-				return false;
-		return true;
-	}
-
-	private void AddEntity(BlahEcsEntity entity)
-	{
-		BlahArrayHelper.ResizeOnDemand(ref _entities, _entitiesCount);
-		BlahArrayHelper.ResizeOnDemand(ref _entityIdToIdx, entity.Id, -1);
-
-		int idx = _entitiesCount++;
-		_entities[idx]            = entity;
-		_entityIdToIdx[entity.Id] = idx;
-	}
-
-	private void TryRemoveEntity(int entityId)
-	{
-		if (!Has(entityId))
-			return;
-		
-		int idx = _entityIdToIdx[entityId];
-		_entityIdToIdx[entityId] = -1;
-
-		if (idx == _entitiesCount -1)
-		{
-			_entitiesCount -= 1;
-		}
-		else
-		{
-			int lastEntityId = _entities[_entitiesCount - 1].Id;
-			_entityIdToIdx[lastEntityId] = idx;
-            
-			_entities[idx] = _entities[--_entitiesCount];
+			_owner.EndIteration();
 		}
 	}
 
-
-	internal void Clear()
-	{
-		_entitiesCount   = 0;
-		_delayedOpsCount = 0;
-
-		for (var i = 0; i < _entityIdToIdx.Length; i++)
-			_entityIdToIdx[i] = -1;
-	}
+	public static bool operator ==(BlahEcsFilter a, BlahEcsFilter b)
+		=> a._filter == b._filter;
+	public static bool operator !=(BlahEcsFilter a, BlahEcsFilter b)
+		=> a._filter != b._filter;
 	
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	private void ApplyDelayedOps()
+	public bool Equals(BlahEcsFilter other)
 	{
-		for (var i = 0; i < _delayedOpsCount; i++)
-		{
-			if (_delayedOps[i].IsTryAdd)
-				OnIncCompAddedOrExcRemoved(_delayedOps[i].Entity);
-			else
-				OnIncCompRemovedOrExcAdded(_delayedOps[i].Entity);
-		}
-		_delayedOpsCount = 0;
-	}
-	
-	private struct DelayedOp
-	{
-		public bool          IsTryAdd;
-		public BlahEcsEntity Entity;
-	}
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	internal (BlahEcsEntity[] entities, int entitiesCount) BeginIteration()
-	{
-		_goingIteratorsCount++;
-		return (_entities, _entitiesCount);
+		if (ReferenceEquals(null, other))
+			return false;
+		if (ReferenceEquals(this, other))
+			return true;
+		return Equals(_filter, other._filter);
 	}
 
-	internal void EndIteration()
+	public override bool Equals(object obj)
 	{
-		if (--_goingIteratorsCount == 0 && _delayedOpsCount > 0)
-			ApplyDelayedOps();
+		if (ReferenceEquals(null, obj))
+			return false;
+		if (ReferenceEquals(this, obj))
+			return true;
+		if (obj.GetType() != this.GetType())
+			return false;
+		return Equals((BlahEcsFilter)obj);
+	}
+
+	public override int GetHashCode()
+	{
+		return (_filter != null ? _filter.GetHashCode() : 0);
 	}
 }
+
+public class BlahEcsFilter<T0> : BlahEcsFilter { }
+
+public class BlahEcsFilter<T0, T1> : BlahEcsFilter { }
+
+public class BlahEcsFilter<T0, T1, T2> : BlahEcsFilter { }
 }

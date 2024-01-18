@@ -7,89 +7,61 @@ public class BlahEcs
 {
 	private BlahEcsEntities _entities;
 	
-	private List<IBlahEcsPool>             _compPools      = new();
-	private Dictionary<Type, IBlahEcsPool> _compTypeToPool = new();
+	private List<IBlahEcsCompInternal>             _compPools      = new();
+	private Dictionary<Type, IBlahEcsCompInternal> _compTypeToPool = new();
 
-	private List<BlahEcsFilter>                   _filters          = new();
-	private Dictionary<int, BlahEcsFilter>        _hashToFilter     = new();
-	private Dictionary<Type, List<BlahEcsFilter>> _incCompToFilters = new();
-	private Dictionary<Type, List<BlahEcsFilter>> _excCompToFilters = new();
+	private List<BlahEcsFilterCore>                   _filters          = new();
+	private Dictionary<int, BlahEcsFilterCore>        _hashToFilter     = new();
+	private Dictionary<Type, List<BlahEcsFilterCore>> _incCompToFilters = new();
+	private Dictionary<Type, List<BlahEcsFilterCore>> _excCompToFilters = new();
 
+	private readonly object[] _compPoolConstructParams = new object[2];
 
 	public BlahEcs()
 	{
-		_entities = new BlahEcsEntities(this);
+		_entities = new BlahEcsEntities(16);
+
+		_compPoolConstructParams[0] = (Action<Type, BlahEcsEntity>)OnCompAdded;
+		_compPoolConstructParams[1] = (Action<Type, BlahEcsEntity>)OnCompRemoved;
 	}
 	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public ref BlahEcsEntity CreateEntity() => ref _entities.Create();
-
-	internal void DestroyEntity(BlahEcsEntity entity)
+	
+	public void DestroyEntity(BlahEcsEntity entity)
 	{
 		foreach (var pool in _compPools)
-			if (pool.Has(entity.Id))
-				pool.Remove(entity.Id);
+			if (pool.Has(entity))
+				pool.RemoveWithoutCb(entity);
 		
 		foreach (var filter in _filters)
 			filter.OnIncCompRemovedOrExcAdded(entity);
 		
-		_entities.Destroy(entity.Id);
+		_entities.Destroy(entity);
 	}
 
 
-	internal ref T AddComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
+
+	private void OnCompAdded(Type type, BlahEcsEntity ent)
 	{
-		var pool = GetPool<T>();
-
-		if (pool.Has(entity.Id))
-			throw new Exception($"entity {entity.Id} already have {nameof(T)}");
-		
-		pool.Add(entity.Id);
-
-		var compType = typeof(T);
-		if (_incCompToFilters.TryGetValue(compType, out var filters))
+		if (_incCompToFilters.TryGetValue(type, out var filters))
 			foreach (var filter in filters)
-				filter.OnIncCompAddedOrExcRemoved(entity);
-		if (_excCompToFilters.TryGetValue(compType, out filters))
+				filter.OnIncCompAddedOrExcRemoved(ent);
+		if (_excCompToFilters.TryGetValue(type, out filters))
 			foreach (var filter in filters)
-				filter.OnIncCompRemovedOrExcAdded(entity);
-
-		return ref pool.Get(entity.Id);
+				filter.OnIncCompRemovedOrExcAdded(ent);
 	}
 
-	internal void RemoveComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
+	private void OnCompRemoved(Type type, BlahEcsEntity ent)
 	{
-		var pool = GetPool<T>();
-
-		if (!pool.Has(entity.Id))
-			throw new Exception($"entity {entity.Id} does not have {nameof(T)}");
-		
-		pool.Remove(entity.Id);
-
-		var compType = typeof(T);
-		if (_incCompToFilters.TryGetValue(compType, out var filters))
+		if (_incCompToFilters.TryGetValue(type, out var filters))
 			foreach (var filter in filters)
-				filter.OnIncCompRemovedOrExcAdded(entity);
-		
-		if (_excCompToFilters.TryGetValue(compType, out filters))
+				filter.OnIncCompRemovedOrExcAdded(ent);
+		if (_excCompToFilters.TryGetValue(type, out filters))
 			foreach (var filter in filters)
-				filter.OnIncCompAddedOrExcRemoved(entity);
+				filter.OnIncCompAddedOrExcRemoved(ent);
 	}
-
-	internal ref T GetComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
-	{
-		var pool = GetPool<T>();
-		if (!pool.Has(entity.Id))
-			throw new Exception($"entity {entity.Id} does not have {nameof(T)}");
-		return ref pool.Get(entity.Id);
-	}
-
-	internal bool HasComp<T>(BlahEcsEntity entity) where T : IBlahEntryEcs
-	{
-		return GetPool<T>().Has(entity.Id);
-	}
-
 
 	public void Clear()
 	{
@@ -102,7 +74,7 @@ public class BlahEcs
 	
 	
 
-	public BlahEcsFilterProxy GetFilter<T>(Type[] incCompTypes, Type[] excCompTypes) where T : BlahEcsFilterProxy
+	public BlahEcsFilterCore GetFilterCore(Type[] incCompTypes, Type[] excCompTypes)
 	{
 		SortTypes(ref incCompTypes);
 
@@ -120,21 +92,21 @@ public class BlahEcs
 
 		if (!_hashToFilter.TryGetValue(hash, out var filter))
 		{
-			var incCompsPools = new IBlahEcsPool[incCompTypes.Length];
+			var incCompsPools = new IBlahEcsCompInternal[incCompTypes.Length];
 			for (var i = 0; i < incCompsPools.Length; i++)
 				incCompsPools[i] = GetPool(incCompTypes[i]);
 
-			IBlahEcsPool[] excCompsPools = null;
+			IBlahEcsCompInternal[] excCompsPools = null;
 			if (excCompTypes == null)
-				excCompsPools = Array.Empty<IBlahEcsPool>();
+				excCompsPools = Array.Empty<IBlahEcsCompInternal>();
 			else
 			{
-				excCompsPools = new IBlahEcsPool[excCompTypes.Length];
+				excCompsPools = new IBlahEcsCompInternal[excCompTypes.Length];
 				for (var i = 0; i < excCompsPools.Length; i++)
 					excCompsPools[i] = GetPool(excCompTypes[i]);
 			}
 
-			filter = new BlahEcsFilter(_entities, incCompsPools, excCompsPools);
+			filter = new BlahEcsFilterCore(_entities, incCompsPools, excCompsPools);
 			_filters.Add(filter);
 			_hashToFilter[hash] = filter;
 
@@ -142,7 +114,7 @@ public class BlahEcs
 			{
 				if (!_incCompToFilters.TryGetValue(type, out var filters))
 				{
-					filters                 = new List<BlahEcsFilter>();
+					filters                 = new List<BlahEcsFilterCore>();
 					_incCompToFilters[type] = filters;
 				}
 				filters.Add(filter);
@@ -152,25 +124,28 @@ public class BlahEcs
 				{
 					if (!_excCompToFilters.TryGetValue(type, out var filters))
 					{
-						filters                 = new List<BlahEcsFilter>();
+						filters                 = new List<BlahEcsFilterCore>();
 						_excCompToFilters[type] = filters;
 					}
 					filters.Add(filter);
 				}
 		}
-
-		var proxy = Activator.CreateInstance<T>();
-		proxy.Finalize(filter);
-		return proxy;
+		return filter;
 	}
 
 
+	public IBlahEcsCompRead<T> GetRead<T>() where T : IBlahEntryEcs
+		=> GetPool<T>();
+
+	public IBlahEcsCompWrite<T> GetWrite<T>() where T : IBlahEntryEcs
+		=> GetPool<T>();
+	
 	private BlahEcsPool<T> GetPool<T>() where T : IBlahEntryEcs
 	{
 		var type = typeof(T);
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
 		{
-			pool = new BlahEcsPool<T>();
+			pool = new BlahEcsPool<T>(OnCompAdded, OnCompRemoved);
 
 			_compPools.Add(pool);
 			_compTypeToPool[type] = pool;
@@ -178,12 +153,12 @@ public class BlahEcs
 		return (BlahEcsPool<T>)pool;
 	}
 
-	private IBlahEcsPool GetPool(Type type)
+	private IBlahEcsCompInternal GetPool(Type type)
 	{
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
 		{
 			var poolType = typeof(BlahEcsPool<>).MakeGenericType(type);
-			pool = (IBlahEcsPool)Activator.CreateInstance(poolType);
+			pool = (IBlahEcsCompInternal)Activator.CreateInstance(poolType, _compPoolConstructParams);
 			
 			_compPools.Add(pool);
 			_compTypeToPool[type] = pool;

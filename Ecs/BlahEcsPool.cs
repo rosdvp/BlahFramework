@@ -3,40 +3,86 @@ using Blah.Common;
 
 namespace Blah.Ecs
 {
-public interface IBlahEcsPool
+internal interface IBlahEcsCompInternal
 {
-	bool Has(int    entityId);
-	void Remove(int entityId);
+	bool Has(BlahEcsEntity    entityId);
+	void RemoveWithoutCb(BlahEcsEntity entityId);
 	void Clear();
 }
 
-public class BlahEcsPool<T> : IBlahEcsPool where T : IBlahEntryEcs
+public interface IBlahEcsCompRead<T> where T: IBlahEntryEcs
+{
+	public bool Has(BlahEcsEntity  ent);
+	public ref T Get(BlahEcsEntity ent);
+}
+
+public interface IBlahEcsCompWrite<T> where T: IBlahEntryEcs
+{
+	public ref T Add(BlahEcsEntity   ent);
+	public void Remove(BlahEcsEntity ent);
+}
+
+public class BlahEcsPool<T> : 
+	IBlahEcsCompInternal,
+	IBlahEcsCompRead<T>,
+	IBlahEcsCompWrite<T>
+	where T : IBlahEntryEcs
 {
 	private readonly BlahSet<T> _set = new(1, 0);
 
+	private readonly Action<Type, BlahEcsEntity> _cbAdded;
+	private readonly Action<Type, BlahEcsEntity> _cbRemoved;
+	
 	private int[] _entityIdToPtr = { -1 };
 
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	public void Add(int entityId)
+
+	public BlahEcsPool(Action<Type, BlahEcsEntity> cbAdded, Action<Type, BlahEcsEntity> cbRemoved)
 	{
-		BlahArrayHelper.ResizeOnDemand(ref _entityIdToPtr, entityId, -1);
+		_cbAdded   = cbAdded;
+		_cbRemoved = cbRemoved;
+	}
+	
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+	public ref T Add(BlahEcsEntity ent)
+	{
+		if (Has(ent))
+			throw new Exception($"{ent} already has {typeof(T).Name}");
+		
+		BlahArrayHelper.ResizeOnDemand(ref _entityIdToPtr, ent.Id, -1);
 		
 		int ptr = _set.Add();
-		_entityIdToPtr[entityId] = ptr;
+		_entityIdToPtr[ent.Id] = ptr;
+		
+		_cbAdded.Invoke(typeof(T), ent);
+		
+		return ref _set.Get(ptr);
 	}
 
-	public bool Has(int entityId) => entityId < _entityIdToPtr.Length && _entityIdToPtr[entityId] != -1;
-
-	public ref T Get(int entityId)
+	public bool Has(BlahEcsEntity ent)
 	{
-		return ref _set.Get(_entityIdToPtr[entityId]);
+		return ent.Id < _entityIdToPtr.Length && _entityIdToPtr[ent.Id] != -1;
 	}
 
-	public void Remove(int entityId)
+	public ref T Get(BlahEcsEntity ent)
 	{
-		_set.Remove(_entityIdToPtr[entityId]);
-		_entityIdToPtr[entityId] = -1;
+		if (!Has(ent))
+			throw new Exception($"{ent} does not have {typeof(T).Name}");
+		return ref _set.Get(_entityIdToPtr[ent.Id]);
+	}
+
+	public void Remove(BlahEcsEntity ent)
+	{
+		if (!Has(ent))
+			throw new Exception($"{ent} does not have {typeof(T).Name}");
+		RemoveWithoutCb(ent);
+		_cbRemoved.Invoke(typeof(T), ent);
+	}
+
+	public void RemoveWithoutCb(BlahEcsEntity ent)
+	{
+		_set.Remove(_entityIdToPtr[ent.Id]);
+		_entityIdToPtr[ent.Id] = -1;
 	}
 
 	public void Clear()

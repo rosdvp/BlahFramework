@@ -156,11 +156,21 @@ public abstract class BlahContextBase
 		var ecsSource = new BlahEcsInjectSource(_ecs);
 		injector.AddSource(ecsSource,
 		                   typeof(BlahEcs),
-		                   nameof(BlahEcsInjectSource.GetWorld),
+		                   nameof(BlahEcsInjectSource.GetEcs),
 		                   BlahInjector.EMethodType.Simple
 		);
 		injector.AddSource(ecsSource,
-		                   typeof(BlahEcsFilterProxy),
+		                   typeof(IBlahEcsCompWrite<>),
+		                   nameof(BlahEcsInjectSource.GetWrite),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		injector.AddSource(ecsSource,
+		                   typeof(IBlahEcsCompRead<>),
+		                   nameof(BlahEcsInjectSource.GetRead),
+		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		);
+		injector.AddSource(ecsSource,
+		                   typeof(BlahEcsFilter),
 		                   nameof(BlahEcsInjectSource.GetFilter),
 		                   BlahInjector.EMethodType.GenericAcceptFieldType
 		);
