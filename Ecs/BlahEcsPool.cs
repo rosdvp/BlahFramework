@@ -59,8 +59,10 @@ public class BlahEcsPool<T> :
 		_entityIdToPtr[ent.Id] = ptr;
 		
 		_cbAdded.Invoke(typeof(T), ent);
-		
-		return ref _set.Get(ptr);
+
+		ref var comp = ref _set.Get(ptr);
+		comp = default;
+		return ref comp;
 	}
 
 	public ref T Add(BlahEcsEntity? ent)
