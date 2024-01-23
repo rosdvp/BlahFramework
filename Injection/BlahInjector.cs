@@ -76,10 +76,14 @@ public class BlahInjector
 		if (fieldType.IsGenericType &&
 		    _injectableFieldTypeToSource.TryGetValue(fieldType.GetGenericTypeDefinition(), out source))
 			return source;
-		
-		if (fieldType.BaseType != null && 
-		    _injectableFieldTypeToSource.TryGetValue(fieldType.BaseType, out source))
-			return source;
+
+		var baseType = fieldType.BaseType;
+		while (baseType != null)
+		{
+			if (_injectableFieldTypeToSource.TryGetValue(baseType, out source))
+				return source;
+			baseType = baseType.BaseType;
+		}
 		
 		return null;
 	}
