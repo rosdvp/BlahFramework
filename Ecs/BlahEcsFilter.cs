@@ -75,4 +75,6 @@ public class BlahEcsFilter<T0> : BlahEcsFilter { }
 public class BlahEcsFilter<T0, T1> : BlahEcsFilter<T0> { }
 
 public class BlahEcsFilter<T0, T1, T2> : BlahEcsFilter<T0, T1> { }
+
+public class BlahEcsFilter<T0, T1, T2, T3> : BlahEcsFilter<T0, T1, T2> { }
 }
