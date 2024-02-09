@@ -34,7 +34,7 @@ internal class BlahEcsEntities
 		
 		BlahArrayHelper.ResizeOnDemand(ref _idToAliveIdx, id);
 		_idToAliveIdx[id] = aliveIdx;
-		BlahArrayHelper.ResizeOnDemand(ref _idToAliveIdx, id);
+		BlahArrayHelper.ResizeOnDemand(ref _idToAliveGen, id);
 		_idToAliveGen[id] += 1; 
 
 		ref var entity = ref _set.Get(id);
