@@ -28,6 +28,8 @@ public class BlahEcs
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public ref BlahEcsEntity CreateEntity() => ref _entities.Create();
+
+	public bool IsEntityAlive(BlahEcsEntity entity) => _entities.IsAlive(entity);
 	
 	public void DestroyEntity(BlahEcsEntity entity)
 	{
