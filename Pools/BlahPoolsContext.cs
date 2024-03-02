@@ -10,6 +10,55 @@ public class BlahPoolsContext
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
+	public void Get<T>(out IBlahDataConsumer<T> consumer) where T : IBlahEntryData
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			consumer = (IBlahDataConsumer<T>)cached;
+		else
+			consumer = (IBlahDataConsumer<T>)AddPool<T>(new BlahDataPool<T>());
+	}
+	
+	public void Get<T>(out IBlahDataProducer<T> producer) where T : IBlahEntryData
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			producer = (IBlahDataProducer<T>)cached;
+		else
+			producer = (IBlahDataProducer<T>)AddPool<T>(new BlahDataPool<T>());
+	}
+	
+	public void Get<T>(out IBlahSignalConsumer<T> consumer) where T : IBlahEntrySignal
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			consumer = (IBlahSignalConsumer<T>)cached;
+		else
+			consumer = (IBlahSignalConsumer<T>)AddPool<T>(new BlahSignalPool<T>());
+	}
+	
+	public void Get<T>(out IBlahSignalProducer<T> producer) where T : IBlahEntrySignal
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			producer = (IBlahSignalProducer<T>)cached;
+		else
+			producer = (IBlahSignalProducer<T>)AddPool<T>(new BlahSignalPool<T>());
+	}
+	public void Get<T>(out IBlahNfSignalConsumer<T> consumer) where T : IBlahEntryNextFrameSignal
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			consumer = (IBlahNfSignalConsumer<T>)cached;
+		else
+			consumer = (IBlahNfSignalConsumer<T>)AddPool<T>(new BlahNfSignalPool<T>());
+	}
+	
+	public void Get<T>(out IBlahNfSignalProducer<T> producer) where T : IBlahEntryNextFrameSignal
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			producer = (IBlahNfSignalProducer<T>)cached;
+		else
+			producer = (IBlahNfSignalProducer<T>)AddPool<T>(new BlahNfSignalPool<T>());
+	}
+    
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
 	public IBlahDataConsumer<T> GetDataConsumer<T>() where T: IBlahEntryData
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
@@ -67,6 +116,8 @@ public class BlahPoolsContext
 	}
 
 
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
 	private IBlahPoolInternal AddPool<T>(IBlahPoolInternal pool)
 	{
 		_map[typeof(T)] = pool;
