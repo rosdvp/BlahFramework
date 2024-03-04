@@ -24,6 +24,12 @@ public interface IBlahEcsCompWrite<T> where T: IBlahEntryEcs
 {
 	public ref T Add(BlahEcsEntity    ent);
 	public ref T Add(BlahEcsEntity?   ent);
+    
+	public bool Has(BlahEcsEntity  ent);
+	public bool Has(BlahEcsEntity? ent);
+	
+	public void Remove(BlahEcsEntity  ent);
+	public void Remove(BlahEcsEntity? ent);
 }
 
 public class BlahEcsPool<T> : 
