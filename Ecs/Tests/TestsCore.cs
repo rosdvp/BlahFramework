@@ -225,11 +225,11 @@ internal class TestsCore
 		foreach (var e in filter)
 			Assert.Fail();
 
-		write.Add(ent);
+		write.Add(ent).Val = 1;
 		var iterationsCount = 0;
 		foreach (var e in filter)
 		{
-			Assert.AreEqual(2, read.Get(ent).Val);
+			Assert.AreEqual(1, read.Get(e).Val);
 			iterationsCount += 1;
 		}
 		Assert.AreEqual(1, iterationsCount);
@@ -388,6 +388,42 @@ internal class TestsCore
 		
 		foreach (int exp in expected)
 			Assert.Fail($"{exp} left");
+	}
+
+	[Test]
+	public void Test_CreateEntities_EntitiesAlive()
+	{
+		var entsCount = 10;
+		
+		var ecs = new BlahEcs();
+		
+		var aliveEnts = new List<BlahEcsEntity>();
+		var deadEnts  = new List<BlahEcsEntity>();
+
+		for (var iter = 0; iter < entsCount; iter++)
+		{
+			for (var i = 0; i < entsCount; i++)
+			{
+				aliveEnts.Add(ecs.CreateEntity());
+				Assert.IsTrue(ecs.IsEntityAlive(aliveEnts[i]), $"iter {iter}, i {i}");
+			}
+
+			foreach (var ent in aliveEnts)
+				Assert.IsTrue(ecs.IsEntityAlive(ent), $"iter {iter}");
+
+			for (var i = 0; i < entsCount; i++)
+			{
+				var ent = aliveEnts[^1];
+				ecs.DestroyEntity(ent);
+				aliveEnts.RemoveAt(aliveEnts.Count-1);
+				deadEnts.Add(ent);
+				
+				foreach (var aliveEnt in aliveEnts)
+					Assert.IsTrue(ecs.IsEntityAlive(aliveEnt), $"iter {iter}, {i}");
+				foreach (var deadEnt in deadEnts)
+					Assert.IsFalse(ecs.IsEntityAlive(deadEnt), $"iter {iter}, {i}");
+			}
+		}
 	}
 
 

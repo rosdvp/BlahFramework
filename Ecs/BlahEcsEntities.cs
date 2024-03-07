@@ -38,8 +38,8 @@ internal class BlahEcsEntities
 		_idToAliveGen[id] += 1; 
 
 		ref var entity = ref _set.Get(id);
-		entity.Id  =  id;
-		entity.Gen += _idToAliveGen[id];
+		entity.Id  = id;
+		entity.Gen = _idToAliveGen[id];
 
 		return ref entity;
 	}
