@@ -10,6 +10,12 @@ public class BlahEcsFilter : IEquatable<BlahEcsFilter>
 	{
 		_filter = filter;
 	}
+
+	public bool IsEmpty => _filter.IsEmpty;
+
+	public BlahEcsEntity GetAny() => _filter.GetAny();
+
+	public bool TryGetAny(out BlahEcsEntity ent) => _filter.TryGetAny(out ent);
 	
 	
 	public Enumerator GetEnumerator() => new(_filter);

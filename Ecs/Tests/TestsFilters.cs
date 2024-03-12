@@ -6,45 +6,8 @@ using UnityEngine;
 
 namespace Blah.Ecs.Tests
 {
-internal class TestsCore
+internal class TestsFilters
 {
-	[Test]
-	public void Test_AddComp_ValueSame([NUnit.Framework.Range(1, 10)] int count)
-	{
-		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
-
-		var entities = new BlahEcsEntity[count];
-		for (var i = 0; i < count; i++)
-		{
-			entities[i] = ecs.CreateEntity();
-
-			write.Add(entities[i]).Val = i + 1;
-			
-			for (var j = 0; j <= i; j++)
-				Assert.AreEqual(j + 1, read.Get(entities[j]).Val);
-		}
-	}
-
-	[Test]
-	public void Test_ReAddComp_NoThrow()
-	{
-		var ecs    = new BlahEcs();
-		var write  = ecs.GetWrite<CompA>();
-		var read   = ecs.GetRead<CompA>();
-		var filter = GetFilter(ecs, new[] { typeof(CompA) }, null);
-
-		var ent = ecs.CreateEntity();
-
-		write.Add(ent);
-		read.Remove(ent);
-		write.Add(ent);
-		read.Remove(ent);
-	}
-
-	
-	
 	[Test]
 	public void Test_SameCompsInFilters_FiltersSame()
 	{
@@ -74,11 +37,23 @@ internal class TestsCore
 	[Test]
 	public void Test_EmptyFilters()
 	{
-		var ecs  = new BlahEcs();
+		var ecs    = new BlahEcs();
+		var write  = ecs.GetWrite<CompA>();
 		var filter = GetFilter(ecs, new[] { typeof(CompA) }, null);
+		
+		Assert.IsTrue(filter.IsEmpty);
 		
 		foreach (var e in filter)
 			Assert.Fail();
+
+		var ent = ecs.CreateEntity();
+		write.Add(ent);
+        
+		Assert.IsFalse(filter.IsEmpty);
+		
+		write.Remove(ent);
+		
+		Assert.IsTrue(filter.IsEmpty);
 	}
 	
 
@@ -390,40 +365,27 @@ internal class TestsCore
 			Assert.Fail($"{exp} left");
 	}
 
+
 	[Test]
-	public void Test_CreateEntities_EntitiesAlive()
+	public void Test_GetAny()
 	{
-		var entsCount = 10;
-		
-		var ecs = new BlahEcs();
-		
-		var aliveEnts = new List<BlahEcsEntity>();
-		var deadEnts  = new List<BlahEcsEntity>();
+		var ecs    = new BlahEcs();
+		var read   = ecs.GetRead<CompA>();
+		var write  = ecs.GetWrite<CompA>();
+		var filter = GetFilter(ecs, new[] {typeof(CompA) }, null);
 
-		for (var iter = 0; iter < entsCount; iter++)
-		{
-			for (var i = 0; i < entsCount; i++)
-			{
-				aliveEnts.Add(ecs.CreateEntity());
-				Assert.IsTrue(ecs.IsEntityAlive(aliveEnts[i]), $"iter {iter}, i {i}");
-			}
+		if (filter.TryGetAny(out var ent))
+			Assert.Fail();
 
-			foreach (var ent in aliveEnts)
-				Assert.IsTrue(ecs.IsEntityAlive(ent), $"iter {iter}");
-
-			for (var i = 0; i < entsCount; i++)
-			{
-				var ent = aliveEnts[^1];
-				ecs.DestroyEntity(ent);
-				aliveEnts.RemoveAt(aliveEnts.Count-1);
-				deadEnts.Add(ent);
-				
-				foreach (var aliveEnt in aliveEnts)
-					Assert.IsTrue(ecs.IsEntityAlive(aliveEnt), $"iter {iter}, {i}");
-				foreach (var deadEnt in deadEnts)
-					Assert.IsFalse(ecs.IsEntityAlive(deadEnt), $"iter {iter}, {i}");
-			}
-		}
+		var ent1 = ecs.CreateEntity();
+        write.Add(ent1).Val = 3;
+        
+        Assert.AreEqual(3, read.Get(filter.GetAny()).Val);
+        Assert.IsTrue(filter.TryGetAny(out var ent2));
+        Assert.AreEqual(3, read.Get(ent2).Val);
+        
+        read.Remove(ent1);
+        Assert.Throws<Exception>(() => filter.GetAny());
 	}
 
 

@@ -139,6 +139,26 @@ public class BlahEcsFilterCore
 		if (--_goingIteratorsCount == 0 && _delayedOpsCount > 0)
 			ApplyDelayedOps();
 	}
+
+	internal bool IsEmpty => _entitiesCount == 0;
+
+	internal BlahEcsEntity GetAny()
+	{
+		if (_entitiesCount == 0)
+			throw new Exception("filter is empty");
+		return _entities[0];
+	}
+
+	internal bool TryGetAny(out BlahEcsEntity ent)
+	{
+		if (_entitiesCount > 0)
+		{
+			ent = _entities[0];
+			return true;
+		}
+		ent = default;
+		return false;
+	}
 	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
