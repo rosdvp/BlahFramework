@@ -17,9 +17,9 @@ public static class BlahOrderer
 		foreach (var system in systems)
 			foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
 				if (kind is BlahReflection.EKind.SignalConsumer or BlahReflection.EKind.SoloSignalConsumer)
-					cache.AddConsumingSystem(system, type);
+					cache.AddSystemConsumingType(system, type);
 				else if (kind is BlahReflection.EKind.SignalProducer or BlahReflection.EKind.SoloSignalProducer)
-					cache.AddProducingSystem(system, type);
+					cache.AddSystemProducingType(system, type);
 
 		foreach (var system in systems)
 		{
@@ -37,33 +37,41 @@ public static class BlahOrderer
 			if (consumingTypes != null)
 				foreach (var type in consumingTypes)
 				{
-					var producingSystems = cache.GetProducingSystems(type);
+					var producingSystems = cache.GetSystemsThatProduceType(type);
 					if (producingSystems != null)
 						cache.AddSystemsDependency(producingSystems, system);
 				}
 		}
 
 		foreach (var systemA in systems)
-			if (cache.TryGetSystemPriority(systemA, out int priorityA))
+		{
+			if (!cache.TryGetSystemPriority(systemA, out int priorityA))
+				continue;
+			foreach (var systemB in systems)
 			{
-				foreach (var systemB in systems)
-					if (systemA != systemB)
+				if (systemA == systemB)
+					continue;
+				if (cache.TryGetSystemPriority(systemB, out int priorityB))
+				{
+					if (priorityA < priorityB)
+						cache.AddSystemsDependency(systemB, systemA);
+					// dependency systemA -> systemB will be added during next foreach step
+				}
+				else
+				{
+					if (priorityA > 0) // system a before all
 					{
-						if (cache.TryGetSystemPriority(systemB, out int priorityB))
-						{
-							if (priorityA < priorityB)
-								cache.AddSystemsDependency(systemB, systemA);
-							// dependency systemB -> systemA will be added during next foreach step
-						}
-						else
-						{
-							if (priorityA > 0)
-								cache.AddSystemsDependency(systemA, systemB);
-							else
-								cache.AddSystemsDependency(systemB, systemA);
-						}
+						if (!cache.IsDependencyExists(systemB, systemA))
+							cache.AddSystemsDependency(systemA, systemB);
 					}
+					else // system a after all
+					{
+						if (!cache.IsDependencyExists(systemA, systemB))
+							cache.AddSystemsDependency(systemB, systemA);
+					}
+				}
 			}
+		}
 
 		systems = BlahOrdererSort.Sort(systems, cache.GetSystemToPrevSystemsMap());
 	}
@@ -83,7 +91,7 @@ public static class BlahOrderer
 		private Dictionary<Type, List<Type>> _systemToPrevSystems = new();
 		
 
-		public void AddConsumingSystem(Type system, Type type)
+		public void AddSystemConsumingType(Type system, Type type)
 		{
 			if (_systemToConsumingTypes.TryGetValue(system, out var consumingTypes))
 				consumingTypes.Add(type);
@@ -102,10 +110,9 @@ public static class BlahOrderer
 				? consumingTypes
 				: null;
 		}
-		
-		
+        
 
-		public void AddProducingSystem(Type system, Type type)
+		public void AddSystemProducingType(Type system, Type type)
 		{
 			if (_systemToProducingTypes.TryGetValue(system, out var producingTypes))
 				producingTypes.Add(type);
@@ -118,15 +125,14 @@ public static class BlahOrderer
 				_producingTypeToSystems[type] = new HashSet<Type> { system };
 		}
 
-		public HashSet<Type> GetProducingSystems(Type producingType)
+		public HashSet<Type> GetSystemsThatProduceType(Type producingType)
 		{
 			return _producingTypeToSystems.TryGetValue(producingType, out var producingSystems)
 				? producingSystems
 				: null;
 		}
 
-		
-
+        
 		public void AddSystemsDependency(Type prevSystem, Type nextSystem)
 		{
 			if (_systemToPrevSystems.TryGetValue(nextSystem, out var prevSystems))
@@ -143,8 +149,13 @@ public static class BlahOrderer
 				_systemToPrevSystems[nextSystem] = new List<Type>(prevSystems);
 		}
 
+		public bool IsDependencyExists(Type prevSystem, Type nextSystem)
+		{
+			return _systemToPrevSystems.TryGetValue(nextSystem, out var prevSystems) &&
+			       prevSystems.Contains(prevSystem);
+		}
 
-		
+
 		public void SetSystemPriority(Type system, int priority)
 		{
 			_systemToPriority[system] = priority;
@@ -154,8 +165,6 @@ public static class BlahOrderer
 		{
 			return _systemToPriority.TryGetValue(system, out priority);
 		}
-		
-		
 			
 		public Dictionary<Type, List<Type>> GetSystemToPrevSystemsMap()
 			=> _systemToPrevSystems;
