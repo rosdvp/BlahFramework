@@ -125,7 +125,7 @@ public class BlahEcsPool<T> :
 	{
 		if (!Has(ent))
 			return false;
-        RemoveWithoutCb(ent);
+		Remove(ent);
         return true;
 	}
 
