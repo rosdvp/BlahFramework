@@ -44,24 +44,31 @@ public class BlahEcsPool<T> :
 {
 	private readonly BlahSet<T> _set = new(1, 0);
 
+	private readonly BlahEcsEntities _entities;
+	
 	private readonly Action<Type, BlahEcsEntity> _cbAdded;
 	private readonly Action<Type, BlahEcsEntity> _cbRemoved;
 	
 	private int[] _entityIdToPtr = { -1 };
 
 
-	public BlahEcsPool(Action<Type, BlahEcsEntity> cbAdded, Action<Type, BlahEcsEntity> cbRemoved)
+	public BlahEcsPool(BlahEcsEntities             entities,
+	                   Action<Type, BlahEcsEntity> cbAdded,
+	                   Action<Type, BlahEcsEntity> cbRemoved)
 	{
+		_entities  = entities;
 		_cbAdded   = cbAdded;
 		_cbRemoved = cbRemoved;
 	}
-	
+
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	public ref T Add(BlahEcsEntity ent)
 	{
 		if (Has(ent))
 			throw new Exception($"{ent} already has {typeof(T).Name}");
+		if (!_entities.IsAlive(ent))
+			throw new Exception($"{ent} is not alive");
 		
 		BlahArrayHelper.ResizeOnDemand(ref _entityIdToPtr, ent.Id, -1);
 		
@@ -84,7 +91,9 @@ public class BlahEcsPool<T> :
 
 	public bool Has(BlahEcsEntity ent)
 	{
-		return ent.Id < _entityIdToPtr.Length && _entityIdToPtr[ent.Id] != -1;
+		return ent.Id < _entityIdToPtr.Length
+		       && _entityIdToPtr[ent.Id] != -1
+		       && _entities.IsAlive(ent);
 	}
 
 	public bool Has(BlahEcsEntity? ent)
@@ -109,7 +118,11 @@ public class BlahEcsPool<T> :
 	public void Remove(BlahEcsEntity ent)
 	{
 		if (!Has(ent))
-			throw new Exception($"{ent} does not have {typeof(T).Name}");
+		{
+			if (_entities.IsAlive(ent))
+				throw new Exception($"{ent} does not have {typeof(T).Name}");
+			throw new Exception($"{ent} is not alive");
+		}
 		RemoveWithoutCb(ent);
 		_cbRemoved.Invoke(typeof(T), ent);
 	}

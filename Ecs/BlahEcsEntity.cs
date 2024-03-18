@@ -19,16 +19,16 @@ public struct BlahEcsEntity
 		return a.Id != b.Id || a.Gen != b.Gen;
 	}
     
-	public bool Equals(BlahEcsEntity other) => Id == other.Id;
+	public bool Equals(BlahEcsEntity other) => Id == other.Id && Gen == other.Gen;
 
 	public override bool Equals(object obj) => obj is BlahEcsEntity other && Equals(other);
 
-	public override int GetHashCode() => Id.GetHashCode();
+	public override int GetHashCode() => HashCode.Combine(Gen.GetHashCode() + Id.GetHashCode());
     
 
 	public override string ToString()
 	{
-		return Id.ToString();
+		return $"{Id}-{Gen}";
 	}
 }
 }

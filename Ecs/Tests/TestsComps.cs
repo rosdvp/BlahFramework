@@ -37,6 +37,32 @@ internal class TestsComps
 		write.Add(ent);
 		read.Remove(ent);
 	}
+
+	[Test]
+	public void Test_DestroyEnt1AddCompEnt2_Ent1HasNoComp()
+	{
+		var ecs   = new BlahEcs();
+		var write = ecs.GetWrite<CompA>();
+		var read  = ecs.GetRead<CompA>();
+
+		var ent1 = ecs.CreateEntity();
+        
+		Assert.IsFalse(read.Has(ent1));
+		
+		write.Add(ent1).Val = 3;
+
+		Assert.IsTrue(read.Has(ent1));
+		
+		ecs.DestroyEntity(ent1);
+		var ent2 = ecs.CreateEntity();
+		
+		Assert.IsFalse(read.Has(ent1));
+		Assert.IsFalse(read.Has(ent2));
+
+		write.Add(ent2).Val = 4;
+		Assert.IsFalse(read.Has(ent1));
+		Assert.IsTrue(read.Has(ent2));
+	}
 	
 	
 	private struct CompA : IBlahEntryEcs

@@ -15,14 +15,15 @@ public class BlahEcs
 	private Dictionary<Type, List<BlahEcsFilterCore>> _incCompToFilters = new();
 	private Dictionary<Type, List<BlahEcsFilterCore>> _excCompToFilters = new();
 
-	private readonly object[] _compPoolConstructParams = new object[2];
+	private readonly object[] _compPoolConstructParams = new object[3];
 
 	public BlahEcs()
 	{
 		_entities = new BlahEcsEntities(16);
 
-		_compPoolConstructParams[0] = (Action<Type, BlahEcsEntity>)OnCompAdded;
-		_compPoolConstructParams[1] = (Action<Type, BlahEcsEntity>)OnCompRemoved;
+		_compPoolConstructParams[0] = _entities;
+		_compPoolConstructParams[1] = (Action<Type, BlahEcsEntity>)OnCompAdded;
+		_compPoolConstructParams[2] = (Action<Type, BlahEcsEntity>)OnCompRemoved;
 	}
 	
 	//-----------------------------------------------------------
@@ -147,7 +148,7 @@ public class BlahEcs
 		var type = typeof(T);
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
 		{
-			pool = new BlahEcsPool<T>(OnCompAdded, OnCompRemoved);
+			pool = new BlahEcsPool<T>(_entities, OnCompAdded, OnCompRemoved);
 
 			_compPools.Add(pool);
 			_compTypeToPool[type] = pool;

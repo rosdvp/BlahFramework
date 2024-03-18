@@ -3,7 +3,7 @@ using Blah.Common;
 
 namespace Blah.Ecs
 {
-internal class BlahEcsEntities
+public class BlahEcsEntities
 {
 	private readonly BlahSet<BlahEcsEntity> _set;
 	
@@ -13,7 +13,7 @@ internal class BlahEcsEntities
 	private int[] _idToAliveIdx;
 	private int[] _idToAliveGen;
 
-	public BlahEcsEntities(int baseCapacity)
+	internal BlahEcsEntities(int baseCapacity)
 	{
 		_set          = new BlahSet<BlahEcsEntity>(baseCapacity, 0);
 		_aliveIds     = new int[baseCapacity];
@@ -23,7 +23,7 @@ internal class BlahEcsEntities
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public ref BlahEcsEntity Create()
+	internal ref BlahEcsEntity Create()
 	{
 		BlahArrayHelper.ResizeOnDemand(ref _aliveIds, _aliveCount);
 
@@ -44,12 +44,12 @@ internal class BlahEcsEntities
 		return ref entity;
 	}
 
-	public bool IsAlive(BlahEcsEntity ent)
+	internal bool IsAlive(BlahEcsEntity ent)
 	{
 		return ent.Gen != 0 && ent.Id < _idToAliveGen.Length && ent.Gen == _idToAliveGen[ent.Id];
 	}
 
-	public void Destroy(BlahEcsEntity ent)
+	internal void Destroy(BlahEcsEntity ent)
 	{
 		if (!IsAlive(ent))
 			return;
@@ -64,11 +64,11 @@ internal class BlahEcsEntities
 		_set.Remove(ent.Id);
 	}
 
-	public (BlahSet<BlahEcsEntity> entities, int[] aliveIds, int aliveCount) GetAllAlive() 
+	internal (BlahSet<BlahEcsEntity> entities, int[] aliveIds, int aliveCount) GetAllAlive() 
 		=> (_set, _aliveIds, _aliveCount);
 
 
-	public void Clear()
+	internal void Clear()
 	{
 		_aliveCount = 0;
 		for (var i = 0; i < _idToAliveIdx.Length; i++)
