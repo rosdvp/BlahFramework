@@ -1,4 +1,6 @@
-﻿namespace Blah.Ecs
+﻿using System;
+
+namespace Blah.Ecs
 {
 public class BlahEcsInjectSource
 {
@@ -19,10 +21,21 @@ public class BlahEcsInjectSource
 		
 	public object GetFilter<T>() where T : BlahEcsFilter, new()
 	{
-		var type          = typeof(T);
-		var incCompsTypes = type.GenericTypeArguments;
+		Type[] incCompsTypes = null;
+		Type[] excCompsTypes = null;
+	
+		var type           = typeof(T);
+		if (typeof(IBlahEcsFilterExc).IsAssignableFrom(type))
+		{
+			excCompsTypes = type.GenericTypeArguments;
+			incCompsTypes = type.BaseType.GenericTypeArguments;
+		}
+		else
+		{
+			incCompsTypes = type.GenericTypeArguments;
+		}
 
-		var core   = _ecs.GetFilterCore(incCompsTypes, null);
+		var core   = _ecs.GetFilterCore(incCompsTypes, excCompsTypes);
 		var filter = new T();
 		filter.Set(core);
 		return filter;
