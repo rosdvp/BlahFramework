@@ -1,10 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Blah.Ecs
 {
 public class BlahEcsInjectSource
 {
 	private readonly BlahEcs _ecs;
+
+	private readonly HashSet<Type> _tempSet  = new();
+	private readonly List<Type> _tempList = new();
 	
 	public BlahEcsInjectSource(BlahEcs ecs)
 	{
@@ -23,12 +27,21 @@ public class BlahEcsInjectSource
 	{
 		Type[] incCompsTypes = null;
 		Type[] excCompsTypes = null;
-	
-		var type           = typeof(T);
+
+		var type = typeof(T);
 		if (typeof(IBlahEcsFilterExc).IsAssignableFrom(type))
 		{
-			excCompsTypes = type.GenericTypeArguments;
 			incCompsTypes = type.BaseType.GenericTypeArguments;
+			foreach (var incCompType in incCompsTypes)
+				_tempSet.Add(incCompType);
+			foreach (var excCompType in type.GenericTypeArguments)
+				if (!_tempSet.Contains(excCompType))
+					_tempList.Add(excCompType);
+			
+			excCompsTypes = _tempList.ToArray();
+			
+			_tempSet.Clear();
+			_tempList.Clear();
 		}
 		else
 		{
