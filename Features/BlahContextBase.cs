@@ -18,6 +18,8 @@ public abstract class BlahContextBase
 	private BlahSystemsContext  _systemsContext;
 	private BlahEcs        _ecs = new();
 
+	private Dictionary<Type, IBlahSystem> _typeToBackgroundSystem = new();
+	
 	private bool _isRequestedSwitchWithPoolsClear;
 
 	public void Init(IBlahServicesInitData servicesInitData, IBlahSystemsInitData systemsInitData)
@@ -39,6 +41,11 @@ public abstract class BlahContextBase
 
 		var injector = BuildInjector();
 		
+		if (BackgroundFeatures != null)
+			foreach (var bgFeature in BackgroundFeatures)
+			foreach (var bgSystemType in bgFeature.Systems)
+				_typeToBackgroundSystem[bgSystemType] = null;
+		
 		var tempSystemsTypes = new List<Type>();
 		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
 		{
@@ -47,6 +54,9 @@ public abstract class BlahContextBase
 			foreach (var feature in features)
 			foreach (var systemType in feature.Systems)
 				tempSystemsTypes.Add(systemType);
+
+			foreach (var (bgSystemType, _) in _typeToBackgroundSystem)
+				tempSystemsTypes.Add(bgSystemType);
 
 			try
 			{
@@ -60,8 +70,21 @@ public abstract class BlahContextBase
 			var group = _systemsContext.AddGroup(groupId);
 			foreach (var systemType in tempSystemsTypes)
 			{
-				var system = (IBlahSystem)Activator.CreateInstance(systemType);
-				injector.InjectInto(system);
+				IBlahSystem system = null;
+				if (_typeToBackgroundSystem.TryGetValue(systemType, out system))
+				{
+					if (system == null)
+					{
+						system = (IBlahSystem)Activator.CreateInstance(systemType);
+						injector.InjectInto(system);
+						_typeToBackgroundSystem[systemType] = system;
+					}
+				}
+				else
+				{
+					system = (IBlahSystem)Activator.CreateInstance(systemType);
+					injector.InjectInto(system);
+				}
 				group.AddSystem(system);
 			}
 		}
@@ -86,7 +109,7 @@ public abstract class BlahContextBase
 	/// will be called.
 	/// </summary>
 	/// <param name="withPoolsClear">If true, clear all pools after Pause.</param>
-	public void RequestSwitchSystemsGroup(int? groupId, bool withPoolsClear)
+	public void RequestSwitchFeaturesGroup(int? groupId, bool withPoolsClear)
 	{
 		_systemsContext.RequestSwitchGroup(groupId);
 		_isRequestedSwitchWithPoolsClear = withPoolsClear;
@@ -104,6 +127,8 @@ public abstract class BlahContextBase
 
 
 	protected abstract Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; }
+
+	protected virtual List<BlahFeatureBase> BackgroundFeatures { get; }
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
@@ -180,6 +205,11 @@ public abstract class BlahContextBase
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
+	public IReadOnlyList<IBlahSystem> GetAllSystems(int groupId)
+	{
+		return _systemsContext.GetAllSystems(groupId);
+	}
+	
 #if UNITY_EDITOR
 	public string DebugGetSystemsOrderMsg() => _systemsContext.DebugGetSystemsOrderMsg();
 #endif

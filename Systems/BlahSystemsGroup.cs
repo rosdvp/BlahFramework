@@ -16,8 +16,6 @@ public class BlahSystemsGroup
 	private bool _isInited;
 	private bool _isActive;
 
-	public IReadOnlyList<IBlahSystem> GetAllSystems() => _allSystems;
-
 	/// <summary>
 	/// Add system to the group.
 	/// </summary>
@@ -79,5 +77,9 @@ public class BlahSystemsGroup
 		for (var i = 0; i < _runSystems.Count; i++)
 			_runSystems[i].Run();
 	}
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+	internal IReadOnlyList<IBlahSystem> AllSystem => _allSystems;
 }
 }

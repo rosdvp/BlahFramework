@@ -93,9 +93,13 @@ public class BlahSystemsContext
 		_activeGroup?.RunSystems();
 	}
 
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+	public IReadOnlyList<IBlahSystem> GetAllSystems(int groupId)
+	{
+		return _groupsMap[groupId].AllSystem;
+	}
 
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
 #if UNITY_EDITOR
 	public string DebugGetSystemsOrderMsg()
 	{
@@ -103,7 +107,7 @@ public class BlahSystemsContext
 		foreach ((int groupId, var group) in _groupsMap)
 		{
 			sb.AppendLine($"--- group {groupId} ---");
-			foreach (var system in group.GetAllSystems())
+			foreach (var system in group.AllSystem)
 				sb.AppendLine(system.GetType().Name);
 			sb.AppendLine("---------------------");
 		}
