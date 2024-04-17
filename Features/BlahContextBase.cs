@@ -37,15 +37,23 @@ public abstract class BlahContextBase
 				foreach (var serviceType in feature.Services)
 					_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
 		}
+		if (BackgroundFeatures != null)
+			foreach (var bgFeature in BackgroundFeatures)
+			{
+#if UNITY_EDITOR
+				BlahFeaturesValidator.Validate(bgFeature);
+#endif
+				foreach (var bgSystemType in bgFeature.Systems)
+					_typeToBackgroundSystem[bgSystemType] = null;
+				if (bgFeature.Services != null)
+					foreach (var serviceType in bgFeature.Services)
+						_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
+			}
+
 		_servicesContext.FinalizeInit();
 
 		var injector = BuildInjector();
-		
-		if (BackgroundFeatures != null)
-			foreach (var bgFeature in BackgroundFeatures)
-			foreach (var bgSystemType in bgFeature.Systems)
-				_typeToBackgroundSystem[bgSystemType] = null;
-		
+        
 		var tempSystemsTypes = new List<Type>();
 		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
 		{
