@@ -40,18 +40,19 @@ internal static class BlahEditorFeaturesValidation
 				contextType = type;
 			else if (type.BaseType == typeof(BlahFeatureBase))
 				featuresInProject.Add(type);
-		
+
 		object context = Activator.CreateInstance(contextType);
-		var prop = typeof(BlahContextBase).GetProperty(
-			"FeaturesBySystemsGroups",
-			BindingFlags.Instance |
-			BindingFlags.Public |
-			BindingFlags.NonPublic
-		);
-		var featuresInContext = (Dictionary<int, List<BlahFeatureBase>>)prop.GetValue(context);
-		foreach ((int groupId, var features) in featuresInContext)
+		
+		var featuresGroups = (Dictionary<int, List<BlahFeatureBase>>)
+			BlahReflection.GetContextFeaturesGroups(context);
+		foreach ((int groupId, var features) in featuresGroups)
 		foreach (var feature in features)
 			featuresInProject.Remove(feature.GetType());
+
+		var bgFeatures = (List<BlahFeatureBase>)BlahReflection.GetContextBackgroundFeatures(context);
+		if (bgFeatures != null)
+			foreach (var bgFeature in bgFeatures)
+				featuresInProject.Remove(bgFeature.GetType());
 
 		var sb = new StringBuilder();
 		sb.AppendLine("--- unused features report ---");
@@ -67,7 +68,7 @@ internal static class BlahEditorFeaturesValidation
 	{
 		var featuresInProject = new HashSet<Type>();
 		var systemsInProject  = new HashSet<Type>();
-
+		
 		foreach (var type in BlahReflection.EnumerateGameTypes())
 			if (type.BaseType == typeof(BlahFeatureBase))
 				featuresInProject.Add(type);

@@ -33,7 +33,7 @@ internal class TestBackgroundFeatures
 	
 	private class MockContext : BlahContextBase
 	{
-		protected override Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; } = new()
+		protected override Dictionary<int, List<BlahFeatureBase>> FeaturesGroups { get; } = new()
 		{
 			{ 0, new List<BlahFeatureBase> { new MockFeatureA() } },
 			{ 1, new List<BlahFeatureBase> { new MockFeatureB() } }
@@ -83,8 +83,14 @@ internal class TestBackgroundFeatures
 
 	private class MockFeatureBg : BlahFeatureBase
 	{
-		public override HashSet<Type>       ConsumingFromOutside { get; }
-		public override HashSet<Type>       Producing            { get; }
+		public override HashSet<Type> ConsumingFromOutside { get; } = new()
+		{
+			typeof(MockEv1)
+		};
+		public override HashSet<Type> Producing { get; } = new()
+		{
+			typeof(MockEv3)
+		};
 		public override HashSet<Type>       Services             { get; }
 		public override IReadOnlyList<Type> Systems { get; } = new[]
 		{

@@ -27,7 +27,7 @@ public abstract class BlahContextBase
 		_servicesContext = new BlahServicesContext(servicesInitData);
 		_systemsContext  = new BlahSystemsContext(systemsInitData, OnSwitchGroupBetweenPauseAndResume);
 
-		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
+		foreach ((int groupId, var features) in FeaturesGroups)
 		foreach (var feature in features)
 		{
 #if UNITY_EDITOR
@@ -55,7 +55,7 @@ public abstract class BlahContextBase
 		var injector = BuildInjector();
         
 		var tempSystemsTypes = new List<Type>();
-		foreach ((int groupId, var features) in FeaturesBySystemsGroups)
+		foreach ((int groupId, var features) in FeaturesGroups)
 		{
 			tempSystemsTypes.Clear();
 
@@ -134,7 +134,7 @@ public abstract class BlahContextBase
 	}
 
 
-	protected abstract Dictionary<int, List<BlahFeatureBase>> FeaturesBySystemsGroups { get; }
+	protected abstract Dictionary<int, List<BlahFeatureBase>> FeaturesGroups { get; }
 
 	protected virtual List<BlahFeatureBase> BackgroundFeatures { get; }
 

@@ -18,16 +18,21 @@ internal static class BlahEditorSystemsOrdering
 
 		var context = BlahReflection.InstantiateGameTypeWithBaseType<BlahContextBase>();
 		
-		var featuresBySystemsGroups =
+		var featuresGroups =
 			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesGroups(context);
-		foreach ((int groupId, var features) in featuresBySystemsGroups)
+		var bgFeatures =
+			(List<BlahFeatureBase>)BlahReflection.GetContextBackgroundFeatures(context);
+		foreach ((int groupId, var features) in featuresGroups)
 		{
 			var systems = new List<Type>();
 			foreach (var feature in features)
 				if (feature.Systems != null)
 					foreach (var system in feature.Systems)
 						systems.Add(system);
-
+			if (bgFeatures != null)
+				foreach (var bgFeature in bgFeatures)
+				foreach (var bgSystem in bgFeature.Systems)
+					systems.Add(bgSystem);
 			try
 			{
 				BlahOrderer.Order(ref systems);
