@@ -108,7 +108,9 @@ public abstract class BlahContextBase
 		_poolsContext.OnNextFrame();
 	}
 
-	
+
+	public int? ActiveFeaturesGroupId => _systemsContext.ActiveGroupId;
+
 	/// <summary>
 	/// Sets the <paramref name="groupId"/> active, and the current one - inactive<br/>
 	/// On next Run:

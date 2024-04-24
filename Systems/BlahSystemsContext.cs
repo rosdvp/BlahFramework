@@ -64,9 +64,9 @@ public class BlahSystemsContext
 	private void PerformSwitch()
 	{
 		_activeGroup?.PauseSystems();
-		
+
 		_cbBetweenPauseAndResume?.Invoke();
-		
+
 		if (_requestedSwitchGroupId == null)
 		{
 			_activeGroup = null;
