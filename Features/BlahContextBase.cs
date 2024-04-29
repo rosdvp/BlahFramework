@@ -101,6 +101,7 @@ public abstract class BlahContextBase
 
 	public BlahPoolsContext    Pools    => _poolsContext;
 	public BlahServicesContext Services => _servicesContext;
+	public BlahEcs             Ecs      => _ecs;
 
 	public void Run()
 	{
