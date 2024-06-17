@@ -13,20 +13,15 @@ public abstract class BlahContextBase
 {
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	private BlahPoolsContext    _poolsContext = new();
-	private BlahServicesContext _servicesContext;
 	private BlahSystemsContext  _systemsContext;
-	private BlahEcs        _ecs = new();
 
-	private Dictionary<Type, IBlahSystem> _typeToBackgroundSystem = new();
-	
 	private bool _isRequestedSwitchWithPoolsClear;
 
 	public void Init(IBlahServicesInitData servicesInitData, IBlahSystemsInitData systemsInitData)
 	{
-		_servicesContext = new BlahServicesContext(servicesInitData);
+		Services = new BlahServicesContext(servicesInitData);
 		_systemsContext  = new BlahSystemsContext(systemsInitData, OnSwitchGroupBetweenPauseAndResume);
-
+		
 		foreach ((int groupId, var features) in FeaturesGroups)
 		foreach (var feature in features)
 		{
@@ -35,8 +30,10 @@ public abstract class BlahContextBase
 #endif
 			if (feature.Services != null)
 				foreach (var serviceType in feature.Services)
-					_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
+					Services.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
 		}
+		
+		var typeToBackgroundSystem = new Dictionary<Type, IBlahSystem>();
 		if (BackgroundFeatures != null)
 			foreach (var bgFeature in BackgroundFeatures)
 			{
@@ -44,13 +41,13 @@ public abstract class BlahContextBase
 				BlahFeaturesValidator.Validate(bgFeature);
 #endif
 				foreach (var bgSystemType in bgFeature.Systems)
-					_typeToBackgroundSystem[bgSystemType] = null;
+					typeToBackgroundSystem[bgSystemType] = null;
 				if (bgFeature.Services != null)
 					foreach (var serviceType in bgFeature.Services)
-						_servicesContext.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
+						Services.TryAdd(serviceType, (BlahServiceBase)Activator.CreateInstance(serviceType));
 			}
 
-		_servicesContext.FinalizeInit();
+		Services.FinalizeInit();
 
 		var injector = BuildInjector();
         
@@ -63,7 +60,7 @@ public abstract class BlahContextBase
 			foreach (var systemType in feature.Systems)
 				tempSystemsTypes.Add(systemType);
 
-			foreach (var (bgSystemType, _) in _typeToBackgroundSystem)
+			foreach (var (bgSystemType, _) in typeToBackgroundSystem)
 				tempSystemsTypes.Add(bgSystemType);
 
 			try
@@ -79,13 +76,13 @@ public abstract class BlahContextBase
 			foreach (var systemType in tempSystemsTypes)
 			{
 				IBlahSystem system = null;
-				if (_typeToBackgroundSystem.TryGetValue(systemType, out system))
+				if (typeToBackgroundSystem.TryGetValue(systemType, out system))
 				{
 					if (system == null)
 					{
 						system = (IBlahSystem)Activator.CreateInstance(systemType);
 						injector.InjectInto(system);
-						_typeToBackgroundSystem[systemType] = system;
+						typeToBackgroundSystem[systemType] = system;
 					}
 				}
 				else
@@ -99,14 +96,14 @@ public abstract class BlahContextBase
 	}
 	
 
-	public BlahPoolsContext    Pools    => _poolsContext;
-	public BlahServicesContext Services => _servicesContext;
-	public BlahEcs             Ecs      => _ecs;
+	public BlahPoolsContext    Pools { get; } = new();
+	public BlahServicesContext Services { get; private set; }
+	public BlahEcs             Ecs { get; } = new();
 
 	public void Run()
 	{
 		_systemsContext.Run();
-		_poolsContext.OnNextFrame();
+		Pools.OnNextFrame();
 	}
 
 
@@ -132,8 +129,8 @@ public abstract class BlahContextBase
 			return;
 		_isRequestedSwitchWithPoolsClear = false;
 		
-		_poolsContext.Clear();
-		_ecs.Clear();
+		Pools.Clear();
+		Ecs.Clear();
 	}
 
 
@@ -147,49 +144,49 @@ public abstract class BlahContextBase
 	private BlahInjector BuildInjector()
 	{
 		var injector = new BlahInjector();
-		injector.AddSource(_servicesContext,
+		injector.AddSource(Services,
 		                   typeof(BlahServiceBase),
 		                   nameof(BlahServicesContext.Get),
 		                   BlahInjector.EMethodType.GenericAcceptFieldType
 		);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahSignalConsumer<>),
 		                   nameof(BlahPoolsContext.GetSignalConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahSignalProducer<>),
 		                   nameof(BlahPoolsContext.GetSignalProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahNfSignalConsumer<>),
 		                   nameof(BlahPoolsContext.GetNfSignalConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahNfSignalProducer<>),
 		                   nameof(BlahPoolsContext.GetNfSignalProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahSoloSignalConsumer<>),
 		                   nameof(BlahPoolsContext.GetSoloSignalConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahSoloSignalProducer<>),
 		                   nameof(BlahPoolsContext.GetSoloSignalProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahDataConsumer<>),
 		                   nameof(BlahPoolsContext.GetDataConsumer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
-		injector.AddSource(_poolsContext,
+		injector.AddSource(Pools,
 		                   typeof(IBlahDataProducer<>),
 		                   nameof(BlahPoolsContext.GetDataProducer),
 		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
 		);
 
-		var ecsSource = new BlahEcsInjectSource(_ecs);
+		var ecsSource = new BlahEcsInjectSource(Ecs);
 		injector.AddSource(ecsSource,
 		                   typeof(BlahEcs),
 		                   nameof(BlahEcsInjectSource.GetEcs),

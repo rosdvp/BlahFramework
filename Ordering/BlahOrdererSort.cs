@@ -7,10 +7,10 @@ namespace Blah.Ordering
 internal static class BlahOrdererSort
 {
 	public static List<Type> Sort(
-		List<Type>                            items,
-		IReadOnlyDictionary<Type, List<Type>> itemToPrevItems)
+		List<Type>                               items,
+		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems)
 	{
-		var sorted = TopolSort(items, itemToPrevItems);
+		var sorted = TpSort(items, itemToPrevItems);
 		if (sorted == null)
 		{
 			ThrowOnSelfCyclic(itemToPrevItems);
@@ -21,56 +21,53 @@ internal static class BlahOrdererSort
 		return sorted;
 	}
 
-	private static List<Type> TopolSort(
-		List<Type>                            items,
-		IReadOnlyDictionary<Type, List<Type>> itemToPrevItems)
+	private static List<Type> TpSort(
+		List<Type>                               items,
+		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems)
 	{
 		var sorted            = new List<Type>();
 		var itemToVisitStatus = new Dictionary<Type, bool>();
 
 		foreach (var item in items)
 		{
-			if (!RecTopolVisit(item, itemToPrevItems, sorted, itemToVisitStatus))
+			if (!TpVisitRecursive(item, itemToPrevItems, sorted, itemToVisitStatus))
 				return null;
 		}
 
 		return sorted;
 	}
 
-	private static bool RecTopolVisit(
-		Type                                  item,
-		IReadOnlyDictionary<Type, List<Type>> itemToPrevItems,
-		List<Type>                            sorted,
-		Dictionary<Type, bool>                itemToVisitState)
+	private static bool TpVisitRecursive(
+		Type                                     item,
+		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems,
+		List<Type>                               sorted,
+		Dictionary<Type, bool>                   itemToVisitState)
 	{
 		bool isVisited = itemToVisitState.TryGetValue(item, out bool isVisiting);
 		if (isVisited)
 		{
 			if (isVisiting)
 				return false;
+			return true;
 		}
-		else
+		
+		itemToVisitState[item] = true;
+
+		if (itemToPrevItems.TryGetValue(item, out var prevItems) &&
+		    prevItems != null)
 		{
-			itemToVisitState[item] = true;
-
-			if (itemToPrevItems.TryGetValue(item, out var prevItems) &&
-			    prevItems != null)
-			{
-				foreach (var prevItem in prevItems)
-				{
-					if (!RecTopolVisit(prevItem, itemToPrevItems, sorted, itemToVisitState))
-						return false;
-				}
-			}
-
-			itemToVisitState[item] = false;
-			sorted.Add(item);
+			foreach (var prevItem in prevItems)
+				if (!TpVisitRecursive(prevItem, itemToPrevItems, sorted, itemToVisitState))
+					return false;
 		}
+
+		itemToVisitState[item] = false;
+		sorted.Add(item);
 		return true;
 	}
 
 
-	private static void ThrowOnSelfCyclic(IReadOnlyDictionary<Type, List<Type>> itemToPrevItems)
+	private static void ThrowOnSelfCyclic(IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems)
 	{
 		foreach (var (item, prevItems) in itemToPrevItems)
 			if (prevItems.Contains(item))
@@ -82,10 +79,10 @@ internal static class BlahOrdererSort
 					null
 				);
 	}
-	
+
 	private static void ThrowOnCyclic(
-		List<Type>                            items,
-		IReadOnlyDictionary<Type, List<Type>> itemToPrevItems)
+		List<Type>                               items,
+		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems)
 	{
 		var visitedItems = new HashSet<Type>();
 		foreach (var item in items)
@@ -102,11 +99,11 @@ internal static class BlahOrdererSort
 				);
 		}
 	}
-	
+
 	private static List<Type> RecFindCycle(
-		Type                                  currItem,
-		HashSet<Type>                         visitedItems,
-		IReadOnlyDictionary<Type, List<Type>> itemToPrevItems)
+		Type                                     currItem,
+		HashSet<Type>                            visitedItems,
+		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems)
 	{
 		if (visitedItems.Contains(currItem))
 			return new List<Type> { currItem };
@@ -128,8 +125,8 @@ internal static class BlahOrdererSort
 	}
 
 	private static void ThrowOnFinalCheck(
-		List<Type>                            items,
-		IReadOnlyDictionary<Type, List<Type>> itemToPrevItems)
+		List<Type>                               items,
+		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems)
 	{
 		for (var i = 0; i < items.Count; i++)
 		{
@@ -178,8 +175,8 @@ public class BlahOrdererSortingException : Exception
 	{
 		SelfCyclicItem = selfCyclicItem;
 		Cycle          = cycle;
-		IssuePrevItem     = issuePrevItem;
-		IssueNextItem     = issueNextItem;
+		IssuePrevItem  = issuePrevItem;
+		IssueNextItem  = issueNextItem;
 		IssueOrder     = issueOrder;
 	}
 

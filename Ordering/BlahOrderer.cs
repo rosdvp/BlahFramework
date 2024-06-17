@@ -127,8 +127,8 @@ public static class BlahOrderer
 		// >0 - before all, <0 - after all 
 		private Dictionary<Type, int> _systemToPriority = new(); 
 		
-		private Dictionary<Type, List<Type>> _systemToPrevSystems = new();
-		private Dictionary<Type, List<Type>> _systemToNextSystems = new();
+		private Dictionary<Type, HashSet<Type>> _systemToPrevSystems = new();
+		private Dictionary<Type, HashSet<Type>> _systemToNextSystems = new();
 		
 
 		public void AddSystemConsumingType(Type system, Type type)
@@ -174,26 +174,26 @@ public static class BlahOrderer
 			if (_systemToPrevSystems.TryGetValue(nextSystem, out var prevSystems))
 				prevSystems.Add(prevSystem);
 			else
-				_systemToPrevSystems[nextSystem] = new List<Type> { prevSystem };
+				_systemToPrevSystems[nextSystem] = new HashSet<Type> { prevSystem };
 
 			if (_systemToNextSystems.TryGetValue(prevSystem, out var nextSystems))
 				nextSystems.Add(nextSystem);
 			else
-				_systemToNextSystems[prevSystem] = new List<Type> { nextSystem };
+				_systemToNextSystems[prevSystem] = new HashSet<Type> { nextSystem };
 		}
 
 		public void AddSystemsDependency(IReadOnlyCollection<Type> prevSystems, Type nextSystem)
 		{
 			if (_systemToPrevSystems.TryGetValue(nextSystem, out var cachedPrevSystems))
-				cachedPrevSystems.AddRange(prevSystems);
+				cachedPrevSystems.UnionWith(prevSystems);
 			else
-				_systemToPrevSystems[nextSystem] = new List<Type>(prevSystems);
+				_systemToPrevSystems[nextSystem] = new HashSet<Type>(prevSystems);
 
 			foreach (var prevSystem in prevSystems)
 				if (_systemToNextSystems.TryGetValue(prevSystem, out var nextSystems))
 					nextSystems.Add(nextSystem);
 				else
-					_systemToNextSystems[prevSystem] = new List<Type> { nextSystem };
+					_systemToNextSystems[prevSystem] = new HashSet<Type> { nextSystem };
 		}
 
 		public bool IsDependencyExists(Type prevSystem, Type nextSystem)
@@ -237,7 +237,7 @@ public static class BlahOrderer
 			}
 		}
 		
-		public Dictionary<Type, List<Type>> GetSystemToPrevSystemsMap()
+		public Dictionary<Type, HashSet<Type>> GetSystemToPrevSystemsMap()
 			=> _systemToPrevSystems;
 	}
 }
