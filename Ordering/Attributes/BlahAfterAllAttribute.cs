@@ -8,6 +8,9 @@ public class BlahAfterAllAttribute : Attribute
 
 	public BlahAfterAllAttribute(int priority = 0)
 	{
+		if (priority < 0)
+			throw new Exception("priority must be >= 0");
+		
 		Priority = priority;
 	}
 }

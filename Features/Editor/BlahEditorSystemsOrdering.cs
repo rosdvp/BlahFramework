@@ -35,7 +35,7 @@ internal static class BlahEditorSystemsOrdering
 					systems.Add(bgSystem);
 			try
 			{
-				BlahOrderer.Order(ref systems);
+				BlahOrderer.Order(ref systems, true);
 			}
 			catch (BlahOrdererSortingException e)
 			{
