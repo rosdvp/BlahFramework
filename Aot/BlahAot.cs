@@ -8,11 +8,11 @@ using UnityEditor;
 
 namespace Blah.Aot
 {
-public static class BlahAotPoolsAndServices
+public static class BlahAot
 {
 	private const string PATH = "Assets/Blah/BlahAotGenerated.cs";
 
-	[MenuItem("Blah/Aot/Generate Pools And Services")]
+	[MenuItem("Blah/Aot/Generate")]
 	public static void Generate()
 	{
 		var sb = new StringBuilder();
@@ -32,8 +32,8 @@ public static class BlahAotPoolsAndServices
 			}
 			if (Array.IndexOf(interfaces, typeof(IBlahEntryNextFrameSignal)) != -1)
 			{
-				sb.AppendLine($"pools.GetSignalNextFrameConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetSignalNextFrameProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetNfSignalConsumer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetNfSignalProducer<{type.FullName}>();");
 			}
 			if (type.BaseType == typeof(BlahServiceBase))
 			{
