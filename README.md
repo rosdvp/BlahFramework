@@ -467,7 +467,7 @@ public class UnitSystem : IBlahInitSystem, IBlahRunSystem
 ```
 
 ## Systems Execution Order
-The order in wich Systems' methods are invoked is maintained by the framework. When BlahContext.Init is invoked, the framework uses topological sorting algorithm that takes into account:
+The order in which Systems' methods are invoked is maintained by the framework. When BlahContext.Init is invoked, the framework uses topological sorting algorithm that takes into account:
 1. System's Signals Consumers/Producers.
 2. BlahAfter/BlahAfterAll/BlahBefore/BlahBeforeAll attributes.
 
