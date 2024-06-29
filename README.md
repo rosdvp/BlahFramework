@@ -480,17 +480,17 @@ Just keep in mind that the framework guarantees that all producers are invoked b
 > [!CAUTION]
 > If there is a cyclic dependency, the framework will throw an exception with detailed info about wrong dependencies.
 
-In the following example the Systems order is:
-1. SystemA: it produces Ev1 which is consumed by SystemB.
-2. SystemB: it has BlahBeforeAll attribute with highest priority among others.
-3. SystemC: it has BlahBeforeAll attribute.
-4. _SystemX might be there since producers of Ev1 and Ev2 already past._
-5. SystemD: it consumes Ev2 produced by SystemB.
-4. _SystemX might be there since producers of Ev1 and Ev2 already past._
-7. SystemE: it has BlahAfterAll attribute.
-8. SystemF: it has BlahAfter attribute with parameter pointing to SystemE.
-
 ```c#
+// In the following example the Systems order is:
+// 1. SystemA: it produces Ev1 which is consumed by SystemB.
+// 2. SystemB: it has BlahBeforeAll attribute with highest priority among others.
+// 3. SystemC: it has BlahBeforeAll attribute.
+// 4. _SystemX might be there since producers of Ev1 and Ev2 already past._
+// 5. SystemD: it consumes Ev2 produced by SystemB.
+// 4. _SystemX might be there since producers of Ev1 and Ev2 already past._
+// 7. SystemE: it has BlahAfterAll attribute.
+// 8. SystemF: it has BlahAfter attribute with parameter pointing to SystemE.
+
 public class SystemA 
 {
     private IBlahSignalProducer<Ev1> _ev1;
