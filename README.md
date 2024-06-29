@@ -5,7 +5,7 @@ _TODO: list key features._
 1) Install package via Unity Package Manager.
 2) _TODO: provide demo files that can be copied into empty project._
 
-# API
+# Usage
 ## Architecture
 ### Systems
 A System is a C# pure class that implements one or more interfaces:
@@ -591,9 +591,14 @@ public class StuffsSystem : IBlahRunSystem
 }
 ```
 
+## Injection
+
+_TODO: describe custom injection._
+
 ## Unity Interoption
 
 _TODO: describe top menu "Blah" in Unity._
+
 _TODO: describe AOT._
 
 ## Best Practices
