@@ -7,6 +7,7 @@ _TODO: list key features._
 
 # API
 ## Architecture
+### Systems
 A System is a C# pure class that implements one or more interfaces:
 ```c#
 public class TestSystem : 
@@ -43,7 +44,7 @@ public class TestSystem :
 ### Features
 Systems belong to Features. A System becomes active/inactive when a Feature becomes active/inactive.
 
-> [!INFO]
+> [!NOTE]
 > Each Feature contains three code-gen properties that theoretically should make it easier for you to understand how each Feature interacts with others.
 
 ```c#
@@ -166,7 +167,7 @@ public class GameStartup : MonoBehaviour
 Signals are pooled data-structures which life time is one Run. Usually, Signals should be used to communicate from one System (or MonoBehaviour) to another System(s) that something must be done (command) or something happened (event) within one Run.
 
 > [!IMPORTANT]
-> Signals are created during Run and destroyed when all Systems completed Run.
+> Signals are destroyed when all Systems completed Run.
 
 > [!WARNING]
 > Signals define [Systems Execution Order](#systems-execution-order), so any System producing Signal always Runs before any System consuming Signal.
@@ -241,7 +242,7 @@ Since Signals live during one Run, the cyclic dependency might take place: Syste
 The one walkaround might be sending Signals for next Run.
 
 > [!IMPORTANT]
-> NF Signals are created during Run but become consumable only at the beginning of the next Run and are destroyed on the next Run end.
+> NF Signals become consumable only at the beginning of the next Run and are destroyed once all Systems completed the Run.
 
 > [!WARNING]
 > NF Signals do **NOT** define [Systems Execution Order](#systems-execution-order).
@@ -476,6 +477,9 @@ The Features does not define the order of Systems, so it is not guaranteed that 
 > Most time you should not worry about Systems order. 
 Just keep in mind that the framework guarantees that all producers are invoked before consumers.
 
+> [!CAUTION]
+> If there is a cyclic dependency, the framework will throw an exception with detailed info about wrong dependencies.
+
 In the following example the Systems order is:
 1. SystemA: it produces Ev1 which is consumed by SystemB.
 2. SystemB: it has BlahBeforeAll attribute with highest priority among others.
@@ -520,7 +524,6 @@ public class SystemX
     private IBlahSignalConsumer<Ev2> _ev2;
 }
 ```
-If there is a cyclic dependency, the framework will throw an exception with detailed info about wrong dependencies.
 
 ## Services
 Services are pure C# classes-singletons that live during application lifetime.
