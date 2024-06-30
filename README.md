@@ -617,9 +617,44 @@ _TODO: describe custom injection._
 
 ## Unity Interoption
 
-_TODO: describe top menu "Blah" in Unity._
+This repository provides a set of Unity Editor tools under the "Blah" menu tab. These tools are designed to simplify and accelerate the process of maintaining code within a project.
 
-_TODO: describe AOT._
+### AOT Generation
+
+Generates a custom AOT code file (BlahAotGenerated.cs) in project's Assets/Blah directory. The generated code facilitates the registration of types implementing various IBlahEntrySignal, IBlahEntryData, IBlahEntryNextFrameSignal, and BlahServiceBase interfaces into corresponding pools and services contexts.
+
+### Features
+
+#### Smart Patch 
+
+Checks and patches feature files only if there are differences in the feature dependencies (services, consumers, producers) compared to the current state.
+It determines if a patch is necessary to avoid modifications.
+
+#### Force Patch
+
+Forces the patching of feature files regardless of their current state.
+It ensures that all feature files are patched with the latest dependencies even if they are already up to date.
+
+#### Report Issues
+
+Generates a report listing issues found in features.
+
+#### Report Unused Features
+
+Identifies and logs any existing but not utilized feature in the project.
+
+#### Report Unused Systems
+
+Identifies system types (IBlahInitSystem, IBlahRunSystem, etc.) implemented within the project but not associated with any feature implementations.
+
+#### Report Duplicating Systems
+
+Detects and logs system types that are duplicated across multiple features.
+
+#### Report Systems Ordering Issues
+
+Generates a report highlighting potential ordering issues among systems used in features and background features. 
+The tool identifies discrepancies in system ordering and logs any exceptions encountered during the ordering process.
 
 ## Best Practices
 
