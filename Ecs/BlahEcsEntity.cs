@@ -21,12 +21,12 @@ public struct BlahEcsEntity
 
 	public static bool operator <(BlahEcsEntity a, BlahEcsEntity b)
 	{
-		return a.Gen < b.Gen || a.Id < b.Id;
+		return a.Gen < b.Gen || (a.Gen == b.Gen && a.Id < b.Id);
 	}
 	
 	public static bool operator >(BlahEcsEntity a, BlahEcsEntity b)
 	{
-		return a.Gen > b.Gen || a.Id > b.Id;
+		return a.Gen > b.Gen || (a.Gen == b.Gen && a.Id > b.Id);
 	}
     
 	public bool Equals(BlahEcsEntity other) => Id == other.Id && Gen == other.Gen;
