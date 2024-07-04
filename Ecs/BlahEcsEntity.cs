@@ -18,6 +18,16 @@ public struct BlahEcsEntity
 	{
 		return a.Id != b.Id || a.Gen != b.Gen;
 	}
+
+	public static bool operator <(BlahEcsEntity a, BlahEcsEntity b)
+	{
+		return a.Gen < b.Gen || a.Id < b.Id;
+	}
+	
+	public static bool operator >(BlahEcsEntity a, BlahEcsEntity b)
+	{
+		return a.Gen > b.Gen || a.Id > b.Id;
+	}
     
 	public bool Equals(BlahEcsEntity other) => Id == other.Id && Gen == other.Gen;
 
