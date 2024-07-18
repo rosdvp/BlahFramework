@@ -2,6 +2,7 @@
 
 namespace Blah.Ordering.Attributes
 {
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class BlahAfterAllAttribute : Attribute
 {
 	public readonly int Priority;
