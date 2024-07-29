@@ -38,12 +38,34 @@ public class BlahEcsFilterCore
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
+	internal bool IsEmpty => _entitiesCount == 0;
+
 	private bool Has(BlahEcsEntity ent)
 	{
 		return ent.Id < _entityIdToIdx.Length && _entityIdToIdx[ent.Id] != -1;
 	}
+	
+	internal BlahEcsEntity GetAny()
+	{
+		if (_entitiesCount == 0)
+			throw new Exception("filter is empty");
+		return _entities[0];
+	}
 
-
+	internal bool TryGetAny(out BlahEcsEntity ent)
+	{
+		if (_entitiesCount > 0)
+		{
+			ent = _entities[0];
+			return true;
+		}
+		ent = default;
+		return false;
+	}
+	
+	
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
 	internal void OnIncCompAddedOrExcRemoved(BlahEcsEntity ent)
 	{
 		if (_goingIteratorsCount > 0)
@@ -72,16 +94,16 @@ public class BlahEcsFilterCore
 		
         TryRemoveEntity(ent);
 	}
-    
 
 	private bool IsSuitable(BlahEcsEntity ent)
 	{
 		foreach (var pool in _incCompsPools)
 			if (!pool.Has(ent))
 				return false;
-		foreach (var pool in _excCompsPools)
-			if (pool.Has(ent))
-				return false;
+		if (_excCompsPools != null)
+			foreach (var pool in _excCompsPools)
+				if (pool.Has(ent))
+					return false;
 		return true;
 	}
 
@@ -117,6 +139,8 @@ public class BlahEcsFilterCore
 	}
 
 
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
 	internal void Clear()
 	{
 		_entitiesCount   = 0;
@@ -126,8 +150,6 @@ public class BlahEcsFilterCore
 			_entityIdToIdx[i] = -1;
 	}
 	
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
 	internal (BlahEcsEntity[] entities, int entitiesCount) BeginIteration()
 	{
 		_goingIteratorsCount += 1;
@@ -139,29 +161,7 @@ public class BlahEcsFilterCore
 		if (--_goingIteratorsCount == 0 && _delayedOpsCount > 0)
 			ApplyDelayedOps();
 	}
-
-	internal bool IsEmpty => _entitiesCount == 0;
-
-	internal BlahEcsEntity GetAny()
-	{
-		if (_entitiesCount == 0)
-			throw new Exception("filter is empty");
-		return _entities[0];
-	}
-
-	internal bool TryGetAny(out BlahEcsEntity ent)
-	{
-		if (_entitiesCount > 0)
-		{
-			ent = _entities[0];
-			return true;
-		}
-		ent = default;
-		return false;
-	}
 	
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
 	private void ApplyDelayedOps()
 	{
 		for (var i = 0; i < _delayedOpsCount; i++)

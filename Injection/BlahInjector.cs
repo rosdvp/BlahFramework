@@ -10,8 +10,7 @@ public class BlahInjector
 	private readonly Dictionary<Type, Source> _injectableFieldTypeToSource = new();
 	private readonly Dictionary<Type, object> _fieldTypeToObject           = new();
 
-	private readonly object[] _tempParams1 = new object[1];
-
+	
 	public void AddSource(
 		object  obj,
 		Type    fieldBaseType,
@@ -73,17 +72,13 @@ public class BlahInjector
 		if (_injectableFieldTypeToSource.TryGetValue(fieldType, out source))
 			return source;
 
+		if (fieldType.BaseType != null)
+			if (_injectableFieldTypeToSource.TryGetValue(fieldType.BaseType, out source))
+				return source;
+		
 		if (fieldType.IsGenericType &&
 		    _injectableFieldTypeToSource.TryGetValue(fieldType.GetGenericTypeDefinition(), out source))
 			return source;
-
-		var baseType = fieldType.BaseType;
-		while (baseType != null)
-		{
-			if (_injectableFieldTypeToSource.TryGetValue(baseType, out source))
-				return source;
-			baseType = baseType.BaseType;
-		}
 		
 		return null;
 	}
@@ -103,12 +98,6 @@ public class BlahInjector
 		{
 			method = method.MakeGenericMethod(field.FieldType.GenericTypeArguments[0]);
 		}
-
-		if (source.MethodType == EMethodType.SimpleAcceptFieldInfo)
-		{
-			_tempParams1[0] = field;
-			return method.Invoke(source.Obj, _tempParams1);
-		}
 		
 		return method.Invoke(source.Obj, null);
 	}
@@ -122,10 +111,12 @@ public class BlahInjector
 
 	public enum EMethodType
 	{
+		// public TestClass GetTest() => new Test();
 		Simple,
+		// public T Get<T>() => new T();
 		GenericAcceptFieldType,
+		// public TestClass<T>() => new TestClass<T>();
 		GenericAcceptGenericArgument,
-		SimpleAcceptFieldInfo,
 	}
 }
 }
