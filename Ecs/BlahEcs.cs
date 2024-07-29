@@ -57,13 +57,13 @@ public class BlahEcs
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public IBlahEcsCompRead<T> GetRead<T>() where T : IBlahEntryEcs
-		=> GetPool<T>();
+	public BlahEcsGet<T> GetCompGetter<T>() where T : IBlahEntryEcs 
+		=> new(GetPool<T>());
 
-	public IBlahEcsCompWrite<T> GetWrite<T>() where T : IBlahEntryEcs
-		=> GetPool<T>();
+	public BlahEcsFull<T> GetCompFull<T>() where T : IBlahEntryEcs
+		=> new(GetPool<T>());
 	
-	private BlahEcsPool<T> GetPool<T>() where T : IBlahEntryEcs
+	internal BlahEcsPool<T> GetPool<T>() where T : IBlahEntryEcs
 	{
 		var type = typeof(T);
 		if (!_compTypeToPool.TryGetValue(type, out var pool))
@@ -92,58 +92,61 @@ public class BlahEcs
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public BlahEcsFilterCore GetFilterCore(List<Type> incCompTypes, List<Type> excCompTypes)
+	public BlahEcsFilterCore GetFilterCore(List<Type> maskInc, List<Type> maskExc)
 	{
-		incCompTypes.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
-		excCompTypes.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
-		int hash = incCompTypes[0].GetHashCode();
-		for (var i = 1; i < incCompTypes.Count; i++)
-			hash = HashCode.Combine(hash, incCompTypes[i]);
+		// Calculate mask
+		maskInc.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
+		maskExc.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
+		int hash = maskInc[0].GetHashCode();
+		for (var i = 1; i < maskInc.Count; i++)
+			hash = HashCode.Combine(hash, maskInc[i]);
 		hash *= 31;
-		for (var i = 0; i < excCompTypes.Count; i++)
-			hash = HashCode.Combine(hash, excCompTypes[i]);
+		for (var i = 0; i < maskExc.Count; i++)
+			hash = HashCode.Combine(hash, maskExc[i]);
 
-		if (!_hashToFilter.TryGetValue(hash, out var filter))
+		// Try return existing filter with the same mask
+		if (_hashToFilter.TryGetValue(hash, out var filter))
+			return filter;
+
+		// Create a new filter and pass pools to it
+		var incPools = new IBlahEcsCompInternal[maskInc.Count];
+		for (var i = 0; i < incPools.Length; i++)
+			incPools[i] = GetPool(maskInc[i]);
+
+		IBlahEcsCompInternal[] excPools = null;
+		if (maskExc.Count > 0)
 		{
-			var incCompsPools = new IBlahEcsCompInternal[incCompTypes.Count];
-			for (var i = 0; i < incCompsPools.Length; i++)
-				incCompsPools[i] = GetPool(incCompTypes[i]);
+			excPools = new IBlahEcsCompInternal[maskExc.Count];
+			for (var i = 0; i < excPools.Length; i++)
+				excPools[i] = GetPool(maskExc[i]);
+		}
 
-			IBlahEcsCompInternal[] excCompsPools = null;
-			if (excCompTypes.Count > 0)
+		filter = new BlahEcsFilterCore(_entities, incPools, excPools);
+		_filters.Add(filter);
+		_hashToFilter[hash] = filter;
+
+		// Register filter for comps updates
+		foreach (var type in maskInc)
+		{
+			if (!_incCompToFilters.TryGetValue(type, out var filters))
 			{
-				excCompsPools = new IBlahEcsCompInternal[excCompTypes.Count];
-				for (var i = 0; i < excCompsPools.Length; i++)
-					excCompsPools[i] = GetPool(excCompTypes[i]);
+				filters                 = new List<BlahEcsFilterCore>();
+				_incCompToFilters[type] = filters;
 			}
-
-			filter = new BlahEcsFilterCore(_entities, incCompsPools, excCompsPools);
-			_filters.Add(filter);
-			_hashToFilter[hash] = filter;
-
-			foreach (var type in incCompTypes)
+			filters.Add(filter);
+		}
+		foreach (var type in maskExc)
+		{
+			if (!_excCompToFilters.TryGetValue(type, out var filters))
 			{
-				if (!_incCompToFilters.TryGetValue(type, out var filters))
-				{
-					filters                 = new List<BlahEcsFilterCore>();
-					_incCompToFilters[type] = filters;
-				}
-				filters.Add(filter);
+				filters                 = new List<BlahEcsFilterCore>();
+				_excCompToFilters[type] = filters;
 			}
-			if (excCompTypes != null)
-				foreach (var type in excCompTypes)
-				{
-					if (!_excCompToFilters.TryGetValue(type, out var filters))
-					{
-						filters                 = new List<BlahEcsFilterCore>();
-						_excCompToFilters[type] = filters;
-					}
-					filters.Add(filter);
-				}
+			filters.Add(filter);
 		}
 		return filter;
 	}
-	
+
 	private void OnCompAdded(Type type, BlahEcsEntity ent)
 	{
 		if (_incCompToFilters.TryGetValue(type, out var filters))

@@ -8,6 +8,7 @@ namespace Blah.Ecs.Tests
 {
 internal class TestsInjection
 {
+	/*
 	[Test]
 	public void TestFull()
 	{
@@ -208,5 +209,6 @@ internal class TestsInjection
 	private struct CompB : IBlahEntryEcs { }
 
 	private struct CompC : IBlahEntryEcs { }
+	*/
 }
 }

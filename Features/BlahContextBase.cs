@@ -193,16 +193,6 @@ public abstract class BlahContextBase
 		                   BlahInjector.EMethodType.Simple
 		);
 		injector.AddSource(ecsSource,
-		                   typeof(IBlahEcsCompWrite<>),
-		                   nameof(BlahEcsInjectSource.GetWrite),
-		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
-		);
-		injector.AddSource(ecsSource,
-		                   typeof(IBlahEcsCompRead<>),
-		                   nameof(BlahEcsInjectSource.GetRead),
-		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
-		);
-		injector.AddSource(ecsSource,
 		                   typeof(BlahEcsFilter),
 		                   nameof(BlahEcsInjectSource.GetFilter),
 		                   BlahInjector.EMethodType.GenericAcceptFieldType

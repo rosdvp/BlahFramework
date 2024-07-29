@@ -10,39 +10,45 @@ internal interface IBlahEcsCompInternal
 	void Clear();
 }
 
-public interface IBlahEcsCompRead<T> where T: IBlahEntryEcs
+public readonly struct BlahEcsGet<T> where T : IBlahEntryEcs
 {
-	public bool Has(BlahEcsEntity        ent);
-	public bool Has(BlahEcsEntity?       ent);
-	public ref T Get(BlahEcsEntity       ent);
-	public ref T Get(BlahEcsEntity?      ent);
-	public void Remove(BlahEcsEntity     ent);
-	public void Remove(BlahEcsEntity?    ent);
-	public bool TryRemove(BlahEcsEntity  ent);
-	public bool TryRemove(BlahEcsEntity? ent);
+	private readonly BlahEcsPool<T> _pool;
+
+	public BlahEcsGet(BlahEcsPool<T> pool)
+	{
+		_pool = pool;
+	}
+
+	public bool Has(BlahEcsEntity       ent) => _pool.Has(ent);
+	public ref T Get(BlahEcsEntity      ent) => ref _pool.Get(ent);
+	public void Remove(BlahEcsEntity    ent) => _pool.Remove(ent);
+	public bool TryRemove(BlahEcsEntity ent) => _pool.TryRemove(ent);
+
+
+	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Include  inc) => new(inc.Get<T>());
+	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Optional opt) => new(opt.Get<T>());
+	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Exclude  exc) => new(exc.Get<T>());
 }
 
-public interface IBlahEcsCompWrite<T> where T: IBlahEntryEcs
+public readonly struct BlahEcsFull<T> where T : IBlahEntryEcs
 {
-	public ref T Add(BlahEcsEntity    ent);
-	public ref T Add(BlahEcsEntity?   ent);
-    
-	public bool Has(BlahEcsEntity  ent);
-	public bool Has(BlahEcsEntity? ent);
-	public ref T Get(BlahEcsEntity  ent);
-	public ref T Get(BlahEcsEntity? ent);
-	
-	public void Remove(BlahEcsEntity     ent);
-	public void Remove(BlahEcsEntity?    ent);
-	public bool TryRemove(BlahEcsEntity  ent);
-	public bool TryRemove(BlahEcsEntity? ent);
+	private readonly BlahEcsPool<T> _pool;
+
+	public BlahEcsFull(BlahEcsPool<T> pool)
+	{
+		_pool = pool;
+	}
+
+	public ref T Add(BlahEcsEntity ent) => ref _pool.Add(ent);
+
+	public bool Has(BlahEcsEntity  ent) => _pool.Has(ent);
+	public ref T Get(BlahEcsEntity ent) => ref _pool.Get(ent);
+
+	public void Remove(BlahEcsEntity    ent) => _pool.Remove(ent);
+	public bool TryRemove(BlahEcsEntity ent) => _pool.TryRemove(ent);
 }
 
-public class BlahEcsPool<T> : 
-	IBlahEcsCompInternal,
-	IBlahEcsCompRead<T>,
-	IBlahEcsCompWrite<T>
-	where T : IBlahEntryEcs
+public class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
 {
 	private readonly BlahSet<T> _set = new(1, 0);
 
@@ -61,6 +67,13 @@ public class BlahEcsPool<T> :
 		_entities  = entities;
 		_cbAdded   = cbAdded;
 		_cbRemoved = cbRemoved;
+	}
+	
+	public void Clear()
+	{
+		_set.Clear();
+		for (var i = 0; i < _entityIdToPtr.Length; i++)
+			_entityIdToPtr[i] = -1;
 	}
 
 	//-----------------------------------------------------------
@@ -153,13 +166,6 @@ public class BlahEcsPool<T> :
 	{
 		_set.Remove(_entityIdToPtr[ent.Id]);
 		_entityIdToPtr[ent.Id] = -1;
-	}
-
-	public void Clear()
-	{
-		_set.Clear();
-		for (var i = 0; i < _entityIdToPtr.Length; i++)
-			_entityIdToPtr[i] = -1;
 	}
 }
 }

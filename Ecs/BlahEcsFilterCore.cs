@@ -19,8 +19,7 @@ public class BlahEcsFilterCore
 
 	private int _goingIteratorsCount;
 
-
-
+	
 	internal BlahEcsFilterCore(BlahEcsEntities        entities, IBlahEcsCompInternal[] incCompsPools,
 	                           IBlahEcsCompInternal[] excCompsPools)
 	{
@@ -35,7 +34,16 @@ public class BlahEcsFilterCore
 				AddEntity(entity);
 		}
 	}
+	
+	internal void Clear()
+	{
+		_entitiesCount   = 0;
+		_delayedOpsCount = 0;
 
+		for (var i = 0; i < _entityIdToIdx.Length; i++)
+			_entityIdToIdx[i] = -1;
+	}
+	
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	internal bool IsEmpty => _entitiesCount == 0;
@@ -141,25 +149,41 @@ public class BlahEcsFilterCore
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	internal void Clear()
-	{
-		_entitiesCount   = 0;
-		_delayedOpsCount = 0;
-
-		for (var i = 0; i < _entityIdToIdx.Length; i++)
-			_entityIdToIdx[i] = -1;
-	}
-	
-	internal (BlahEcsEntity[] entities, int entitiesCount) BeginIteration()
+	private (BlahEcsEntity[] entities, int entitiesCount) BeginIteration()
 	{
 		_goingIteratorsCount += 1;
 		return (_entities, _entitiesCount);
 	}
 
-	internal void EndIteration()
+	private void EndIteration()
 	{
 		if (--_goingIteratorsCount == 0 && _delayedOpsCount > 0)
 			ApplyDelayedOps();
+	}
+	
+	public struct Enumerator : IDisposable
+	{
+		private readonly BlahEcsFilterCore _owner;
+		private readonly BlahEcsEntity[]   _entities;
+		private readonly int               _entitiesCount;
+
+		private int _cursor;
+
+		public Enumerator(BlahEcsFilterCore owner)
+		{
+			_owner                      = owner;
+			(_entities, _entitiesCount) = owner.BeginIteration();
+			_cursor                     = -1;
+		}
+
+		public BlahEcsEntity Current => _entities[_cursor];
+
+		public bool MoveNext() => ++_cursor < _entitiesCount;
+
+		public void Dispose()
+		{
+			_owner.EndIteration();
+		}
 	}
 	
 	private void ApplyDelayedOps()

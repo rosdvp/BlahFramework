@@ -19,14 +19,9 @@ public class BlahEcsInjectSource
 
 	public BlahEcs GetEcs() => _ecs;
 
-	public IBlahEcsCompRead<T> GetRead<T>() where T : IBlahEntryEcs
-		=> _ecs.GetRead<T>();
-
-	public IBlahEcsCompWrite<T> GetWrite<T>() where T : IBlahEntryEcs
-		=> _ecs.GetWrite<T>();
-
 	public T GetFilter<T>() where T : BlahEcsFilter, new()
 	{
+		/*
 		_tempIncList.Clear();
 		_tempExcList.Clear();
 
@@ -51,21 +46,8 @@ public class BlahEcsInjectSource
 
 		var core = _ecs.GetFilterCore(_tempIncList, _tempExcList);
 		filter.SetCore(core);
-		return filter;
-	}
-
-	public BlahEcsFilter<T> GetSimpleFilter<T>() where T : IBlahEntryEcs
-	{
-		_tempIncList.Clear();
-		_tempExcList.Clear();
-		
-		_tempIncList.Add(typeof(T));
-
-		var filter = new BlahEcsFilter<T>();
-		filter.Pool = _ecs.GetRead<T>();
-		var core   = _ecs.GetFilterCore(_tempIncList, _tempExcList);
-		filter.SetCore(core);
-		return filter;
+		return filter;*/
+		return null;
 	}
 }
 }

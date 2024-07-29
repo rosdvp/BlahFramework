@@ -1,36 +1,99 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Blah.Ecs
 {
+public struct TestComp : IBlahEntryEcs { }
+
+public class TestFilter : BlahEcsFilter
+{
+	public BlahEcsGet<TestComp> A = Inc;
+	public BlahEcsGet<TestComp> B = Opt;
+	public BlahEcsGet<TestComp> C = Exc;
+}
+
 public abstract class BlahEcsFilter : IEquatable<BlahEcsFilter>
 {
-	private BlahEcsFilterCore _filter;
+	private BlahEcsFilterCore _core;
 
-	public void SetCore(BlahEcsFilterCore filter)
+	public void SetCore(BlahEcsFilterCore core)
 	{
-		_filter = filter;
+		_core = core;
 	}
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public virtual Type[] Required { get; } = null;
-	public virtual Type[] Exc      { get; } = null;
+	public bool IsEmpty => _core.IsEmpty;
 
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	public bool IsEmpty => _filter.IsEmpty;
+	public BlahEcsEntity GetAny() => _core.GetAny();
 
-	public BlahEcsEntity GetAny() => _filter.GetAny();
-
-	public bool TryGetAny(out BlahEcsEntity ent) => _filter.TryGetAny(out ent);
+	public bool TryGetAny(out BlahEcsEntity ent) => _core.TryGetAny(out ent);
 	
-	public Enumerator GetEnumerator() => new(_filter);
+	public BlahEcsFilterCore.Enumerator GetEnumerator() => new(_core);
 
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+	protected static Include  Inc => new();
+	protected static Optional Opt => new();
+	protected static Exclude  Exc => new();
+	
+	
+	public readonly ref struct Include
+	{
+		public BlahEcsPool<T> Get<T>() where T : IBlahEntryEcs
+		{
+			_maskInc.Add(typeof(T));
+			return _ecs.GetPool<T>();
+		}
+	}
+
+	public readonly ref struct Optional
+	{
+		public BlahEcsPool<T> Get<T>() where T : IBlahEntryEcs
+		{
+			return _ecs.GetPool<T>();
+		}
+	}
+    
+	public readonly ref struct Exclude
+	{
+		public BlahEcsPool<T> Get<T>() where T : IBlahEntryEcs
+		{
+			_maskExc.Add(typeof(T));
+			return _ecs.GetPool<T>();
+		}
+	}
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
+	private static BlahEcs    _ecs;
+	private static List<Type> _maskInc = new();
+	private static List<Type> _maskExc = new();
+
+
+	public static T Create<T>(BlahEcs ecs) where T: BlahEcsFilter, new()
+	{
+		_maskInc.Clear();
+		_maskExc.Clear();
+		
+		_ecs = ecs;
+		var filter = new T();
+		_ecs = null;
+		
+		var core   = ecs.GetFilterCore(_maskInc, _maskExc);
+		filter.SetCore(core);
+		return filter;
+	}
+
+
+	//-----------------------------------------------------------
+	//-----------------------------------------------------------
 	
 	public static bool operator ==(BlahEcsFilter a, BlahEcsFilter b)
-		=> a._filter == b._filter;
+		=> a?._core == b?._core;
 	public static bool operator !=(BlahEcsFilter a, BlahEcsFilter b)
-		=> a._filter != b._filter;
+		=> a?._core != b?._core;
 	
 	public bool Equals(BlahEcsFilter other)
 	{
@@ -38,7 +101,7 @@ public abstract class BlahEcsFilter : IEquatable<BlahEcsFilter>
 			return false;
 		if (ReferenceEquals(this, other))
 			return true;
-		return Equals(_filter, other._filter);
+		return Equals(_core, other._core);
 	}
 
 	public override bool Equals(object obj)
@@ -54,38 +117,7 @@ public abstract class BlahEcsFilter : IEquatable<BlahEcsFilter>
 
 	public override int GetHashCode()
 	{
-		return (_filter != null ? _filter.GetHashCode() : 0);
-	}
-}
-
-public class BlahEcsFilter<T> : BlahEcsFilter where T: IBlahEntryEcs
-{
-	public IBlahEcsCompRead<T> Pool;
-}
-
-
-public struct Enumerator : IDisposable
-{
-	private readonly BlahEcsFilterCore _owner;
-	private readonly BlahEcsEntity[]   _entities;
-	private readonly int               _entitiesCount;
-
-	private int _cursor;
-
-	public Enumerator(BlahEcsFilterCore owner)
-	{
-		_owner                      = owner;
-		(_entities, _entitiesCount) = owner.BeginIteration();
-		_cursor                     = -1;
-	}
-
-	public BlahEcsEntity Current => _entities[_cursor];
-
-	public bool MoveNext() => ++_cursor < _entitiesCount;
-
-	public void Dispose()
-	{
-		_owner.EndIteration();
+		return (_core != null ? _core.GetHashCode() : 0);
 	}
 }
 }

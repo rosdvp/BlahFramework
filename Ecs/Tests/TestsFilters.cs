@@ -11,25 +11,27 @@ internal class TestsFilters
 	[Test]
 	public void Test_SameCompsInFilters_FiltersSame()
 	{
-		var ecs   = new BlahEcs();
-		var filter1 = GetFilter(ecs, new[] { typeof(CompA), typeof(CompB) }, null);
-		var filter2 = GetFilter(ecs, new[] { typeof(CompA), typeof(CompB) }, null);
-		var filter3 = GetFilter(ecs, new[] { typeof(CompB), typeof(CompA) }, null);
+		var ecs = new BlahEcs();
+
+		var filter1 = BlahEcsFilter.Create<FilterAB>(ecs);
+		var filter2 = BlahEcsFilter.Create<FilterAB>(ecs);
+		var filter3 = BlahEcsFilter.Create<FilterBA>(ecs);
 		
 		Assert.AreEqual(filter1, filter2);
 		Assert.AreEqual(filter1, filter3);
 		Assert.AreEqual(filter2, filter3);
 
-		var filter4 = GetFilter(ecs, new[] { typeof(CompA), typeof(CompB), typeof(CompC) }, null);
-		var filter5 = GetFilter(ecs, new[] { typeof(CompA) }, new[] { typeof(CompB) });
+		
+		var filter4 = BlahEcsFilter.Create<FilterABC>(ecs);
+		var filter5 = BlahEcsFilter.Create<FilterAexcB>(ecs);
 		Assert.AreNotEqual(filter1, filter4);
 		Assert.AreNotEqual(filter1, filter5);
 		
-		var filter6 = GetFilter(ecs, new[] { typeof(CompA) }, new[] { typeof(CompB), typeof(CompC) });
-		var filter7 = GetFilter(ecs, new[] { typeof(CompA) }, new[] { typeof(CompC), typeof(CompB) });
+		var filter6 = BlahEcsFilter.Create<FilterAexcBC>(ecs);
+		var filter7 = BlahEcsFilter.Create<FilterAexcCB>(ecs);
 		Assert.AreEqual(filter6, filter7);
 
-		var filter8 = GetFilter(ecs, new[] { typeof(CompB) }, new[] { typeof(CompA), typeof(CompC) });
+		var filter8 = BlahEcsFilter.Create<FilterBexcAC>(ecs);
 		Assert.AreNotEqual(filter7, filter8);
 	}
 	
@@ -38,8 +40,8 @@ internal class TestsFilters
 	public void Test_EmptyFilters()
 	{
 		var ecs    = new BlahEcs();
-		var write  = ecs.GetWrite<CompA>();
-		var filter = GetFilter(ecs, new[] { typeof(CompA) }, null);
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 		
 		Assert.IsTrue(filter.IsEmpty);
 		
@@ -47,11 +49,11 @@ internal class TestsFilters
 			Assert.Fail();
 
 		var ent = ecs.CreateEntity();
-		write.Add(ent);
+		pool.Add(ent);
         
 		Assert.IsFalse(filter.IsEmpty);
 		
-		write.Remove(ent);
+		filter.A.Remove(ent);
 		
 		Assert.IsTrue(filter.IsEmpty);
 	}
@@ -60,20 +62,18 @@ internal class TestsFilters
 	[Test]
 	public void Test_AddComp_FilterUpdated([NUnit.Framework.Range(1, 10)] int count)
 	{
-		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
-		
-		var filter = GetFilter(ecs, new[] { typeof(CompA) }, null);
+		var ecs    = new BlahEcs();
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 
 		for (var i = 0; i < count; i++)
 		{
 			var ent = ecs.CreateEntity();
-			write.Add(ent).Val = i + 1;
+			pool.Add(ent).Val = i + 1;
 
 			var expected = Enumerable.Range(1, i + 1).ToList();
 			foreach (var e in filter)
-				Assert.IsTrue(expected.Remove(read.Get(e).Val));
+				Assert.IsTrue(expected.Remove(filter.A.Get(e).Val));
 			
 			foreach (int val in expected)
 				Assert.Fail($"{val} left");
@@ -83,30 +83,28 @@ internal class TestsFilters
 	[Test]
 	public void Test_MultipleEntitiesRemoveCompOfOne_FilterUpdated()
 	{
-		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
-		
-		var filter = GetFilter(ecs, new[] { typeof(CompA) }, null);
+		var ecs    = new BlahEcs();
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 
 		var ent1 = ecs.CreateEntity();
 		var ent2 = ecs.CreateEntity();
 		var ent3 = ecs.CreateEntity();
 
-		write.Add(ent1).Val   = 1;
-		write.Add(ent2).Val   = 2;
-		write.Add(ent3).Val   = 3;
+		pool.Add(ent1).Val = 1;
+		pool.Add(ent2).Val = 2;
+		pool.Add(ent3).Val = 3;
 
 		var expected = new List<int> { 1, 2, 3 };
 		foreach (var e in filter)
-			Assert.IsTrue(expected.Remove(read.Get(e).Val));
+			Assert.IsTrue(expected.Remove(filter.A.Get(e).Val));
         Assert.Zero(expected.Count);
 
-        read.Remove(ent2);
+        filter.A.Remove(ent2);
         
         expected = new List<int> { 1, 3 };
         foreach (var e in filter)
-	        Assert.IsTrue(expected.Remove(read.Get(e).Val));
+	        Assert.IsTrue(expected.Remove(filter.A.Get(e).Val));
         Assert.Zero(expected.Count);
 	}
 	
@@ -115,11 +113,10 @@ internal class TestsFilters
 	public void Test_SwitchCompAToB_FiltersUpdated()
 	{
 		var ecs     = new BlahEcs();
-		var writeA  = ecs.GetWrite<CompA>();
-		var readA   = ecs.GetRead<CompA>();
-		var writeB  = ecs.GetWrite<CompB>();
-		var filterA = GetFilter(ecs, new[] {typeof(CompA) }, null);
-		var filterB = GetFilter(ecs, new[] {typeof(CompB) }, null);
+		var poolA   = ecs.GetCompFull<CompA>();
+		var poolB   = ecs.GetCompFull<CompB>();
+		var filterA = BlahEcsFilter.Create<FilterA>(ecs);
+		var filterB = BlahEcsFilter.Create<FilterB>(ecs);
 
 		foreach (var e in filterA)
 			Assert.Fail();
@@ -127,7 +124,7 @@ internal class TestsFilters
 			Assert.Fail();
 
 		var ent = ecs.CreateEntity();
-		writeA.Add(ent);
+		poolA.Add(ent);
 
 		var iterationsCount = 0;
 		foreach (var e in filterA)
@@ -136,8 +133,8 @@ internal class TestsFilters
 		foreach (var e in filterB)
 			Assert.Fail();
         
-		readA.Remove(ent);
-		writeB.Add(ent);
+		filterA.A.Remove(ent);
+		poolB.Add(ent);
 
 		foreach (var e in filterA)
 			Assert.Fail();
@@ -150,24 +147,21 @@ internal class TestsFilters
 	[Test]
 	public void Test_AddExtraComp_StillInFilter()
 	{
-		var ecs    = new BlahEcs();
-		var writeA = ecs.GetWrite<CompA>();
-		var readA  = ecs.GetRead<CompA>();
-		var writeB = ecs.GetWrite<CompB>();
-		var readB  = ecs.GetRead<CompB>();
-		
-		var filterA = GetFilter(ecs, new[] {typeof(CompA) }, null);
-		var filterB = GetFilter(ecs, new[] {typeof(CompB) }, null);
+		var ecs     = new BlahEcs();
+		var poolA   = ecs.GetCompFull<CompA>();
+		var poolB   = ecs.GetCompFull<CompB>();
+		var filterA = BlahEcsFilter.Create<FilterA>(ecs);
+		var filterB = BlahEcsFilter.Create<FilterB>(ecs);
 
 		var ent = ecs.CreateEntity();
-		writeA.Add(ent).Val = 2;
-		writeB.Add(ent).Val = 3;
+		poolA.Add(ent).Val = 2;
+		poolB.Add(ent).Val = 3;
 
 		var iterationsCount = 0;
 		foreach (var e in filterA)
 		{
-			Assert.AreEqual(2, readA.Get(e).Val);
-			Assert.AreEqual(3, readB.Get(e).Val);
+			Assert.AreEqual(2, filterA.A.Get(e).Val);
+			Assert.AreEqual(3, filterB.B.Get(e).Val);
 			iterationsCount += 1;
 		}
 		Assert.AreEqual(1, iterationsCount);
@@ -175,8 +169,8 @@ internal class TestsFilters
 		iterationsCount = 0;
 		foreach (var e in filterB)
 		{
-			Assert.AreEqual(2, readA.Get(e).Val);
-			Assert.AreEqual(3, readB.Get(e).Val);
+			Assert.AreEqual(2, filterA.A.Get(e).Val);
+			Assert.AreEqual(3, filterB.B.Get(e).Val);
 			iterationsCount += 1;
 		}
 		Assert.AreEqual(1, iterationsCount);
@@ -186,25 +180,24 @@ internal class TestsFilters
 	public void Test_AddCompThenRemove_FilterUpdated()
 	{
 		var ecs    = new BlahEcs();
-		var write  = ecs.GetWrite<CompA>();
-		var read   = ecs.GetRead<CompA>();
-		var filter = GetFilter(ecs, new[] {typeof(CompA) }, null);
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 
 		var ent = ecs.CreateEntity();
-		write.Add(ent).Val = 2;
+		pool.Add(ent).Val = 2;
 
 		foreach (var e in filter)
-			Assert.AreEqual(2, read.Get(e).Val);
+			Assert.AreEqual(2, filter.A.Get(e).Val);
         
-		read.Remove(ent);
+		filter.A.Remove(ent);
 		foreach (var e in filter)
 			Assert.Fail();
 
-		write.Add(ent).Val = 1;
+		pool.Add(ent).Val = 1;
 		var iterationsCount = 0;
 		foreach (var e in filter)
 		{
-			Assert.AreEqual(1, read.Get(e).Val);
+			Assert.AreEqual(1, filter.A.Get(e).Val);
 			iterationsCount += 1;
 		}
 		Assert.AreEqual(1, iterationsCount);
@@ -213,20 +206,19 @@ internal class TestsFilters
 	[Test]
 	public void Test_DelayedCreateFilter_FilterUpdated()
 	{
-		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
+		var ecs  = new BlahEcs();
+		var pool = ecs.GetCompFull<CompA>();
 
 		var ent = ecs.CreateEntity();
-		write.Add(ent).Val   = 2;
+		pool.Add(ent).Val = 2;
         
-		var filterA = GetFilter(ecs, new[] {typeof(CompA) }, null);
-		var filterB = GetFilter(ecs, new[] {typeof(CompB) }, null);
+		var filterA = BlahEcsFilter.Create<FilterA>(ecs);
+		var filterB = BlahEcsFilter.Create<FilterB>(ecs);
 
 		var iterationsCount = 0;
 		foreach (var e in filterA)
 		{
-			Assert.AreEqual(2, read.Get(e).Val);
+			Assert.AreEqual(2, filterA.A.Get(e).Val);
 			iterationsCount += 1;
 		}
 		Assert.AreEqual(1, iterationsCount);
@@ -239,21 +231,20 @@ internal class TestsFilters
 	public void Test_RemoveCompDuringIteration_FilterUpdated()
 	{
 		var ecs    = new BlahEcs();
-		var write  = ecs.GetWrite<CompA>();
-		var read   = ecs.GetRead<CompA>();
-		var filter = GetFilter(ecs, new[] {typeof(CompA) }, null);
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 
-		write.Add(ecs.CreateEntity()).Val = 1;
-		write.Add(ecs.CreateEntity()).Val = 2;
-		write.Add(ecs.CreateEntity()).Val = 3;
+		pool.Add(ecs.CreateEntity()).Val = 1;
+		pool.Add(ecs.CreateEntity()).Val = 2;
+		pool.Add(ecs.CreateEntity()).Val = 3;
 
 		int iterationsCount = 0;
 		foreach (var e in filter)
 		{
-			if (read.Get(e).Val == 2)
+			if (filter.A.Get(e).Val == 2)
 			{
-				read.Remove(e);
-				Assert.IsFalse(read.Has(e));
+				filter.A.Remove(e);
+				Assert.IsFalse(filter.A.Has(e));
 			}
 			iterationsCount += 1;
 		}
@@ -261,45 +252,70 @@ internal class TestsFilters
 
 		var expected = new List<int> { 1, 3 };
 		foreach (var e in filter)
-			Assert.IsTrue(expected.Remove(read.Get(e).Val));
+			Assert.IsTrue(expected.Remove(filter.A.Get(e).Val));
+		Assert.IsTrue(expected.Count == 0);
+	}
+	
+	[Test]
+	public void Test_DestroyEntityDuringIteration_SameFilterUpdated()
+	{
+		var ecs    = new BlahEcs();
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+
+		for (var i = 0; i < 20; i++)
+		{
+			Debug.Log($"iter {i}");
+
+			foreach (var ent in filter)
+				filter.A.Get(ent).Val += 1;
+			
+			foreach (var ent in filter)
+				if (filter.A.Get(ent).Val == 5)
+					ecs.DestroyEntity(ent);
+			
+			pool.Add(ecs.CreateEntity()).Val = 1;
+		}
+
+		var expected = new List<int> { 1, 2, 3, 4 };
+		foreach (var ent in filter)
+			Assert.IsTrue(expected.Remove(filter.A.Get(ent).Val), $"val {filter.A.Get(ent).Val}");
 		Assert.IsTrue(expected.Count == 0);
 	}
 
 	[Test]
 	public void Test_DestroyEntityDuringIteration_AnotherFilterUpdated()
 	{
-		var ecs     = new BlahEcs();
-		var writeA  = ecs.GetWrite<CompA>();
-		var readA   = ecs.GetRead<CompA>();
-		var writeB  = ecs.GetWrite<CompB>();
-		var readB   = ecs.GetRead<CompB>();
-		var filter1 = GetFilter(ecs, new[] {typeof(CompA) }, null);
-		var filter2 = GetFilter(ecs, new[] {typeof(CompA), typeof(CompB) }, null);
+		var ecs      = new BlahEcs();
+		var poolA    = ecs.GetCompFull<CompA>();
+		var poolB    = ecs.GetCompFull<CompB>();
+		var filterA  = BlahEcsFilter.Create<FilterA>(ecs);
+		var filterAb = BlahEcsFilter.Create<FilterAB>(ecs);
 
 		var ent1 = ecs.CreateEntity();
-		writeA.Add(ent1).Val  = 1;
-		writeB.Add(ent1).Val  = 11;
+		poolA.Add(ent1).Val = 1;
+		poolB.Add(ent1).Val = 11;
 		var ent2 = ecs.CreateEntity();
-		writeA.Add(ent2).Val = 2;
-		writeB.Add(ent2).Val = 22;
+		poolA.Add(ent2).Val = 2;
+		poolB.Add(ent2).Val = 22;
 		var ent3 = ecs.CreateEntity();
-		writeA.Add(ent3).Val  = 3;
-		writeB.Add(ent3).Val  = 33;
+		poolA.Add(ent3).Val = 3;
+		poolB.Add(ent3).Val = 33;
 
 		var expected = new List<int> { 11, 22, 33};
 
 		var iterationsCount = 0;
-		foreach (var e1 in filter1)
+		foreach (var e1 in filterA)
 		{
-			if (readA.Get(e1).Val == 2)
+			if (filterA.A.Get(e1).Val == 2)
 			{
 				expected.Remove(22);
 				ecs.DestroyEntity(e1);
 			}
 
 			var expectedInIter = new List<int>(expected);
-			foreach (var e2 in filter2)
-				Assert.IsTrue(expectedInIter.Remove(readB.Get(e2).Val));
+			foreach (var e2 in filterAb)
+				Assert.IsTrue(expectedInIter.Remove(filterAb.B.Get(e2).Val));
 			if (expectedInIter.Count > 0)
 				Assert.Fail();
 
@@ -308,62 +324,32 @@ internal class TestsFilters
 		Assert.AreEqual(3, iterationsCount);
 
 		expected = new List<int>() { 1, 3 };
-		foreach (var e1 in filter1)
-			Assert.IsTrue(expected.Remove(readA.Get(e1).Val));
+		foreach (var e1 in filterA)
+			Assert.IsTrue(expected.Remove(filterA.A.Get(e1).Val));
 		Assert.IsTrue(expected.Count == 0);
 	}
-
-	[Test]
-	public void Test_DestroyEntityDuringIteration_SameFilterUpdated()
-	{
-		var ecs    = new BlahEcs();
-		var write  = ecs.GetWrite<CompA>();
-		var read   = ecs.GetRead<CompA>();
-		var filter = GetFilter(ecs, new[] {typeof(CompA) }, null);
-
-		for (var i = 0; i < 20; i++)
-		{
-			Debug.Log($"iter {i}");
-
-			foreach (var ent in filter)
-				read.Get(ent).Val += 1;
-			
-			foreach (var ent in filter)
-				if (read.Get(ent).Val == 5)
-					ecs.DestroyEntity(ent);
-			
-			write.Add(ecs.CreateEntity()).Val = 1;
-		}
-
-		var expected = new List<int> { 1, 2, 3, 4 };
-		foreach (var ent in filter)
-			Assert.IsTrue(expected.Remove(read.Get(ent).Val), $"val {read.Get(ent).Val}");
-		Assert.IsTrue(expected.Count == 0);
-	}
-
+	
 	[Test]
 	public void Test_DestroyAllEntitiesThenCreate_SameFilterUpdated()
 	{
-		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
-		
-		var filter = GetFilter(ecs, new[] {typeof(CompA) }, null);
+		var ecs    = new BlahEcs();
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 
 		for (var i = 0; i < 10; i++)
-			write.Add(ecs.CreateEntity()).Val = i;
+			pool.Add(ecs.CreateEntity()).Val = i;
 
 		foreach (var ent in filter)
 			ecs.DestroyEntity(ent);
 
 		for (var i = 10; i < 20; i++)
-			write.Add(ecs.CreateEntity()).Val = i;
+			pool.Add(ecs.CreateEntity()).Val = i;
 
 		int iterationsCount = 0;
 		var expected        = Enumerable.Range(10, 10).ToList();
 		foreach (var ent in filter)
 		{
-			Assert.IsTrue(expected.Remove(read.Get(ent).Val));
+			Assert.IsTrue(expected.Remove(filter.A.Get(ent).Val));
 			iterationsCount += 1;
 		}
 		Assert.AreEqual(10, iterationsCount);
@@ -376,10 +362,9 @@ internal class TestsFilters
 	public void Test_EntHasExcComp_NotInFilter()
 	{
 		var ecs    = new BlahEcs();
-		var writeA = ecs.GetWrite<CompA>();
-		var writeB = ecs.GetWrite<CompB>();
-
-		var filter = GetFilter(ecs, new[] { typeof(CompA) }, new[] { typeof(CompB) });
+		var poolA  = ecs.GetCompFull<CompA>();
+		var poolB  = ecs.GetCompFull<CompB>();
+		var filter = BlahEcsFilter.Create<FilterAexcB>(ecs);
 
 		var ents = new List<BlahEcsEntity>();
 		ents.Add(ecs.CreateEntity());
@@ -388,14 +373,14 @@ internal class TestsFilters
 		var temp = new List<BlahEcsEntity>();
 
 		foreach (var ent in ents)
-			writeA.Add(ent);
+			poolA.Add(ent);
 
 		temp.AddRange(ents);
 		foreach (var ent in filter)
 			Assert.IsTrue(temp.Remove(ent));
 		Assert.IsTrue(temp.Count == 0);
 
-		writeB.Add(ents[1]);
+		poolB.Add(ents[1]);
 
 		temp.Add(ents[0]);
 		temp.Add(ents[2]);
@@ -403,7 +388,7 @@ internal class TestsFilters
 			Assert.IsTrue(temp.Remove(ent));
 		Assert.IsTrue(temp.Count == 0);
 		
-		writeB.Remove(ents[1]);
+		poolB.Remove(ents[1]);
 		
 		temp.AddRange(ents);
 		foreach (var ent in filter)
@@ -416,39 +401,83 @@ internal class TestsFilters
 	public void Test_GetAny()
 	{
 		var ecs    = new BlahEcs();
-		var read   = ecs.GetRead<CompA>();
-		var write  = ecs.GetWrite<CompA>();
-		var filter = GetFilter(ecs, new[] {typeof(CompA) }, null);
+		var pool   = ecs.GetCompFull<CompA>();
+		var filter = BlahEcsFilter.Create<FilterA>(ecs);
 
 		if (filter.TryGetAny(out var ent))
 			Assert.Fail();
 
 		var ent1 = ecs.CreateEntity();
-        write.Add(ent1).Val = 3;
+		pool.Add(ent1).Val = 3;
         
-        Assert.AreEqual(3, read.Get(filter.GetAny()).Val);
+        Assert.AreEqual(3, filter.A.Get(filter.GetAny()).Val);
         Assert.IsTrue(filter.TryGetAny(out var ent2));
-        Assert.AreEqual(3, read.Get(ent2).Val);
+        Assert.AreEqual(3, filter.A.Get(ent2).Val);
         
-        read.Remove(ent1);
+        filter.A.Remove(ent1);
         Assert.Throws<Exception>(() => filter.GetAny());
 	}
+	
 
-
-
-	private BlahEcsTestFilter GetFilter(BlahEcs ecs, Type[] inc, Type[] exc)
+	private class FilterA : BlahEcsFilter
 	{
-		var core = ecs.GetFilterCore(
-			new List<Type>(inc),
-			exc == null ? new List<Type>() : new List<Type>(exc)
-		);
-		var filter = new BlahEcsTestFilter();
-		filter.SetCore(core);
-		return filter;
+		public BlahEcsGet<CompA> A = Inc;
+	}
+	
+	private class FilterB : BlahEcsFilter
+	{
+		public BlahEcsGet<CompB> B = Inc;
 	}
 
-	private class BlahEcsTestFilter : BlahEcsFilter { }
+	private class FilterAB : BlahEcsFilter
+	{
+		public BlahEcsGet<CompA> A = Inc;
+		public BlahEcsGet<CompB> B = Inc;
+	}
 
+	private class FilterAexcB : BlahEcsFilter
+	{
+		public BlahEcsGet<CompA> A = Inc;
+
+		public BlahEcsGet<CompB> B = Exc;
+	}
+
+	private class FilterBA : BlahEcsFilter
+	{
+		public BlahEcsGet<CompB> B = Inc;
+		public BlahEcsGet<CompA> A = Inc;
+	}
+
+	private class FilterABC : BlahEcsFilter
+	{
+		public BlahEcsGet<CompA> A = Inc;
+		public BlahEcsGet<CompB> B = Inc;
+		public BlahEcsGet<CompC> C = Inc;
+	}
+
+	private class FilterAexcBC : BlahEcsFilter
+	{
+		public BlahEcsGet<CompA> A = Inc;
+		
+		public BlahEcsGet<CompB> B = Exc;
+		public BlahEcsGet<CompC> C = Exc;
+	}
+	
+	private class FilterAexcCB : BlahEcsFilter
+	{
+		public BlahEcsGet<CompA> A = Inc;
+		
+		public BlahEcsGet<CompC> C = Exc;
+		public BlahEcsGet<CompB> B = Exc;
+	}
+
+	private class FilterBexcAC : BlahEcsFilter
+	{
+		public BlahEcsGet<CompB> B = Inc;
+		
+		public BlahEcsGet<CompA> A = Exc;
+		public BlahEcsGet<CompC> C = Exc;
+	}
 
 	private struct CompA : IBlahEntryEcs
 	{
