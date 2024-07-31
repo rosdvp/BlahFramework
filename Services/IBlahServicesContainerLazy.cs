@@ -2,6 +2,6 @@
 {
 public interface IBlahServicesContainerLazy
 {
-	public BlahServiceLazy<T> GetLazy<T>() where T : BlahServiceBase;
+	public BlahServiceLazy<T> GetLazy<T>() where T : BlahServiceBase, new();
 }
 }

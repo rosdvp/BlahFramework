@@ -4,8 +4,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Blah.AutoOrder",
-        "Blah.Pools"
+        "BlahFramework"
     ],
     "includePlatforms": [
         "Editor"

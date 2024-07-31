@@ -23,9 +23,13 @@ internal class TestAttributeBefore
 			typeof(SystemC)
 		};
 		
-		BlahOrderer.Order(ref systems);
-		
-		AssertHelper.AssertEqual(expected, systems);
+		UnityEngine.Random.InitState(100);
+		for (var i = 0; i < 10; i++)
+		{
+			AssertHelper.Randomize(ref systems);
+			BlahOrderer.Order(ref systems);
+			AssertHelper.AssertEqual(expected, systems);	
+		}
 	}
 	
 	[Test]
@@ -46,9 +50,13 @@ internal class TestAttributeBefore
 			typeof(SystemC)
 		};
 		
-		BlahOrderer.Order(ref systems);
-		
-		AssertHelper.AssertOrder(expectedOrder, systems);
+		UnityEngine.Random.InitState(100);
+		for (var i = 0; i < 10; i++)
+		{
+			AssertHelper.Randomize(ref systems);
+			BlahOrderer.Order(ref systems);
+			AssertHelper.AssertOrder(expectedOrder, systems);	
+		}
 	}
 
 

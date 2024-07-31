@@ -4,10 +4,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Blah.Features",
-        "Blah.Systems",
-        "Blah.Pools",
-        "Blah.Services"
+        "BlahFramework"
     ],
     "includePlatforms": [
         "Editor"

@@ -32,7 +32,7 @@ public class BlahPool<T> : IBlahPoolInternal
 		int ptr = Entries.Add();
 
 		if (GoingIteratorsCount == 0)
-			AddUnsafe(ptr);
+			AddWithoutDelay(ptr);
 		else
 			AddDelayedOp(true, ptr);
 
@@ -40,7 +40,7 @@ public class BlahPool<T> : IBlahPoolInternal
 		return ref Entries.Get(ptr);
 	}
 
-	private void AddUnsafe(int entryPtr)
+	private void AddWithoutDelay(int entryPtr)
 	{
 		BlahArrayHelper.ResizeOnDemand(ref AliveEntriesPtrs, AliveEntriesCount);
 		AliveEntriesPtrs[AliveEntriesCount++] = entryPtr;
@@ -66,10 +66,10 @@ public class BlahPool<T> : IBlahPoolInternal
 		if (GoingIteratorsCount > 0)
 			AddDelayedOp(false, entryPtr);
 		else
-			RemoveUnsafe(entryPtr);
+			RemoveWithoutDelay(entryPtr);
 	}
 	
-	private void RemoveUnsafe(int entryPtr)
+	private void RemoveWithoutDelay(int entryPtr)
 	{
 		for (var i = 0; i < AliveEntriesCount; i++)
 			if (AliveEntriesPtrs[i] == entryPtr)
@@ -150,56 +150,43 @@ public class BlahPool<T> : IBlahPoolInternal
 	{
 		for (var opIdx = 0; opIdx < _delayedOpsCount; opIdx++)
 			if (_delayedOps[opIdx].IsAdd)
-				AddUnsafe(_delayedOps[opIdx].EntryPtr);
+				AddWithoutDelay(_delayedOps[opIdx].EntryPtr);
 			else
-				RemoveUnsafe(_delayedOps[opIdx].EntryPtr);
+				RemoveWithoutDelay(_delayedOps[opIdx].EntryPtr);
 		_delayedOpsCount = 0;
 	}
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public Enumerator GetEnumerator()
-	{
-		if (GoingIteratorsCount == IteratorCursorByLevel.Length)
-			Array.Resize(ref IteratorCursorByLevel, GoingIteratorsCount * 2);
+	public Enumerator GetEnumerator() => new(this);
 
-		return new Enumerator(this, GoingIteratorsCount++);
-	}
-
-	private void OnEnumeratorEnd()
-	{
-		if (--GoingIteratorsCount == 0)
-			ApplyDelayedOps();
-	}
-	
-	
 	public readonly struct Enumerator : IDisposable
 	{
 		private readonly BlahPool<T> _owner;
-		private readonly BlahSet<T>  _set;
-		private readonly int[]       _alivePtrs;
-		private readonly int         _aliveCount;
 
-		private readonly int   _level;
+		private readonly int _level;
 
-		public Enumerator(BlahPool<T> owner, int level)
+		public Enumerator(BlahPool<T> owner)
 		{
-			_owner         = owner;
-			_set           = owner.Entries;
-			_alivePtrs     = owner.AliveEntriesPtrs;
-			_aliveCount    = owner.AliveEntriesCount;
-			_level         = level;
+			_owner = owner;
 
-			_owner.IteratorCursorByLevel[_level] = -1; // alivePtrs starts from 0, but we need -1 for first MoveNext
+			BlahArrayHelper.ResizeOnDemand(ref _owner.IteratorCursorByLevel, _owner.GoingIteratorsCount);
+			_level = _owner.GoingIteratorsCount++;
+
+			// alivePtrs starts from 0, but we need -1 for first MoveNext
+			_owner.IteratorCursorByLevel[_level] = -1;
 		}
 
-		public ref T Current => ref _set.Get(_alivePtrs[_owner.IteratorCursorByLevel[_level]]);
+		public ref T Current => ref _owner.Entries.Get(
+			_owner.AliveEntriesPtrs[_owner.IteratorCursorByLevel[_level]]
+		);
 
-		public bool MoveNext() => ++_owner.IteratorCursorByLevel[_level] < _aliveCount;
+		public bool MoveNext() => ++_owner.IteratorCursorByLevel[_level] < _owner.AliveEntriesCount;
 
 		public void Dispose()
 		{
-			_owner.OnEnumeratorEnd();
+			if (--_owner.GoingIteratorsCount == 0 && _owner._delayedOpsCount > 0)
+				_owner.ApplyDelayedOps();
 		}
 	}
 }

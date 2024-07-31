@@ -13,8 +13,8 @@ internal class TestSignalRemove
         int[] valuesToRemove = data.ValuesToRemove;
             
         var context  = new BlahPoolsContext();
-        var consumer = context.GetSignalConsumer<MockSignalEntry>();
-        var producer = context.GetSignalProducer<MockSignalEntry>();
+        var consumer = context.GetSignalRead<MockSignalEntry>();
+        var producer = context.GetSignalWrite<MockSignalEntry>();
 
         for (var i = 0; i < 3; i++)
         {
@@ -79,8 +79,8 @@ internal class TestSignalRemove
     public void TestRemoveWithNextFrame()
     {
         var context  = new BlahPoolsContext();
-        var consumer = context.GetNfSignalConsumer<MockSignalNextFrameEntry>();
-        var producer = context.GetNfSignalProducer<MockSignalNextFrameEntry>();
+        var consumer = context.GetNfSignalRead<MockSignalNextFrameEntry>();
+        var producer = context.GetNfSignalWrite<MockSignalNextFrameEntry>();
 
         for (var i = 0; i < 10; i++)
         {

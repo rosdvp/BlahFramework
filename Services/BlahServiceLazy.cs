@@ -1,6 +1,6 @@
 ﻿namespace Blah.Services
 {
-public class BlahServiceLazy<T> where T: BlahServiceBase
+public class BlahServiceLazy<T> where T: BlahServiceBase, new()
 {
 	private readonly BlahServicesContext _context;
 
@@ -13,7 +13,5 @@ public class BlahServiceLazy<T> where T: BlahServiceBase
 	private T _service;
 
 	public T Get => _service ??= _context.Get<T>();
-
-	public void InitIfNot() => _context.Get<T>();
 }
 }

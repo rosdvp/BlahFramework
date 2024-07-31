@@ -22,34 +22,34 @@ internal static class AssertHelper
 		Assert.AreEqual(expectedLength, actualLength);
 	}
 
-	public static void CheckContent<T>(IBlahSignalConsumer<T> pool, params int[] expectedValues) 
+	public static void CheckContent<T>(IBlahSignalRead<T> pool, params int[] expectedValues) 
 		where T: IBlahEntrySignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahSignalProducer<T> pool, params int[] expectedValues) 
+	public static void CheckContent<T>(IBlahSignalWrite<T> pool, params int[] expectedValues) 
 		where T: IBlahEntrySignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
 	
-	public static void CheckContent<T>(IBlahNfSignalConsumer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntryNextFrameSignal, IMockEntry 
+	public static void CheckContent<T>(IBlahNfSignalRead<T> pool, params int[] expectedValues) 
+		where T: IBlahEntryNfSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahNfSignalProducer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntryNextFrameSignal, IMockEntry 
+	public static void CheckContent<T>(IBlahNfSignalWrite<T> pool, params int[] expectedValues) 
+		where T: IBlahEntryNfSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
     
-	public static void CheckContent<T>(IBlahDataConsumer<T> pool, params int[] expectedValues)
+	public static void CheckContent<T>(IBlahDataGet<T> pool, params int[] expectedValues)
 		where T : IBlahEntryData, IMockEntry
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahDataProducer<T> pool, params int[] expectedValues)
+	public static void CheckContent<T>(IBlahDataAdd<T> pool, params int[] expectedValues)
 		where T : IBlahEntryData, IMockEntry
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);

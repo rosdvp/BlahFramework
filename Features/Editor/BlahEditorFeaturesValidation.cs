@@ -11,47 +11,23 @@ namespace Blah.Features.Editor
 {
 internal static class BlahEditorFeaturesValidation
 {
-	[MenuItem("Blah/Features/Report issues")]
-	public static void ReportFeaturesIssues()
-	{
-		var sb = new StringBuilder();
-		sb.AppendLine("--- features issues report ---");
-		foreach (var feature in BlahReflection.InstantiateGameTypesWithBaseType<BlahFeatureBase>())
-			try
-			{
-				BlahFeaturesValidator.Validate(feature);
-			}
-			catch (BlahFeatureValidatorException exc)
-			{
-				sb.AppendLine(exc.Message);
-			}
-		sb.AppendLine("---------------------------------");
-		Debug.Log(sb.ToString());
-	}
-	
-	[MenuItem("Blah/Features/Report unused features")]
+	[MenuItem("Blah/Framework/Report unused features")]
 	public static void ReportUnUsedFeatures()
 	{
-		Type contextType   = null;
-		var  featuresInProject = new HashSet<Type>();
+		var featuresInProject = new HashSet<Type>();
 		
 		foreach (var type in BlahReflection.EnumerateGameTypes())
-			if (type.BaseType == typeof(BlahContextBase))
-				contextType = type;
-			else if (type.BaseType == typeof(BlahFeatureBase))
+			if (type.BaseType == typeof(BlahFeatureBase))
 				featuresInProject.Add(type);
 
-		object context = Activator.CreateInstance(contextType);
+		var context = BlahReflection.InstantiateGameTypeWithBaseType<BlahContextBase>();
 		
-		var featuresGroups = (Dictionary<int, List<BlahFeatureBase>>)
-			BlahReflection.GetContextFeaturesGroups(context);
-		foreach ((int groupId, var features) in featuresGroups)
+		foreach (var (_, features) in context.FeaturesGroups)
 		foreach (var feature in features)
 			featuresInProject.Remove(feature.GetType());
 
-		var bgFeatures = (List<BlahFeatureBase>)BlahReflection.GetContextBackgroundFeatures(context);
-		if (bgFeatures != null)
-			foreach (var bgFeature in bgFeatures)
+		if (context.BackgroundFeatures != null)
+			foreach (var bgFeature in context.BackgroundFeatures)
 				featuresInProject.Remove(bgFeature.GetType());
 
 		var sb = new StringBuilder();
@@ -63,7 +39,7 @@ internal static class BlahEditorFeaturesValidation
 	}
 
 	
-	[MenuItem("Blah/Features/Report unused systems")]
+	[MenuItem("Blah/Framework/Report unused systems")]
 	public static void ReportUnUsedSystems()
 	{
 		var featuresInProject = new HashSet<Type>();
@@ -78,19 +54,11 @@ internal static class BlahEditorFeaturesValidation
 			         type.GetInterface(nameof(IBlahResumeSystem)) != null)
 				systemsInProject.Add(type);
 
-		foreach (var feature in featuresInProject)
+		foreach (var featureType in featuresInProject)
 		{
-			object featureObj = Activator.CreateInstance(feature);
-			var prop = typeof(BlahFeatureBase).GetProperty(
-				"Systems",
-				BindingFlags.Instance |
-				BindingFlags.Public |
-				BindingFlags.NonPublic
-			);
-			var systems = (IReadOnlyList<Type>)prop.GetValue(featureObj);
-			if (systems != null)
-				foreach (var system in systems)
-					systemsInProject.Remove(system);
+			var feature = (BlahFeatureBase)Activator.CreateInstance(featureType);
+			foreach (var system in feature.Systems)
+				systemsInProject.Remove(system.GetType());
 		}
 
 		var sb = new StringBuilder();
@@ -102,7 +70,7 @@ internal static class BlahEditorFeaturesValidation
 	}
 	
 	
-	[MenuItem("Blah/Features/Report duplicating systems")]
+	[MenuItem("Blah/Framework/Report duplicating systems")]
 	public static void ReportDuplicatingSystems()
 	{
 		var systemsInProject  = new HashSet<Type>();
@@ -111,22 +79,14 @@ internal static class BlahEditorFeaturesValidation
 		foreach (var type in BlahReflection.EnumerateGameTypes())
 			if (type.BaseType == typeof(BlahFeatureBase))
 			{
-				object featureObj = Activator.CreateInstance(type);
-				var prop = typeof(BlahFeatureBase).GetProperty(
-					"Systems",
-					BindingFlags.Instance |
-					BindingFlags.Public |
-					BindingFlags.NonPublic
-				);
-				var systems = (IReadOnlyList<Type>)prop.GetValue(featureObj);
-				if (systems != null)
-					foreach (var system in systems)
-					{
-						if (systemsInProject.Contains(system))
-							systemsDuplicates.Add(system);
-						else
-							systemsInProject.Add(system);
-					}
+				var feature = (BlahFeatureBase)Activator.CreateInstance(type);
+				foreach (var system in feature.Systems)
+				{
+					if (systemsInProject.Contains(system.GetType()))
+						systemsDuplicates.Add(system.GetType());
+					else
+						systemsInProject.Add(system.GetType());
+				}
 			}
 
 		var sb = new StringBuilder();

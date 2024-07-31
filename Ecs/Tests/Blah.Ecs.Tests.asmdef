@@ -4,8 +4,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Blah.Ecs",
-        "Blah.Injection"
+        "BlahFramework"
     ],
     "includePlatforms": [
         "Editor"

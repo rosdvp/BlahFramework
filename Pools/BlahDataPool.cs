@@ -5,7 +5,7 @@ namespace Blah.Pools
 {
 public interface IBlahEntryData { }
 
-public interface IBlahDataConsumer<T> where T : IBlahEntryData
+public interface IBlahDataGet<T> where T : IBlahEntryData
 {
 	public bool IsEmpty { get; }
 	public int  Count   { get; }
@@ -34,7 +34,7 @@ public interface IBlahDataConsumer<T> where T : IBlahEntryData
 	public void Sort(Comparison<T> comp);
 }
 
-public interface IBlahDataProducer<T> where T : IBlahEntryData
+public interface IBlahDataAdd<T> where T : IBlahEntryData
 {
 	public ref T Add();
 	public ref T Add(out BlahDataPtr ptr);
@@ -42,8 +42,8 @@ public interface IBlahDataProducer<T> where T : IBlahEntryData
 
 internal class BlahDataPool<T> :
 	BlahPool<T>,
-	IBlahDataConsumer<T>,
-	IBlahDataProducer<T> where T : IBlahEntryData
+	IBlahDataGet<T>,
+	IBlahDataAdd<T> where T : IBlahEntryData
 {
 	private BlahSet<BlahDataPtr> _set = new(1, 0);
 

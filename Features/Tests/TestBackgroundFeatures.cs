@@ -15,8 +15,8 @@ internal class TestBackgroundFeatures
 		context.Init(null, null);
 
 
-		var systemsA = context.GetAllSystems(0);
-		var systemsB = context.GetAllSystems(1);
+		var systemsA = context.TestsGetAllSystems(0);
+		var systemsB = context.TestsGetAllSystems(1);
 		
 		Assert.AreEqual(typeof(MockSystemA1), systemsA[0].GetType());
 		Assert.AreEqual(typeof(MockSystemBg), systemsA[1].GetType());
@@ -33,13 +33,13 @@ internal class TestBackgroundFeatures
 	
 	private class MockContext : BlahContextBase
 	{
-		protected override Dictionary<int, List<BlahFeatureBase>> FeaturesGroups { get; } = new()
+		public override Dictionary<int, List<BlahFeatureBase>> FeaturesGroups { get; } = new()
 		{
 			{ 0, new List<BlahFeatureBase> { new MockFeatureA() } },
 			{ 1, new List<BlahFeatureBase> { new MockFeatureB() } }
 		};
 
-		protected override List<BlahFeatureBase> BackgroundFeatures { get; } = new()
+		public override List<BlahFeatureBase> BackgroundFeatures { get; } = new()
 		{
 			new MockFeatureBg()
 		};
@@ -47,85 +47,58 @@ internal class TestBackgroundFeatures
 
 	private class MockFeatureA : BlahFeatureBase
 	{
-		public override HashSet<Type> ConsumingFromOutside { get; } = new()
+		public override IReadOnlyList<IBlahSystem> Systems { get; } = new IBlahSystem[]
 		{
-			typeof(MockEv3)
-		};
-		public override HashSet<Type> Producing { get; } = new()
-		{
-			typeof(MockEv1)
-		};
-		public override HashSet<Type> Services             { get; }
-		public override IReadOnlyList<Type> Systems { get; } = new[]
-		{
-			typeof(MockSystemA1),
-			typeof(MockSystemA2)
+			new MockSystemA1(),
+			new MockSystemA2(),
 		};
 	}
 
 	private class MockFeatureB : BlahFeatureBase
 	{
-		public override HashSet<Type> ConsumingFromOutside { get; } = new()
+		public override IReadOnlyList<IBlahSystem> Systems { get; } = new IBlahSystem[]
 		{
-			typeof(MockEv3)
-		};
-		public override HashSet<Type> Producing { get; } = new()
-		{
-			typeof(MockEv2)
-		};
-		public override HashSet<Type>       Services             { get; }
-		public override IReadOnlyList<Type> Systems { get; } = new[]
-		{
-			typeof(MockSystemB1),
-			typeof(MockSystemB2)
+			new MockSystemB1(),
+			new MockSystemB2(),
 		};
 	}
 
 	private class MockFeatureBg : BlahFeatureBase
 	{
-		public override HashSet<Type> ConsumingFromOutside { get; } = new()
+		public override IReadOnlyList<IBlahSystem> Systems { get; } = new[]
 		{
-			typeof(MockEv1)
-		};
-		public override HashSet<Type> Producing { get; } = new()
-		{
-			typeof(MockEv3)
-		};
-		public override HashSet<Type>       Services             { get; }
-		public override IReadOnlyList<Type> Systems { get; } = new[]
-		{
-			typeof(MockSystemBg)
+			new MockSystemBg()
 		};
 	}
 
 	private class MockSystemA1 : MockSystemBase
 	{
-		private IBlahSignalProducer<MockEv1> _ev1;
+		private IBlahSignalWrite<MockEv1> _ev1;
 	}
 
 	private class MockSystemA2 : MockSystemBase
 	{
-		private IBlahSignalConsumer<MockEv1> _ev1;
-		private IBlahSignalConsumer<MockEv3> _ev3;
+		private IBlahSignalRead<MockEv1> _ev1;
+		private IBlahSignalRead<MockEv3> _ev3;
 	}
 
 	private class MockSystemB1 : MockSystemBase
 	{
-		private IBlahSignalConsumer<MockEv3> _ev3;
+		private IBlahSignalRead<MockEv3> _ev3;
 		
-		private IBlahSignalProducer<MockEv2> _ev2;
+		private IBlahSignalWrite<MockEv2> _ev2;
 	}
 
 	private class MockSystemB2 : MockSystemBase
 	{
-		private IBlahSignalConsumer<MockEv2> _ev2;
+		private IBlahSignalRead<MockEv2> _ev2;
 	}
 
 	private class MockSystemBg : MockSystemBase
 	{
-		private IBlahSignalConsumer<MockEv1> _ev1;
+		private IBlahSignalRead<MockEv1> _ev1;
 		
-		private IBlahSignalProducer<MockEv3> _ev3;
+		private IBlahSignalWrite<MockEv3> _ev3;
 	}
 
 	private class MockSystemBase : IBlahInitSystem, IBlahResumeSystem, IBlahPauseSystem, IBlahRunSystem

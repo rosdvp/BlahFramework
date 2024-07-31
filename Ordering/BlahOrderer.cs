@@ -36,35 +36,13 @@ public static class BlahOrderer
 		var systemToVisitState  = new Dictionary<Type, bool>();
 		var result              = new List<Type>();
 
-		foreach (var (priority, beforeAllSystems) in cache.EnumerateBeforeAllSystems())
+		foreach (var (priority, prioritySystems) in cache.EnumeratePrioritySystemsPairsFromMaxToMin())
 			BlahOrdererTpSort.Sort(
 				priority,
-				beforeAllSystems,
+				prioritySystems,
 				systemToPrevSystems,
 				systemToVisitState,
-				result
-			);
-
-		var nonPrioritySystems = new HashSet<Type>();
-		foreach (var system in systems)
-			if (cache.GetSystemPriority(system) == 0)
-				nonPrioritySystems.Add(system);
-		BlahOrdererTpSort.Sort(
-			0,
-			nonPrioritySystems,
-			systemToPrevSystems,
-			systemToVisitState,
-			result
-		);
-
-		foreach (var (priority, afterAllSystems) in cache.EnumerateAfterAllSystems())
-			BlahOrdererTpSort.Sort(
-				priority,
-				afterAllSystems,
-				systemToPrevSystems,
-				systemToVisitState,
-				result
-			);
+				result);
 		
 		BlahOrdererTpSort.ThrowOnFinalCheck(result, systemToPrevSystems);
 
@@ -76,17 +54,17 @@ public static class BlahOrderer
 	private static void AddDependenciesFromConsumingsProducings(Cache cache, List<Type> systems)
 	{
 		foreach (var system in systems)
-		foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
-			if (kind is BlahReflection.EKind.SignalConsumer or BlahReflection.EKind.SoloSignalConsumer)
-				cache.AddSystemConsumingType(system, type);
-			else if (kind is BlahReflection.EKind.SignalProducer or BlahReflection.EKind.SoloSignalProducer)
-				cache.AddSystemProducingType(system, type);
+		foreach (var (type, isWrite) in BlahReflection.EnumerateSystemSignals(system))
+			if (isWrite)
+				cache.AddSystemSignalWrite(system, type);
+			else
+				cache.AddSystemSignalRead(system, type);
 
 		foreach (var system in systems)
-			if (cache.TryGetTypesThatSystemConsume(system, out var consumingTypes))
-				foreach (var type in consumingTypes)
-					if (cache.TryGetSystemsThatProduceType(type, out var producingSystems))
-						cache.AddSystemsDependency(producingSystems, system);
+			if (cache.TryGetSignalsThatSystemRead(system, out var signalsRead))
+				foreach (var signal in signalsRead)
+					if (cache.TryGetSystemsThatWriteSignal(signal, out var writeSystems))
+						cache.AddSystemsDependency(writeSystems, system);
 	}
 
 	private static void AddDirectBeforeAfterDependencies(Cache cache, List<Type> systems)
@@ -102,11 +80,22 @@ public static class BlahOrderer
 	private static void SplitIntoPriorities(Cache cache, List<Type> systems)
 	{
 		foreach (var system in systems)
-		foreach (var attr in BlahReflection.EnumerateAttributes(system))
-			if (attr is BlahAfterAllAttribute afterAllAttr)
-				cache.SetSystemPriority(system, -(afterAllAttr.Priority + 1));
-			else if (attr is BlahBeforeAllAttribute beforeAllAttr)
-				cache.SetSystemPriority(system, beforeAllAttr.Priority + 1);
+		{
+			var isPrioritySet = false;
+			foreach (var attr in BlahReflection.EnumerateAttributes(system))
+				if (attr is BlahBeforeAllAttribute beforeAllAttr)
+				{
+					cache.SetSystemPriority(system, beforeAllAttr.Priority + 1);
+					isPrioritySet = true;
+				}
+				else if (attr is BlahAfterAllAttribute afterAllAttr)
+				{
+					cache.SetSystemPriority(system, -((int)afterAllAttr.Priority + 1));
+					isPrioritySet = true;
+				}
+			if (!isPrioritySet)
+				cache.SetSystemPriority(system, 0);
+		}
 
 		foreach (var (priority, rootSystem) in cache.EnumeratePrioritySystemPairsFromMaxToMinCopy())
 			if (priority > 0)
@@ -140,58 +129,100 @@ public static class BlahOrderer
 	//-----------------------------------------------------------
 	private class Cache
 	{
-		private Dictionary<Type, HashSet<Type>> _systemToConsumingTypes = new();
-		private Dictionary<Type, HashSet<Type>> _consumingTypeToSystems = new();
+		private Dictionary<Type, List<Type>> _systemToSignalsRead = new();
+		private Dictionary<Type, HashSet<Type>> _signalReadToSystems = new();
 
-		private Dictionary<Type, HashSet<Type>> _systemToProducingTypes = new();
-		private Dictionary<Type, HashSet<Type>> _producingTypeToSystems = new();
+		private Dictionary<Type, HashSet<Type>> _signalWriteToSystems = new();
 
 		// >0 - before all, <0 - after all 
-		private Dictionary<int, HashSet<Type>> _priorityToSystems = new();
-		private Dictionary<Type, int>          _systemToPriority  = new();
+		private Dictionary<int, List<Type>> _priorityToSystems = new();
+		private Dictionary<Type, int>       _systemToPriority  = new();
 
 		private Dictionary<Type, HashSet<Type>> _systemToPrevSystems = new();
 		private Dictionary<Type, HashSet<Type>> _systemToNextSystems = new();
 
 
-		public void AddSystemConsumingType(Type system, Type type)
+		public void AddSystemSignalRead(Type system, Type type)
 		{
-			if (_systemToConsumingTypes.TryGetValue(system, out var consumingTypes))
+			if (_systemToSignalsRead.TryGetValue(system, out var consumingTypes))
 				consumingTypes.Add(type);
 			else
-				_systemToConsumingTypes[system] = new HashSet<Type> { type };
+				_systemToSignalsRead[system] = new List<Type> { type };
 
-			if (_consumingTypeToSystems.TryGetValue(type, out var consumingSystems))
+			if (_signalReadToSystems.TryGetValue(type, out var consumingSystems))
 				consumingSystems.Add(system);
 			else
-				_consumingTypeToSystems[type] = new HashSet<Type> { system };
+				_signalReadToSystems[type] = new HashSet<Type> { system };
 		}
 
-		public bool TryGetTypesThatSystemConsume(Type system, out HashSet<Type> consumingTypes)
+		public bool TryGetSignalsThatSystemRead(Type system, out List<Type> signals)
 		{
-			return _systemToConsumingTypes.TryGetValue(system, out consumingTypes);
+			return _systemToSignalsRead.TryGetValue(system, out signals);
 		}
 
+		
 
-		public void AddSystemProducingType(Type system, Type type)
+		public void AddSystemSignalWrite(Type system, Type type)
 		{
-			if (_systemToProducingTypes.TryGetValue(system, out var producingTypes))
-				producingTypes.Add(type);
-			else
-				_systemToProducingTypes[system] = new HashSet<Type> { type };
-
-			if (_producingTypeToSystems.TryGetValue(type, out var producingSystems))
+			if (_signalWriteToSystems.TryGetValue(type, out var producingSystems))
 				producingSystems.Add(system);
 			else
-				_producingTypeToSystems[type] = new HashSet<Type> { system };
+				_signalWriteToSystems[type] = new HashSet<Type> { system };
 		}
 
-		public bool TryGetSystemsThatProduceType(Type producingType, out HashSet<Type> producingSystems)
+		public bool TryGetSystemsThatWriteSignal(Type producingType, out HashSet<Type> systems)
 		{
-			return _producingTypeToSystems.TryGetValue(producingType, out producingSystems);
+			return _signalWriteToSystems.TryGetValue(producingType, out systems);
+		}
+		
+		
+		
+		public void SetSystemPriority(Type system, int priority)
+		{
+			if (_systemToPriority.TryGetValue(system, out int oldPriority))
+				_priorityToSystems[oldPriority].Remove(system);
+
+			_systemToPriority[system] = priority;
+
+			if (_priorityToSystems.TryGetValue(priority, out var systems))
+				systems.Add(system);
+			else
+				_priorityToSystems[priority] = new List<Type> { system };
 		}
 
+		public int GetSystemPriority(Type system) => _systemToPriority[system];
 
+		public IEnumerable<(int, Type)> EnumeratePrioritySystemPairsFromMaxToMinCopy()
+		{
+			var result = new List<Type>();
+			foreach (int priority in GetSortedPriorities())
+				if (_priorityToSystems.TryGetValue(priority, out var systems))
+				{
+					result.Clear();
+					result.AddRange(systems);
+					foreach (var r in result)
+						yield return (priority, r);
+				}
+		}
+
+		public IEnumerable<(int, List<Type>)> EnumeratePrioritySystemsPairsFromMaxToMin()
+		{
+			foreach (int priority in GetSortedPriorities())
+				if (_priorityToSystems.TryGetValue(priority, out var systems))
+					yield return (priority, systems);
+		}
+		
+		private List<int> GetSortedPriorities()
+		{
+			var priorities = new List<int>();
+			foreach (int priority in _priorityToSystems.Keys)
+				priorities.Add(priority);
+			priorities.Sort();
+			priorities.Reverse();
+			return priorities;
+		}
+
+		
 		public void AddSystemsDependency(Type prevSystem, Type nextSystem)
 		{
 			if (_systemToPrevSystems.TryGetValue(nextSystem, out var prevSystems))
@@ -205,7 +236,7 @@ public static class BlahOrderer
 				_systemToNextSystems[prevSystem] = new HashSet<Type> { nextSystem };
 		}
 
-		public void AddSystemsDependency(IReadOnlyCollection<Type> prevSystems, Type nextSystem)
+		public void AddSystemsDependency(HashSet<Type> prevSystems, Type nextSystem)
 		{
 			if (_systemToPrevSystems.TryGetValue(nextSystem, out var cachedPrevSystems))
 				cachedPrevSystems.UnionWith(prevSystems);
@@ -218,53 +249,7 @@ public static class BlahOrderer
 				else
 					_systemToNextSystems[prevSystem] = new HashSet<Type> { nextSystem };
 		}
-
-		public void SetSystemPriority(Type system, int priority)
-		{
-			if (_systemToPriority.TryGetValue(system, out int oldPriority))
-				_priorityToSystems[oldPriority].Remove(system);
-
-			_systemToPriority[system] = priority;
-
-			if (_priorityToSystems.TryGetValue(priority, out var systems))
-				systems.Add(system);
-			else
-				_priorityToSystems[priority] = new HashSet<Type> { system };
-		}
-
-		public int GetSystemPriority(Type system)
-		{
-			return _systemToPriority.GetValueOrDefault(system, 0);
-		}
-
-		public IEnumerable<(int, Type)> EnumeratePrioritySystemPairsFromMaxToMinCopy()
-		{
-			var result = new List<Type>();
-			foreach (int priority in GetSortedPriorities())
-				if (_priorityToSystems.TryGetValue(priority, out var systems))
-				{
-					result.AddRange(systems);
-					foreach (var r in result)
-						yield return (priority, r);
-				}
-		}
-
-		public IEnumerable<(int, HashSet<Type>)> EnumerateBeforeAllSystems()
-		{
-			foreach (int priority in GetSortedPriorities())
-				if (priority > 0 && _priorityToSystems.TryGetValue(priority, out var systems))
-					yield return (priority, systems);
-		}
-
-		public IEnumerable<(int, HashSet<Type>)> EnumerateAfterAllSystems()
-		{
-			foreach (int priority in GetSortedPriorities())
-				if (priority < 0 && _priorityToSystems.TryGetValue(priority, out var systems))
-					yield return (priority, systems);
-		}
-
-
-
+		
 		public IEnumerable<Type> EnumerateAllPrevSystems(Type system)
 		{
 			if (!_systemToPrevSystems.TryGetValue(system, out var prevSystems))
@@ -292,17 +277,6 @@ public static class BlahOrderer
 		public Dictionary<Type, HashSet<Type>> GetSystemToPrevSystemsMap()
 		{
 			return _systemToPrevSystems;
-		}
-
-
-		private List<int> GetSortedPriorities()
-		{
-			var priorities = new List<int>();
-			foreach (int priority in _priorityToSystems.Keys)
-				priorities.Add(priority);
-			priorities.Sort();
-			priorities.Reverse();
-			return priorities;
 		}
 	}
 }

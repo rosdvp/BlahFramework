@@ -8,7 +8,7 @@ internal static class BlahOrdererTpSort
 {
 	public static void Sort(
 		int                                      systemsPriority,
-		ISet<Type>                               items,
+		IReadOnlyList<Type>                               items,
 		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems,
 		Dictionary<Type, bool>                   itemToVisitState,
 		List<Type>                               result)
@@ -48,7 +48,7 @@ internal static class BlahOrdererTpSort
 	}
 
 	public static void ThrowOnCyclic(
-		ICollection<Type>                items,
+		IReadOnlyList<Type>                items,
 		IReadOnlyDictionary<Type, HashSet<Type>> itemToPrevItems,
 		string                                   errorDesc,
 		int?                                     systemsPriority)

@@ -28,9 +28,13 @@ internal class TextInheritance
 			typeof(SystemE)
 		};
 		
-		BlahOrderer.Order(ref systems);
-		
-		AssertHelper.AssertEqual(expected, systems);
+		UnityEngine.Random.InitState(100);
+		for (var i = 0; i < 10; i++)
+		{
+			AssertHelper.Randomize(ref systems);
+			BlahOrderer.Order(ref systems);
+			AssertHelper.AssertEqual(expected, systems);	
+		}
 	}
 	
 
@@ -43,7 +47,7 @@ internal class TextInheritance
 
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 
@@ -51,25 +55,25 @@ internal class TextInheritance
 
 	private class SystemB : SystemBBase
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 		
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemCBase
 	{
-		private IBlahSignalConsumer<SignalB> _signalC;
+		private IBlahSignalRead<SignalB> _signalC;
 	}
 	
 	private class SystemC : SystemCBase
 	{
-		private IBlahSignalProducer<SignalC> _signalC;
+		private IBlahSignalWrite<SignalC> _signalC;
 	}
 
 	[BlahBefore(typeof(SystemE))]
 	private class SystemDBase
 	{
-		private IBlahSignalConsumer<SignalC> _signalC;	
+		private IBlahSignalRead<SignalC> _signalC;	
 	}
 
 	private class SystemD : SystemDBase { }

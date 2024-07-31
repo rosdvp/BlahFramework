@@ -92,7 +92,12 @@ public class BlahEcs
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public BlahEcsFilterCore GetFilterCore(List<Type> maskInc, List<Type> maskExc)
+	public T CreateFilter<T>() where T: BlahEcsFilter, new()
+	{
+		return BlahEcsFilter.Create<T>(this);
+	}
+	
+	internal BlahEcsFilterCore GetFilterCore(List<Type> maskInc, List<Type> maskExc)
 	{
 		// Calculate mask
 		maskInc.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));

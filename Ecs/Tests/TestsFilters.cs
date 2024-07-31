@@ -9,30 +9,30 @@ namespace Blah.Ecs.Tests
 internal class TestsFilters
 {
 	[Test]
-	public void Test_SameCompsInFilters_FiltersSame()
+	public void Test_SameCompsInFilters_FiltersCoresSame()
 	{
 		var ecs = new BlahEcs();
 
-		var filter1 = BlahEcsFilter.Create<FilterAB>(ecs);
-		var filter2 = BlahEcsFilter.Create<FilterAB>(ecs);
-		var filter3 = BlahEcsFilter.Create<FilterBA>(ecs);
+		var filter1 = ecs.CreateFilter<FilterAB>();
+		var filter2 = ecs.CreateFilter<FilterAB>();
+		var filter3 = ecs.CreateFilter<FilterBA>();
 		
-		Assert.AreEqual(filter1, filter2);
-		Assert.AreEqual(filter1, filter3);
-		Assert.AreEqual(filter2, filter3);
+		Assert.AreEqual(filter1.TestsCore, filter2.TestsCore);
+		Assert.AreEqual(filter1.TestsCore, filter3.TestsCore);
+		Assert.AreEqual(filter2.TestsCore, filter3.TestsCore);
 
 		
-		var filter4 = BlahEcsFilter.Create<FilterABC>(ecs);
-		var filter5 = BlahEcsFilter.Create<FilterAexcB>(ecs);
-		Assert.AreNotEqual(filter1, filter4);
-		Assert.AreNotEqual(filter1, filter5);
+		var filter4 = ecs.CreateFilter<FilterABC>();
+		var filter5 = ecs.CreateFilter<FilterAexcB>();
+		Assert.AreNotEqual(filter1.TestsCore, filter4.TestsCore);
+		Assert.AreNotEqual(filter1.TestsCore, filter5.TestsCore);
 		
-		var filter6 = BlahEcsFilter.Create<FilterAexcBC>(ecs);
-		var filter7 = BlahEcsFilter.Create<FilterAexcCB>(ecs);
-		Assert.AreEqual(filter6, filter7);
+		var filter6 = ecs.CreateFilter<FilterAexcBC>();
+		var filter7 = ecs.CreateFilter<FilterAexcCB>();
+		Assert.AreEqual(filter6.TestsCore, filter7.TestsCore);
 
-		var filter8 = BlahEcsFilter.Create<FilterBexcAC>(ecs);
-		Assert.AreNotEqual(filter7, filter8);
+		var filter8 = ecs.CreateFilter<FilterBexcAC>();
+		Assert.AreNotEqual(filter7.TestsCore, filter8.TestsCore);
 	}
 	
 	
@@ -41,7 +41,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 		
 		Assert.IsTrue(filter.IsEmpty);
 		
@@ -64,7 +64,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		for (var i = 0; i < count; i++)
 		{
@@ -85,7 +85,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		var ent1 = ecs.CreateEntity();
 		var ent2 = ecs.CreateEntity();
@@ -115,8 +115,8 @@ internal class TestsFilters
 		var ecs     = new BlahEcs();
 		var poolA   = ecs.GetCompFull<CompA>();
 		var poolB   = ecs.GetCompFull<CompB>();
-		var filterA = BlahEcsFilter.Create<FilterA>(ecs);
-		var filterB = BlahEcsFilter.Create<FilterB>(ecs);
+		var filterA = ecs.CreateFilter<FilterA>();
+		var filterB = ecs.CreateFilter<FilterB>();
 
 		foreach (var e in filterA)
 			Assert.Fail();
@@ -150,8 +150,8 @@ internal class TestsFilters
 		var ecs     = new BlahEcs();
 		var poolA   = ecs.GetCompFull<CompA>();
 		var poolB   = ecs.GetCompFull<CompB>();
-		var filterA = BlahEcsFilter.Create<FilterA>(ecs);
-		var filterB = BlahEcsFilter.Create<FilterB>(ecs);
+		var filterA = ecs.CreateFilter<FilterA>();
+		var filterB = ecs.CreateFilter<FilterB>();
 
 		var ent = ecs.CreateEntity();
 		poolA.Add(ent).Val = 2;
@@ -181,7 +181,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		var ent = ecs.CreateEntity();
 		pool.Add(ent).Val = 2;
@@ -212,8 +212,8 @@ internal class TestsFilters
 		var ent = ecs.CreateEntity();
 		pool.Add(ent).Val = 2;
         
-		var filterA = BlahEcsFilter.Create<FilterA>(ecs);
-		var filterB = BlahEcsFilter.Create<FilterB>(ecs);
+		var filterA = ecs.CreateFilter<FilterA>();
+		var filterB = ecs.CreateFilter<FilterB>();
 
 		var iterationsCount = 0;
 		foreach (var e in filterA)
@@ -232,7 +232,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		pool.Add(ecs.CreateEntity()).Val = 1;
 		pool.Add(ecs.CreateEntity()).Val = 2;
@@ -261,7 +261,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		for (var i = 0; i < 20; i++)
 		{
@@ -289,8 +289,8 @@ internal class TestsFilters
 		var ecs      = new BlahEcs();
 		var poolA    = ecs.GetCompFull<CompA>();
 		var poolB    = ecs.GetCompFull<CompB>();
-		var filterA  = BlahEcsFilter.Create<FilterA>(ecs);
-		var filterAb = BlahEcsFilter.Create<FilterAB>(ecs);
+		var filterA  = ecs.CreateFilter<FilterA>();
+		var filterAb = ecs.CreateFilter<FilterAB>();
 
 		var ent1 = ecs.CreateEntity();
 		poolA.Add(ent1).Val = 1;
@@ -334,7 +334,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		for (var i = 0; i < 10; i++)
 			pool.Add(ecs.CreateEntity()).Val = i;
@@ -364,7 +364,7 @@ internal class TestsFilters
 		var ecs    = new BlahEcs();
 		var poolA  = ecs.GetCompFull<CompA>();
 		var poolB  = ecs.GetCompFull<CompB>();
-		var filter = BlahEcsFilter.Create<FilterAexcB>(ecs);
+		var filter = ecs.CreateFilter<FilterAexcB>();
 
 		var ents = new List<BlahEcsEntity>();
 		ents.Add(ecs.CreateEntity());
@@ -402,7 +402,7 @@ internal class TestsFilters
 	{
 		var ecs    = new BlahEcs();
 		var pool   = ecs.GetCompFull<CompA>();
-		var filter = BlahEcsFilter.Create<FilterA>(ecs);
+		var filter = ecs.CreateFilter<FilterA>();
 
 		if (filter.TryGetAny(out var ent))
 			Assert.Fail();

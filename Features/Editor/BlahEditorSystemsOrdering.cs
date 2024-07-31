@@ -17,22 +17,18 @@ internal static class BlahEditorSystemsOrdering
 		sb.AppendLine("--- systems ordering issues ---");
 
 		var context = BlahReflection.InstantiateGameTypeWithBaseType<BlahContextBase>();
-		
-		var featuresGroups =
-			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesGroups(context);
-		var bgFeatures =
-			(List<BlahFeatureBase>)BlahReflection.GetContextBackgroundFeatures(context);
-		foreach ((int groupId, var features) in featuresGroups)
+
+		foreach ((int groupId, var features) in context.FeaturesGroups)
 		{
 			var systems = new List<Type>();
 			foreach (var feature in features)
 				if (feature.Systems != null)
 					foreach (var system in feature.Systems)
-						systems.Add(system);
-			if (bgFeatures != null)
-				foreach (var bgFeature in bgFeatures)
+						systems.Add(system.GetType());
+			if (context.BackgroundFeatures != null)
+				foreach (var bgFeature in context.BackgroundFeatures)
 				foreach (var bgSystem in bgFeature.Systems)
-					systems.Add(bgSystem);
+					systems.Add(bgSystem.GetType());
 			try
 			{
 				BlahOrderer.Order(ref systems, true);

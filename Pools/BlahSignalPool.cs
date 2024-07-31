@@ -4,7 +4,7 @@ namespace Blah.Pools
 {
 public interface IBlahEntrySignal { }
 
-public interface IBlahSignalConsumer<T> where T : IBlahEntrySignal
+public interface IBlahSignalRead<T> where T : IBlahEntrySignal
 {
 	public bool IsEmpty { get; }
 	public int  Count   { get; }
@@ -17,15 +17,15 @@ public interface IBlahSignalConsumer<T> where T : IBlahEntrySignal
 	public void Sort(Comparison<T> comp);
 }
 
-public interface IBlahSignalProducer<T> where T : IBlahEntrySignal
+public interface IBlahSignalWrite<T> where T : IBlahEntrySignal
 {
 	public ref T Add();
 }
 
 internal class BlahSignalPool<T> :
 	BlahPool<T>,
-	IBlahSignalConsumer<T>,
-	IBlahSignalProducer<T> where T : IBlahEntrySignal
+	IBlahSignalRead<T>,
+	IBlahSignalWrite<T> where T : IBlahEntrySignal
 {
 	public override void OnNextFrame()
 	{

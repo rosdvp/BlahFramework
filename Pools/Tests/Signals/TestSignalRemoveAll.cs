@@ -8,8 +8,8 @@ internal class TestSignalRemoveAll
     public void TestRemoveAll()
     {
         var context  = new BlahPoolsContext();
-        var consumer = context.GetSignalConsumer<MockSignalEntry>();
-        var producer = context.GetSignalProducer<MockSignalEntry>();
+        var consumer = context.GetSignalRead<MockSignalEntry>();
+        var producer = context.GetSignalWrite<MockSignalEntry>();
         
         for (var i = 0; i < 10; i++)
         {

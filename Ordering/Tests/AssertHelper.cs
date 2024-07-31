@@ -1,11 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using Random = UnityEngine.Random;
 
 namespace Blah.Ordering.Tests
 {
 internal static class AssertHelper
 {
+	public static void Randomize(ref List<Type> list)
+	{
+		var temp = new List<Type>(list);
+		list.Clear();
+		while (temp.Count > 0)
+		{
+			int idx = Random.Range(0, temp.Count);
+			list.Add(temp[idx]);
+			temp.RemoveAt(idx);
+		}
+	}
+	
 	public static void AssertEqual(IReadOnlyList<Type> expected, IReadOnlyList<Type> actual)
 	{
 		string errorStr = BuildErrorStr(expected, actual);

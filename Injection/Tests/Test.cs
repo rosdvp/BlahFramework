@@ -92,19 +92,19 @@ internal class Test
 
 		var injector = new BlahInjector();
 		injector.AddSource(source,
-		                   typeof(MockInhItemBase),
 		                   nameof(MockSource.GetInhItem),
-		                   BlahInjector.EMethodType.GenericAcceptFieldType
+		                   BlahInjector.EMethodType.TakeGenericReturnSimple,
+		                   typeof(MockInhItemBase)
 		);
 		injector.AddSource(source,
-		                   typeof(MockGenItemA<>),
 		                   nameof(MockSource.GetGenItemA),
-		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		                   BlahInjector.EMethodType.TakeGenericReturnGenericInSimple,
+		                   typeof(MockGenItemA<>)
 		);
 		injector.AddSource(source,
-		                   typeof(MockGenItemB<>),
 		                   nameof(MockSource.GetGenItemB),
-		                   BlahInjector.EMethodType.GenericAcceptGenericArgument
+		                   BlahInjector.EMethodType.TakeGenericReturnGenericInSimple,
+		                   typeof(MockGenItemB<>)
 		);
 		return injector;
 	}

@@ -9,8 +9,8 @@ internal class TestSignalContext
 	{
 		var context = new BlahPoolsContext();
 
-		var consumer = context.GetSignalConsumer<MockSignalEntry>();
-		var producer = context.GetSignalProducer<MockSignalEntry>();
+		var consumer = context.GetSignalRead<MockSignalEntry>();
+		var producer = context.GetSignalWrite<MockSignalEntry>();
 		
 		Assert.AreSame(producer, consumer);
 	}

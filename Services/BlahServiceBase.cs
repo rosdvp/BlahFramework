@@ -6,27 +6,25 @@ public abstract class BlahServiceBase
 {
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	internal EState State { get; private set; }
+	private EState _state;
 
-	internal void Init(IBlahServicesInitData initData, IBlahServicesContainerLazy container)
+	internal void TryInit(IBlahServicesInitData initData, IBlahServicesContainerLazy container)
 	{
-		if (State == EState.Initing)
-			throw new Exception($"services {GetType()} is already initing, " +
-			                    $"perhaps, there is some cycling dependencies in init"
-			);
+		if (_state == EState.Inited)
+			return;
+		
+		if (_state == EState.Initing)
+			throw new Exception($"{GetType().Name} has cycling dependencies in init");
 
-		if (State == EState.Inited)
-			throw new Exception($"service {GetType()} is already inited");
-
-		State = EState.Initing;
+		_state = EState.Initing;
 		InitImpl(initData, container);
-		State = EState.Inited;
+		_state = EState.Inited;
 	}
 
 	protected abstract void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services);
 	
 
-	internal enum EState
+	private enum EState
 	{
 		None,
 		Initing,

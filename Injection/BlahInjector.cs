@@ -10,20 +10,24 @@ public class BlahInjector
 	private readonly Dictionary<Type, Source> _injectableFieldTypeToSource = new();
 	private readonly Dictionary<Type, object> _fieldTypeToObject           = new();
 
+	public void AddSimpleInjectable<T>(T obj)
+	{
+		_fieldTypeToObject.TryAdd(typeof(T), obj);
+	}
 	
 	public void AddSource(
-		object  obj,
-		Type    fieldBaseType,
-		string  methodBaseName,
-		EMethodType methodType)
+		object      sourceObj,
+		string      sourceMethodName,
+		EMethodType sourceMethodType,
+		Type        targetFieldType)
 	{
 		_injectableFieldTypeToSource.TryAdd(
-			fieldBaseType,
+			targetFieldType,
 			new Source
 			{
-				Obj            = obj,
-				MethodBaseName = methodBaseName,
-				MethodType = methodType
+				Obj            = sourceObj,
+				MethodBaseName = sourceMethodName,
+				MethodType     = sourceMethodType
 			}
 		);
 	}
@@ -90,11 +94,11 @@ public class BlahInjector
 			throw new Exception($"source {source.Obj.GetType().Name} does not have " +
 			                    $"base method with name {source.MethodBaseName}");
 
-		if (source.MethodType == EMethodType.GenericAcceptFieldType)
+		if (source.MethodType == EMethodType.TakeGenericReturnSimple)
 		{
 			method = method.MakeGenericMethod(field.FieldType);
 		}
-		else if (source.MethodType == EMethodType.GenericAcceptGenericArgument)
+		else if (source.MethodType == EMethodType.TakeGenericReturnGenericInSimple)
 		{
 			method = method.MakeGenericMethod(field.FieldType.GenericTypeArguments[0]);
 		}
@@ -112,11 +116,11 @@ public class BlahInjector
 	public enum EMethodType
 	{
 		// public TestClass GetTest() => new Test();
-		Simple,
+		TakeSimpleReturnSimple,
 		// public T Get<T>() => new T();
-		GenericAcceptFieldType,
-		// public TestClass<T>() => new TestClass<T>();
-		GenericAcceptGenericArgument,
+		TakeGenericReturnSimple,
+		// public TestClass<T> Get<T>() => new TestClass<T>();
+		TakeGenericReturnGenericInSimple,
 	}
 }
 }

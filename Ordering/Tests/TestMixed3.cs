@@ -17,10 +17,14 @@ internal class TextMixed3
 		var d       = typeof(SystemD);
 		var systems = new List<Type> { d, c, b, a };
 		
-		BlahOrderer.Order(ref systems);
-		
-		Assert.IsTrue(systems.IndexOf(a) < systems.IndexOf(b));
-		Assert.IsTrue(systems.IndexOf(c) < systems.IndexOf(d));
+		UnityEngine.Random.InitState(100);
+		for (var i = 0; i < 10; i++)
+		{
+			AssertHelper.Randomize(ref systems);
+			BlahOrderer.Order(ref systems);
+			Assert.IsTrue(systems.IndexOf(a) < systems.IndexOf(b));
+			Assert.IsTrue(systems.IndexOf(c) < systems.IndexOf(d));
+		}
 	}
 	
 
@@ -31,23 +35,23 @@ internal class TextMixed3
 	[BlahAfterAll]
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	private class SystemB
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 	}
 
 	[BlahAfterAll]
 	private class SystemC
 	{
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemD
 	{
-		private IBlahSignalConsumer<SignalB> _signalB;
+		private IBlahSignalRead<SignalB> _signalB;
 	}
 }
 }

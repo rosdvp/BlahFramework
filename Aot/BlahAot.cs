@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using Blah.Ecs;
 using Blah.Pools;
 using Blah.Reflection;
 using Blah.Services;
@@ -22,18 +23,27 @@ public static class BlahAot
 			var interfaces = type.GetInterfaces();
 			if (Array.IndexOf(interfaces, typeof(IBlahEntrySignal)) != -1)
 			{
-				sb.AppendLine($"pools.GetSignalConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetSignalProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetSignalRead<{type.FullName}>();");
+				sb.AppendLine($"pools.GetSignalWrite<{type.FullName}>();");
 			}
 			if (Array.IndexOf(interfaces, typeof(IBlahEntryData)) != -1)
 			{
-				sb.AppendLine($"pools.GetDataConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetDataProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetDataGetter<{type.FullName}>();");
+				sb.AppendLine($"pools.GetDataAdder<{type.FullName}>();");
 			}
-			if (Array.IndexOf(interfaces, typeof(IBlahEntryNextFrameSignal)) != -1)
+			if (Array.IndexOf(interfaces, typeof(IBlahEntryNfSignal)) != -1)
 			{
-				sb.AppendLine($"pools.GetNfSignalConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetNfSignalProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetNfSignalRead<{type.FullName}>();");
+				sb.AppendLine($"pools.GetNfSignalWrite<{type.FullName}>();");
+			}
+			if (Array.IndexOf(interfaces, typeof(IBlahEntryEcs)) != -1)
+			{
+				sb.AppendLine($"ecs.GetCompGetter<{type.FullName}>();");
+				sb.AppendLine($"ecs.GetCompFull<{type.FullName}>();");
+			}
+			if (type.BaseType == typeof(BlahEcsFilter))
+			{
+				sb.AppendLine($"ecs.CreateFilter<{type.FullName}>");
 			}
 			if (type.BaseType == typeof(BlahServiceBase))
 			{
@@ -66,6 +76,7 @@ public static class BlahPoolsAotGenerated
 	private static void Preserve()
 	{
 		var pools = new BlahPoolsContext();
+		var ecs = new BlahEcs();
 		var services = new BlahServicesContext(null);
 		[CODEGEN]
 	}	

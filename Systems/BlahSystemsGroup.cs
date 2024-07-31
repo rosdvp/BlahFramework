@@ -16,9 +16,6 @@ public class BlahSystemsGroup
 	private bool _isInited;
 	private bool _isActive;
 
-	/// <summary>
-	/// Add system to the group.
-	/// </summary>
 	public BlahSystemsGroup AddSystem(IBlahSystem system)
 	{
 		if (_isInited)

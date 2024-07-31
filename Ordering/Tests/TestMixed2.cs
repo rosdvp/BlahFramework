@@ -24,9 +24,13 @@ internal class TextMixed2
 			typeof(SystemC)
 		};
 		
-		BlahOrderer.Order(ref systems);
-		
-		AssertHelper.AssertOrder(expected, systems);
+		UnityEngine.Random.InitState(100);
+		for (var i = 0; i < 10; i++)
+		{
+			AssertHelper.Randomize(ref systems);
+			BlahOrderer.Order(ref systems);
+			AssertHelper.AssertEqual(expected, systems);	
+		}
 	}
 	
 
@@ -36,19 +40,19 @@ internal class TextMixed2
 
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	[BlahAfterAll]
 	private class SystemB
 	{
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemC
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
-		private IBlahSignalConsumer<SignalB> _signalB;
+		private IBlahSignalRead<SignalA> _signalA;
+		private IBlahSignalRead<SignalB> _signalB;
 	}
 }
 }

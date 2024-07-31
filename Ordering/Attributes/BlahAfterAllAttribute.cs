@@ -5,13 +5,10 @@ namespace Blah.Ordering.Attributes
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class BlahAfterAllAttribute : Attribute
 {
-	public readonly int Priority;
+	public readonly uint Priority;
 
-	public BlahAfterAllAttribute(int priority = 0)
+	public BlahAfterAllAttribute(uint priority = 0)
 	{
-		if (priority < 0)
-			throw new Exception("priority must be >= 0");
-		
 		Priority = priority;
 	}
 }

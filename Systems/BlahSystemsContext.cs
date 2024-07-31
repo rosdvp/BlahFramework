@@ -12,12 +12,6 @@ public class BlahSystemsContext
 
 	private readonly Action _cbBetweenPauseAndResume;
 
-	/// <param name="systemsInitData">
-	/// Passed to systems' Init.
-	/// </param>
-	/// <param name="cbBetweenPauseAndResume">
-	/// Invoked after old group pause and before new group resume.
-	/// </param>
 	public BlahSystemsContext(IBlahSystemsInitData systemsInitData, Action cbBetweenPauseAndResume)
 	{
 		_systemsInitData = systemsInitData;
@@ -33,10 +27,7 @@ public class BlahSystemsContext
 	private int? _requestedSwitchGroupId;
 	public  int? ActiveGroupId { get; private set; }
 
-	/// <summary>
-	/// Creates new group to add systems to.<br/>
-	/// </summary>
-	/// <remarks>No group is active by default.</remarks>
+
 	public BlahSystemsGroup AddGroup(int groupId)
 	{
 		if (_groupsMap.TryGetValue(groupId, out _))
@@ -80,9 +71,7 @@ public class BlahSystemsContext
 		ActiveGroupId = _requestedSwitchGroupId;
 	}
 
-	/// <summary>
-	/// Calls <see cref="IBlahRunSystem.Run"/> for the current group systems.<br/>
-	/// </summary>
+
 	public void Run()
 	{
 		if (_isSwitchRequested)
@@ -99,20 +88,5 @@ public class BlahSystemsContext
 	{
 		return _groupsMap[groupId].AllSystem;
 	}
-
-#if UNITY_EDITOR
-	public string DebugGetSystemsOrderMsg()
-	{
-		var sb = new StringBuilder();
-		foreach ((int groupId, var group) in _groupsMap)
-		{
-			sb.AppendLine($"--- group {groupId} ---");
-			foreach (var system in group.AllSystem)
-				sb.AppendLine(system.GetType().Name);
-			sb.AppendLine("---------------------");
-		}
-		return sb.ToString();
-	}
-#endif
 }
 }

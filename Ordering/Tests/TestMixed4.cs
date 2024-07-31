@@ -16,9 +16,13 @@ internal class TextMixed4
 		var c       = typeof(SystemC);
 		var systems = new List<Type> { b, c, a };
 		
-		BlahOrderer.Order(ref systems);
-		
-		Assert.IsTrue(systems.IndexOf(a) < systems.IndexOf(b));
+		UnityEngine.Random.InitState(100);
+		for (var i = 0; i < 10; i++)
+		{
+			AssertHelper.Randomize(ref systems);
+			BlahOrderer.Order(ref systems);
+			Assert.IsTrue(systems.IndexOf(a) < systems.IndexOf(b));
+		}
 	}
 	
 
@@ -27,13 +31,13 @@ internal class TextMixed4
 	[BlahAfterAll]
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	[BlahAfterAll]
 	private class SystemB
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 	}
 
 	[BlahAfterAll]

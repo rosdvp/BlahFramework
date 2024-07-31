@@ -14,7 +14,7 @@ public readonly struct BlahEcsGet<T> where T : IBlahEntryEcs
 {
 	private readonly BlahEcsPool<T> _pool;
 
-	public BlahEcsGet(BlahEcsPool<T> pool)
+	internal BlahEcsGet(BlahEcsPool<T> pool)
 	{
 		_pool = pool;
 	}
@@ -28,13 +28,17 @@ public readonly struct BlahEcsGet<T> where T : IBlahEntryEcs
 	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Include  inc) => new(inc.Get<T>());
 	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Optional opt) => new(opt.Get<T>());
 	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Exclude  exc) => new(exc.Get<T>());
+
+#if BLAH_TESTS
+	public object TestsPool => _pool;
+#endif
 }
 
 public readonly struct BlahEcsFull<T> where T : IBlahEntryEcs
 {
 	private readonly BlahEcsPool<T> _pool;
 
-	public BlahEcsFull(BlahEcsPool<T> pool)
+	internal BlahEcsFull(BlahEcsPool<T> pool)
 	{
 		_pool = pool;
 	}
@@ -48,7 +52,7 @@ public readonly struct BlahEcsFull<T> where T : IBlahEntryEcs
 	public bool TryRemove(BlahEcsEntity ent) => _pool.TryRemove(ent);
 }
 
-public class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
+internal class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
 {
 	private readonly BlahSet<T> _set = new(1, 0);
 

@@ -11,8 +11,8 @@ internal class TestSignalNested
 	public void TestIterating(int[] values)
 	{
 		var context  = new BlahPoolsContext();
-		var consumer = context.GetSignalConsumer<MockSignalEntry>();
-		var producer = context.GetSignalProducer<MockSignalEntry>();
+		var consumer = context.GetSignalRead<MockSignalEntry>();
+		var producer = context.GetSignalWrite<MockSignalEntry>();
 
 		foreach (int val in values)
 			producer.Add().Val = val;
@@ -34,8 +34,8 @@ internal class TestSignalNested
 	public void TestAdd()
 	{
 		var context  = new BlahPoolsContext();
-		var consumer = context.GetSignalConsumer<MockSignalEntry>();
-		var producer = context.GetSignalProducer<MockSignalEntry>();
+		var consumer = context.GetSignalRead<MockSignalEntry>();
+		var producer = context.GetSignalWrite<MockSignalEntry>();
 
 		var values = new[] { 1, 2, 3 };
 		
@@ -72,8 +72,8 @@ internal class TestSignalNested
 	public void TestRemove(int? valA, int? valB, int level)
 	{
 		var context  = new BlahPoolsContext();
-		var consumer = context.GetSignalConsumer<MockSignalEntry>();
-		var producer = context.GetSignalProducer<MockSignalEntry>();
+		var consumer = context.GetSignalRead<MockSignalEntry>();
+		var producer = context.GetSignalWrite<MockSignalEntry>();
 
 		var values = new[] { 1, 2, 3 };
 		

@@ -8,8 +8,8 @@ internal class TestDataAdd
     public void Test()
     {
         var context  = new BlahPoolsContext();
-        var producer = context.GetDataProducer<MockDataEntry>();
-        var consumer = context.GetDataConsumer<MockDataEntry>();
+        var producer = context.GetDataAdder<MockDataEntry>();
+        var consumer = context.GetDataGetter<MockDataEntry>();
         
         for (var i = 0; i < 10; i++)
         {
