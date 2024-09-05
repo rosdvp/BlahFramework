@@ -58,7 +58,7 @@ internal class TestsInjection
 		AssertFilter(system1.Filter6, new[] { typeof(CompA), typeof(CompB) }, new[] { typeof(CompC) });
 		AssertFilter(system1.Filter7, new[] { typeof(CompA), typeof(CompB) }, new[] { typeof(CompC) });
 
-		Assert.AreEqual(context.Ecs.GetCompGetter<CompA>(), system1.Filter1.A.TestsPool);
+		Assert.AreEqual(context.Ecs.GetCompGetter<CompA>(), system1.Filter1.A);
 		Assert.AreEqual(system1.Filter1.A, system2.Filter2A.A);
 		Assert.AreEqual(system1.Filter1.A, system2.Filter2B.A);
 		Assert.AreEqual(system1.Filter1.A, system2.Filter3.A);
@@ -102,49 +102,49 @@ internal class TestsInjection
 	{
 		public class FilterA : BlahEcsFilter
 		{
-			public BlahEcsGet<CompA> A = Inc;
+			public IBlahEcsGet<CompA> A;
 		}
 
 		public class FilterAB : BlahEcsFilter
 		{
-			public BlahEcsGet<CompA> A = Inc;
-			public BlahEcsGet<CompB> B = Inc;
+			public IBlahEcsGet<CompA> A;
+			public IBlahEcsGet<CompB> B;
 		}
 
 		public class FilterBA : BlahEcsFilter
 		{
-			public BlahEcsGet<CompB> B = Inc;
-			public BlahEcsGet<CompA> A = Inc;
+			public IBlahEcsGet<CompB> B;
+			public IBlahEcsGet<CompA> A;
 		}
 
 		public class FilterAexcB : BlahEcsFilter
 		{
-			public BlahEcsGet<CompA> A = Inc;
+			public IBlahEcsGet<CompA> A;
 
-			private BlahEcsGet<CompB> _b = Exc;
+			private BlahEcsFilterExc<CompB> _b;
 		}
 
 		public class FilterBexcA : BlahEcsFilter
 		{
-			public BlahEcsGet<CompB> B = Inc;
+			public IBlahEcsGet<CompB> B;
 
-			private BlahEcsGet<CompA> _a = Exc;
+			private BlahEcsFilterExc<CompA> _a;
 		}
 
 		public class FilterABexcC : BlahEcsFilter
 		{
-			public BlahEcsGet<CompA> A = Inc;
-			public BlahEcsGet<CompB> B = Inc;
+			public IBlahEcsGet<CompA> A;
+			public IBlahEcsGet<CompB> B;
 
-			private BlahEcsGet<CompC> _c = Exc;
+			private BlahEcsFilterExc<CompC> _c;
 		}
 
 		public class FilterBAexcC : BlahEcsFilter
 		{
-			public BlahEcsGet<CompB> B = Inc;
-			public BlahEcsGet<CompA> A = Inc;
+			public IBlahEcsGet<CompB> B;
+			public IBlahEcsGet<CompA> A;
 
-			private BlahEcsGet<CompC> _c = Exc;
+			private BlahEcsFilterExc<CompC> _c;
 		}
 
 

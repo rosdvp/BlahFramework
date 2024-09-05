@@ -421,62 +421,62 @@ internal class TestsFilters
 
 	private class FilterA : BlahEcsFilter
 	{
-		public BlahEcsGet<CompA> A = Inc;
+		public IBlahEcsGet<CompA> A;
 	}
 	
 	private class FilterB : BlahEcsFilter
 	{
-		public BlahEcsGet<CompB> B = Inc;
+		public IBlahEcsGet<CompB> B;
 	}
 
 	private class FilterAB : BlahEcsFilter
 	{
-		public BlahEcsGet<CompA> A = Inc;
-		public BlahEcsGet<CompB> B = Inc;
+		public IBlahEcsGet<CompA> A;
+		public IBlahEcsGet<CompB> B;
 	}
 
 	private class FilterAexcB : BlahEcsFilter
 	{
-		public BlahEcsGet<CompA> A = Inc;
+		public IBlahEcsGet<CompA> A;
 
-		public BlahEcsGet<CompB> B = Exc;
+		private BlahEcsFilterExc<CompB> _b;
 	}
 
 	private class FilterBA : BlahEcsFilter
 	{
-		public BlahEcsGet<CompB> B = Inc;
-		public BlahEcsGet<CompA> A = Inc;
+		public IBlahEcsGet<CompB> B;
+		public IBlahEcsGet<CompA> A;
 	}
 
 	private class FilterABC : BlahEcsFilter
 	{
-		public BlahEcsGet<CompA> A = Inc;
-		public BlahEcsGet<CompB> B = Inc;
-		public BlahEcsGet<CompC> C = Inc;
+		public IBlahEcsGet<CompA> A;
+		public IBlahEcsGet<CompB> B;
+		public IBlahEcsGet<CompC> C;
 	}
 
 	private class FilterAexcBC : BlahEcsFilter
 	{
-		public BlahEcsGet<CompA> A = Inc;
+		public IBlahEcsGet<CompA> A;
 		
-		public BlahEcsGet<CompB> B = Exc;
-		public BlahEcsGet<CompC> C = Exc;
+		private BlahEcsFilterExc<CompB> _b;
+		private BlahEcsFilterExc<CompC> _c;
 	}
 	
 	private class FilterAexcCB : BlahEcsFilter
 	{
-		public BlahEcsGet<CompA> A = Inc;
+		public IBlahEcsGet<CompA> A;
 		
-		public BlahEcsGet<CompC> C = Exc;
-		public BlahEcsGet<CompB> B = Exc;
+		private BlahEcsFilterExc<CompC> _c;
+		private BlahEcsFilterExc<CompB> _b;
 	}
 
 	private class FilterBexcAC : BlahEcsFilter
 	{
-		public BlahEcsGet<CompB> B = Inc;
+		public IBlahEcsGet<CompB> B;
 		
-		public BlahEcsGet<CompA> A = Exc;
-		public BlahEcsGet<CompC> C = Exc;
+		private BlahEcsFilterExc<CompA> _a;
+		private BlahEcsFilterExc<CompC> _c;
 	}
 
 	private struct CompA : IBlahEntryEcs

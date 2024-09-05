@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Blah.Ecs
 {
+public struct BlahEcsFilterExc<T> where T : IBlahEntryEcs { }
+
 public abstract class BlahEcsFilter
 {
 	private BlahEcsFilterCore _core;
@@ -17,60 +20,44 @@ public abstract class BlahEcsFilter
 
 	public BlahEcsFilterCore.Enumerator GetEnumerator() => new(_core);
 
-
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	protected static Include  Inc => new();
-	protected static Optional Opt => new();
-	protected static Exclude  Exc => new();
-
-
-	public readonly ref struct Include
-	{
-		internal BlahEcsPool<T> Get<T>() where T : IBlahEntryEcs
-		{
-			_maskInc.Add(typeof(T));
-			return _ecs.GetPool<T>();
-		}
-	}
-
-	public readonly ref struct Optional
-	{
-		internal BlahEcsPool<T> Get<T>() where T : IBlahEntryEcs
-		{
-			return _ecs.GetPool<T>();
-		}
-	}
-
-	public readonly ref struct Exclude
-	{
-		internal BlahEcsPool<T> Get<T>() where T : IBlahEntryEcs
-		{
-			_maskExc.Add(typeof(T));
-			return _ecs.GetPool<T>();
-		}
-	}
-
-	//-----------------------------------------------------------
-	//-----------------------------------------------------------
-	private static BlahEcs    _ecs;
-	private static List<Type> _maskInc = new();
-	private static List<Type> _maskExc = new();
+	private static List<IBlahEcsCompInternal> _incPools = new();
+	private static List<IBlahEcsCompInternal> _excPools = new();
 
 
 	internal static T Create<T>(BlahEcs ecs) where T : BlahEcsFilter, new()
 	{
-		_maskInc.Clear();
-		_maskExc.Clear();
+		_incPools.Clear();
+		_excPools.Clear();
 
-		_ecs = ecs;
-		var filter = new T();
-		_ecs = null;
-
-		if (_maskInc.Count == 0)
+		var filter     = new T();
+		var filterType = typeof(T);
+		foreach (var field in filterType.GetFields(BindingFlags.Instance
+		                                           | BindingFlags.Public
+		                                           | BindingFlags.NonPublic
+		         ))
+		{
+			if (!field.FieldType.IsGenericType)
+				continue;
+			var genDef = field.FieldType.GetGenericTypeDefinition();
+			var genArg = field.FieldType.GetGenericArguments()[0];
+			if (genDef == typeof(IBlahEcsGet<>) || genDef == typeof(IBlahEcsFull<>))
+			{
+				var pool = ecs.GetPool(genArg);
+				_incPools.Add(pool);
+				field.SetValue(filter, pool);
+			}
+			else if (genDef == typeof(BlahEcsFilterExc<>))
+			{
+				var pool = ecs.GetPool(genArg);
+				_excPools.Add(pool);
+			}
+		}
+		if (_incPools.Count == 0)
 			throw new Exception($"{typeof(T).Name} does not have Inc pools");
 
-		filter._core = ecs.GetFilterCore(_maskInc, _maskExc);
+		filter._core = ecs.GetFilterCore(_incPools, _excPools);
 		return filter;
 	}
 

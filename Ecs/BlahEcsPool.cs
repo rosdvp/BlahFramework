@@ -5,6 +5,7 @@ namespace Blah.Ecs
 {
 internal interface IBlahEcsCompInternal
 {
+	public Type CompType { get; }
 	bool Has(BlahEcsEntity             ent);
 	void RemoveWithoutCb(BlahEcsEntity ent);
 	void Clear();
@@ -27,47 +28,6 @@ public interface IBlahEcsFull<T> where T : IBlahEntryEcs
 	public bool TryRemove(BlahEcsEntity ent);
 }
 
-public readonly struct BlahEcsGet<T> where T : IBlahEntryEcs
-{
-	private readonly BlahEcsPool<T> _pool;
-
-	internal BlahEcsGet(BlahEcsPool<T> pool)
-	{
-		_pool = pool;
-	}
-
-	public bool Has(BlahEcsEntity       ent) => _pool.Has(ent);
-	public ref T Get(BlahEcsEntity      ent) => ref _pool.Get(ent);
-	public void Remove(BlahEcsEntity    ent) => _pool.Remove(ent);
-	public bool TryRemove(BlahEcsEntity ent) => _pool.TryRemove(ent);
-
-
-	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Include  inc) => new(inc.Get<T>());
-	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Optional opt) => new(opt.Get<T>());
-	public static implicit operator BlahEcsGet<T>(BlahEcsFilter.Exclude  exc) => new(exc.Get<T>());
-
-#if BLAH_TESTS
-	public object TestsPool => _pool;
-#endif
-}
-
-public readonly struct BlahEcsFull<T> where T : IBlahEntryEcs
-{
-	private readonly BlahEcsPool<T> _pool;
-
-	internal BlahEcsFull(BlahEcsPool<T> pool)
-	{
-		_pool = pool;
-	}
-
-	public ref T Add(BlahEcsEntity ent) => ref _pool.Add(ent);
-
-	public bool Has(BlahEcsEntity  ent) => _pool.Has(ent);
-	public ref T Get(BlahEcsEntity ent) => ref _pool.Get(ent);
-
-	public void Remove(BlahEcsEntity    ent) => _pool.Remove(ent);
-	public bool TryRemove(BlahEcsEntity ent) => _pool.TryRemove(ent);
-}
 
 internal class BlahEcsPool<T> : IBlahEcsCompInternal,
 	IBlahEcsGet<T>,
@@ -92,6 +52,8 @@ internal class BlahEcsPool<T> : IBlahEcsCompInternal,
 		_cbAdded   = cbAdded;
 		_cbRemoved = cbRemoved;
 	}
+
+	public Type CompType => typeof(T);
 	
 	public void Clear()
 	{

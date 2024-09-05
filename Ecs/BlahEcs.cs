@@ -96,56 +96,46 @@ public class BlahEcs
 	{
 		return BlahEcsFilter.Create<T>(this);
 	}
-	
-	internal BlahEcsFilterCore GetFilterCore(List<Type> maskInc, List<Type> maskExc)
+
+	internal BlahEcsFilterCore GetFilterCore(
+		List<IBlahEcsCompInternal> incPools,
+		List<IBlahEcsCompInternal> excPools)
 	{
 		// Calculate mask
-		maskInc.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
-		maskExc.Sort((a, b) => a.GetHashCode().CompareTo(b.GetHashCode()));
-		int hash = maskInc[0].GetHashCode();
-		for (var i = 1; i < maskInc.Count; i++)
-			hash = HashCode.Combine(hash, maskInc[i]);
+		incPools.Sort((a, b) => a.CompType.GetHashCode().CompareTo(b.CompType.GetHashCode()));
+		excPools.Sort((a, b) => a.CompType.GetHashCode().CompareTo(b.CompType.GetHashCode()));
+		int hash = incPools[0].CompType.GetHashCode();
+		for (var i = 1; i < incPools.Count; i++)
+			hash = HashCode.Combine(hash, incPools[i].CompType);
 		hash *= 31;
-		for (var i = 0; i < maskExc.Count; i++)
-			hash = HashCode.Combine(hash, maskExc[i]);
+		for (var i = 0; i < excPools.Count; i++)
+			hash = HashCode.Combine(hash, excPools[i].CompType);
 
 		// Try return existing filter with the same mask
 		if (_hashToFilter.TryGetValue(hash, out var filter))
 			return filter;
 
-		// Create a new filter and pass pools to it
-		var incPools = new IBlahEcsCompInternal[maskInc.Count];
-		for (var i = 0; i < incPools.Length; i++)
-			incPools[i] = GetPool(maskInc[i]);
 
-		IBlahEcsCompInternal[] excPools = null;
-		if (maskExc.Count > 0)
-		{
-			excPools = new IBlahEcsCompInternal[maskExc.Count];
-			for (var i = 0; i < excPools.Length; i++)
-				excPools[i] = GetPool(maskExc[i]);
-		}
-
-		filter = new BlahEcsFilterCore(_entities, incPools, excPools);
+		filter = new BlahEcsFilterCore(_entities, incPools.ToArray(), excPools.ToArray());
 		_filters.Add(filter);
 		_hashToFilter[hash] = filter;
 
 		// Register filter for comps updates
-		foreach (var type in maskInc)
+		foreach (var incPool in incPools)
 		{
-			if (!_incCompToFilters.TryGetValue(type, out var filters))
+			if (!_incCompToFilters.TryGetValue(incPool.CompType, out var filters))
 			{
-				filters                 = new List<BlahEcsFilterCore>();
-				_incCompToFilters[type] = filters;
+				filters                             = new List<BlahEcsFilterCore>();
+				_incCompToFilters[incPool.CompType] = filters;
 			}
 			filters.Add(filter);
 		}
-		foreach (var type in maskExc)
+		foreach (var excPool in excPools)
 		{
-			if (!_excCompToFilters.TryGetValue(type, out var filters))
+			if (!_excCompToFilters.TryGetValue(excPool.CompType, out var filters))
 			{
-				filters                 = new List<BlahEcsFilterCore>();
-				_excCompToFilters[type] = filters;
+				filters                             = new List<BlahEcsFilterCore>();
+				_excCompToFilters[excPool.CompType] = filters;
 			}
 			filters.Add(filter);
 		}
