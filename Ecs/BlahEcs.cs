@@ -57,11 +57,11 @@ public class BlahEcs
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public BlahEcsGet<T> GetCompGetter<T>() where T : IBlahEntryEcs 
-		=> new(GetPool<T>());
+	public IBlahEcsGet<T> GetCompGetter<T>() where T : IBlahEntryEcs 
+		=> GetPool<T>();
 
-	public BlahEcsFull<T> GetCompFull<T>() where T : IBlahEntryEcs
-		=> new(GetPool<T>());
+	public IBlahEcsFull<T> GetCompFull<T>() where T : IBlahEntryEcs
+		=> GetPool<T>();
 	
 	internal BlahEcsPool<T> GetPool<T>() where T : IBlahEntryEcs
 	{

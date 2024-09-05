@@ -10,6 +10,23 @@ internal interface IBlahEcsCompInternal
 	void Clear();
 }
 
+public interface IBlahEcsGet<T> where T : IBlahEntryEcs
+{
+	public bool Has(BlahEcsEntity       ent);
+	public ref T Get(BlahEcsEntity      ent);
+	public void Remove(BlahEcsEntity    ent);
+	public bool TryRemove(BlahEcsEntity ent);
+}
+
+public interface IBlahEcsFull<T> where T : IBlahEntryEcs
+{
+	public ref T Add(BlahEcsEntity      ent);
+	public bool Has(BlahEcsEntity       ent);
+	public ref T Get(BlahEcsEntity      ent);
+	public void Remove(BlahEcsEntity    ent);
+	public bool TryRemove(BlahEcsEntity ent);
+}
+
 public readonly struct BlahEcsGet<T> where T : IBlahEntryEcs
 {
 	private readonly BlahEcsPool<T> _pool;
@@ -52,7 +69,10 @@ public readonly struct BlahEcsFull<T> where T : IBlahEntryEcs
 	public bool TryRemove(BlahEcsEntity ent) => _pool.TryRemove(ent);
 }
 
-internal class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
+internal class BlahEcsPool<T> : IBlahEcsCompInternal,
+	IBlahEcsGet<T>,
+	IBlahEcsFull<T>
+	where T : IBlahEntryEcs
 {
 	private readonly BlahSet<T> _set = new(1, 0);
 
@@ -101,13 +121,6 @@ internal class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
 		return ref comp;
 	}
 
-	public ref T Add(BlahEcsEntity? ent)
-	{
-		if (ent == null)
-			throw new Exception($"ent is null");
-		return ref Add(ent.Value);
-	}
-
 	public bool Has(BlahEcsEntity ent)
 	{
 		return ent.Id < _entityIdToPtr.Length
@@ -115,23 +128,11 @@ internal class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
 		       && _entities.IsAlive(ent);
 	}
 
-	public bool Has(BlahEcsEntity? ent)
-	{
-		return ent != null && Has(ent.Value);
-	}
-
 	public ref T Get(BlahEcsEntity ent)
 	{
 		if (!Has(ent))
 			throw new Exception($"{ent} does not have {typeof(T).Name}");
 		return ref _set.Get(_entityIdToPtr[ent.Id]);
-	}
-
-	public ref T Get(BlahEcsEntity? ent)
-	{
-		if (ent == null)
-			throw new Exception($"ent is null");
-		return ref Get(ent.Value);
 	}
 
 	public void Remove(BlahEcsEntity ent)
@@ -146,24 +147,12 @@ internal class BlahEcsPool<T> : IBlahEcsCompInternal where T : IBlahEntryEcs
 		_cbRemoved.Invoke(typeof(T), ent);
 	}
 
-	public void Remove(BlahEcsEntity? ent)
-	{
-		if (ent == null)
-			throw new Exception($"ent is null");
-		Remove(ent.Value);
-	}
-
 	public bool TryRemove(BlahEcsEntity ent)
 	{
 		if (!Has(ent))
 			return false;
 		Remove(ent);
         return true;
-	}
-
-	public bool TryRemove(BlahEcsEntity? ent)
-	{
-		return ent != null && TryRemove(ent.Value);
 	}
 
 	public void RemoveWithoutCb(BlahEcsEntity ent)

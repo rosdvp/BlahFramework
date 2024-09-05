@@ -140,7 +140,7 @@ public abstract class BlahContextBase
 		Injector.AddSource(Pools,
 		                   nameof(BlahPoolsContext.GetDataAdder),
 		                   BlahInjector.EMethodType.TakeGenericReturnGenericInSimple,
-		                   typeof(IBlahDataAdd<>)
+		                   typeof(IBlahDataFull<>)
 		);
 		Injector.AddSource(Services,
 		                   nameof(BlahServicesContext.Get),
@@ -151,12 +151,12 @@ public abstract class BlahContextBase
 		Injector.AddSource(Ecs,
 		                   nameof(BlahEcs.GetCompGetter),
 		                   BlahInjector.EMethodType.TakeGenericReturnGenericInSimple,
-		                   typeof(BlahEcsGet<>)
+		                   typeof(IBlahEcsGet<>)
 		);
 		Injector.AddSource(Ecs,
 		                   nameof(BlahEcs.GetCompFull),
 		                   BlahInjector.EMethodType.TakeGenericReturnGenericInSimple,
-		                   typeof(BlahEcsFull<>)
+		                   typeof(IBlahEcsFull<>)
 		);
 		Injector.AddSource(Ecs,
 		                   nameof(BlahEcs.CreateFilter),

@@ -77,7 +77,7 @@ internal class TestContext
 		{
 			private IBlahSignalRead<MockEventA> _event;
 
-			private IBlahDataAdd<MockDataB> _data;
+			private IBlahDataFull<MockDataB> _data;
 
 			private MockServiceA _serviceA;
 			private MockServiceB _serviceB;

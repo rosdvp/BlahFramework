@@ -13,7 +13,7 @@ public class BlahPoolsContext
 	public void Get<T>(out IBlahDataGet<T> getter) where T : IBlahEntryData
 		=> getter = GetDataGetter<T>();
 
-	public void Get<T>(out IBlahDataAdd<T> adder) where T : IBlahEntryData
+	public void Get<T>(out IBlahDataFull<T> adder) where T : IBlahEntryData
 		=> adder = GetDataAdder<T>();
 
 	public void Get<T>(out IBlahSignalRead<T> read) where T : IBlahEntrySignal
@@ -65,11 +65,11 @@ public class BlahPoolsContext
 		return (IBlahDataGet<T>)AddPool<T>(new BlahDataPool<T>());
 	}
 
-	public IBlahDataAdd<T> GetDataAdder<T>() where T: IBlahEntryData
+	public IBlahDataFull<T> GetDataAdder<T>() where T: IBlahEntryData
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahDataAdd<T>)cached;
-		return (IBlahDataAdd<T>)AddPool<T>(new BlahDataPool<T>());
+			return (IBlahDataFull<T>)cached;
+		return (IBlahDataFull<T>)AddPool<T>(new BlahDataPool<T>());
 	}
 
 

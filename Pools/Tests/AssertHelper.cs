@@ -49,7 +49,7 @@ internal static class AssertHelper
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahDataAdd<T> pool, params int[] expectedValues)
+	public static void CheckContent<T>(IBlahDataFull<T> pool, params int[] expectedValues)
 		where T : IBlahEntryData, IMockEntry
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);

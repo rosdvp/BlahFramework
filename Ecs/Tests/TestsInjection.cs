@@ -58,7 +58,7 @@ internal class TestsInjection
 		AssertFilter(system1.Filter6, new[] { typeof(CompA), typeof(CompB) }, new[] { typeof(CompC) });
 		AssertFilter(system1.Filter7, new[] { typeof(CompA), typeof(CompB) }, new[] { typeof(CompC) });
 
-		Assert.AreEqual(context.Ecs.GetCompGetter<CompA>(), system1.Filter1.A);
+		Assert.AreEqual(context.Ecs.GetCompGetter<CompA>(), system1.Filter1.A.TestsPool);
 		Assert.AreEqual(system1.Filter1.A, system2.Filter2A.A);
 		Assert.AreEqual(system1.Filter1.A, system2.Filter2B.A);
 		Assert.AreEqual(system1.Filter1.A, system2.Filter3.A);
