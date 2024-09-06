@@ -81,20 +81,24 @@ internal interface IBlahEcsFilterExc { }
 public class BlahEcsFilter<T0> : BlahEcsFilter
 {
 	public class Exc<E0> : BlahEcsFilter<T0>, IBlahEcsFilterExc { }
+	public new class Exc<E0, E1> : BlahEcsFilter<T0>, IBlahEcsFilterExc { }
 }
 
 public class BlahEcsFilter<T0, T1> : BlahEcsFilter<T0>
 {
 	public new class Exc<E0> : BlahEcsFilter<T0, T1>, IBlahEcsFilterExc { }
+	public new class Exc<E0, E1> : BlahEcsFilter<T0>, IBlahEcsFilterExc { }
 }
 
 public class BlahEcsFilter<T0, T1, T2> : BlahEcsFilter<T0, T1>
 {
 	public new class Exc<E0> : BlahEcsFilter<T0, T1, T2>, IBlahEcsFilterExc { }
+	public new class Exc<E0, E1> : BlahEcsFilter<T0, T1, T2>, IBlahEcsFilterExc { }
 }
 
 public class BlahEcsFilter<T0, T1, T2, T3> : BlahEcsFilter<T0, T1, T2>
 {
 	public new class Exc<E0> : BlahEcsFilter<T0, T1, T2, T3>, IBlahEcsFilterExc { }
+	public new class Exc<E0, E1> : BlahEcsFilter<T0, T1, T2, T3>, IBlahEcsFilterExc { }
 }
 }
