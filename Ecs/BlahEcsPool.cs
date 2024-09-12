@@ -24,8 +24,10 @@ public interface IBlahEcsCompRead<T> where T: IBlahEntryEcs
 
 public interface IBlahEcsCompWrite<T> where T: IBlahEntryEcs
 {
-	public ref T Add(BlahEcsEntity    ent);
-	public ref T Add(BlahEcsEntity?   ent);
+	public ref T Add(BlahEcsEntity       ent);
+	public ref T Add(BlahEcsEntity?      ent);
+	public ref T AddOrGet(BlahEcsEntity  ent);
+	public ref T AddOrGet(BlahEcsEntity? ent);
     
 	public bool Has(BlahEcsEntity  ent);
 	public bool Has(BlahEcsEntity? ent);
@@ -90,6 +92,22 @@ public class BlahEcsPool<T> :
 			throw new Exception($"ent is null");
 		return ref Add(ent.Value);
 	}
+
+	
+	public ref T AddOrGet(BlahEcsEntity ent)
+	{
+		if (Has(ent))
+			return ref Get(ent);
+		return ref Add(ent);
+	}
+
+	public ref T AddOrGet(BlahEcsEntity? ent)
+	{
+		if (ent == null)
+			throw new Exception($"ent is null");
+		return ref AddOrGet(ent.Value);
+	}
+	
 
 	public bool Has(BlahEcsEntity ent)
 	{
