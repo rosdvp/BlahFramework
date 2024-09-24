@@ -24,7 +24,7 @@ public static class BlahReflection
 			{
 				var fieldType = field.FieldType;
 
-				if (fieldType.BaseType == typeof(BlahServiceBase))
+				if (typeof(BlahServiceBase).IsAssignableFrom(fieldType))
 				{
 					yield return (EKind.Service, fieldType);
 					continue;
