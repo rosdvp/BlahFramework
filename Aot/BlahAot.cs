@@ -1,6 +1,6 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Text;
+using Blah.Ecs;
 using Blah.Pools;
 using Blah.Reflection;
 using Blah.Services;
@@ -12,32 +12,36 @@ public static class BlahAot
 {
 	private const string PATH = "Assets/Blah/BlahAotGenerated.cs";
 
-	[MenuItem("Blah/Aot/Generate")]
+	[MenuItem("Blah/Framework/Generate AOT")]
 	public static void Generate()
 	{
 		var sb = new StringBuilder();
 
 		foreach (var type in BlahReflection.EnumerateGameTypes())
 		{
-			var interfaces = type.GetInterfaces();
-			if (Array.IndexOf(interfaces, typeof(IBlahEntrySignal)) != -1)
+			if (typeof(IBlahEntrySignal).IsAssignableFrom(type))
 			{
-				sb.AppendLine($"pools.GetSignalConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetSignalProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetSignalRead<{type.FullName}>();");
+				sb.AppendLine($"pools.GetSignalWrite<{type.FullName}>();");
 			}
-			if (Array.IndexOf(interfaces, typeof(IBlahEntryData)) != -1)
+			else if (typeof(IBlahEntryNfSignal).IsAssignableFrom(type))
 			{
-				sb.AppendLine($"pools.GetDataConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetDataProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetNfSignalRead<{type.FullName}>();");
+				sb.AppendLine($"pools.GetNfSignalWrite<{type.FullName}>();");
 			}
-			if (Array.IndexOf(interfaces, typeof(IBlahEntryNfSignal)) != -1)
+			else if (typeof(IBlahEntryData).IsAssignableFrom(type))
 			{
-				sb.AppendLine($"pools.GetNfSignalConsumer<{type.FullName}>();");
-				sb.AppendLine($"pools.GetNfSignalProducer<{type.FullName}>();");
+				sb.AppendLine($"pools.GetDataGetter<{type.FullName}>();");
+				sb.AppendLine($"pools.GetDataFull<{type.FullName}>();");
 			}
-			if (type.BaseType == typeof(BlahServiceBase))
+			else if (typeof(BlahServiceBase).IsAssignableFrom(type))
 			{
 				sb.AppendLine($"services.Get<{type.FullName}>();");
+			}
+			else if (typeof(IBlahEntryComp).IsAssignableFrom(type))
+			{
+				sb.AppendLine($"ecs.GetCompGetter<{type.FullName}>");
+				sb.AppendLine($"ecs.GetCompFull<{type.FullName}>");
 			}
 		}
 		string content = TEMPLATE.Replace("[CODEGEN]", sb.ToString());
@@ -58,6 +62,7 @@ public static class BlahAot
 	private const string TEMPLATE = @"
 using Blah.Pools;
 using Blah.Services;
+using Blah.Ecs;
 using UnityEngine.Scripting;
 
 public static class BlahPoolsAotGenerated 
@@ -67,6 +72,7 @@ public static class BlahPoolsAotGenerated
 	{
 		var pools = new BlahPoolsContext();
 		var services = new BlahServicesContext(null);
+		var ecs = new BlahEcs();
 		[CODEGEN]
 	}	
 }";

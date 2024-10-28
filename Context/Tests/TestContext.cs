@@ -1,13 +1,10 @@
 ﻿using System.Collections.Generic;
-using Blah.Context;
 using Blah.Pools;
 using Blah.Services;
 using Blah.Systems;
 using NUnit.Framework;
 
-// use custom namespace to simulate game types (since Blah types are ignored)
-// ReSharper disable once CheckNamespace
-namespace TestsBlah.Context.Tests
+namespace Blah.Context.Tests
 {
 internal class TestContext
 {

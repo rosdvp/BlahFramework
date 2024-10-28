@@ -10,7 +10,7 @@ namespace Blah.Context.Editor
 {
 internal static class BlahEditorSystemsOrdering
 {
-	[MenuItem("Blah/Features/Report systems ordering issues")]
+	[MenuItem("Blah/Framework/Report systems ordering issues")]
 	public static void ReportIssues()
 	{
 		var sb = new StringBuilder();
