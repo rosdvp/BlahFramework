@@ -82,19 +82,19 @@ internal class TestProduceConsume
 
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	private class SystemB
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 		
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemC
 	{
-		private IBlahSignalConsumer<SignalB> _signalConsumer;
+		private IBlahSignalRead<SignalB> _signalConsumer;
 	}
 
 	private class SystemD { }
@@ -104,25 +104,25 @@ internal class TestProduceConsume
 
 	private class SystemF
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	private class SystemG
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	private class SystemH
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemI
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
-		private IBlahSignalConsumer<SignalB> _signalB;
+		private IBlahSignalRead<SignalA> _signalA;
+		private IBlahSignalRead<SignalB> _signalB;
 	}
 }
 }

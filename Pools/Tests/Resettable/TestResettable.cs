@@ -26,8 +26,8 @@ internal class TestResettable
     public void Test()
     {
         var context  = new BlahPoolsContext();
-        var producer = context.GetSignalProducer<ResettableSignal>();
-        var consumer = context.GetSignalConsumer<ResettableSignal>();
+        var producer = context.GetSignalWrite<ResettableSignal>();
+        var consumer = context.GetSignalRead<ResettableSignal>();
 
         ref var evSent = ref producer.Add();
         evSent.IntVal      = 1;

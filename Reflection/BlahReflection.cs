@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Blah.Pools;
 using Blah.Services;
+using UnityEditor;
 
 namespace Blah.Reflection
 {
@@ -35,22 +36,18 @@ public static class BlahReflection
 				var genBaseType = fieldType.GetGenericTypeDefinition();
 				var genArgType  = fieldType.GenericTypeArguments[0];
 
-				if (genBaseType == typeof(IBlahSignalConsumer<>))
-					yield return (EKind.SignalConsumer, genArgType);
-				else if (genBaseType == typeof(IBlahSignalProducer<>))
-					yield return (EKind.SignalProducer, genArgType);
-				else if (genBaseType == typeof(IBlahNfSignalConsumer<>))
-					yield return (EKind.NfSignalConsumer, genArgType);
-				else if (genBaseType == typeof(IBlahNfSignalProducer<>))
-					yield return (EKind.NfSignalProducer, genArgType);
-				else if (genBaseType == typeof(IBlahSoloSignalConsumer<>))
-					yield return (EKind.SoloSignalConsumer, genArgType);
-				else if (genBaseType == typeof(IBlahSoloSignalProducer<>))
-					yield return (EKind.SoloSignalProducer, genArgType);
-				else if (genBaseType == typeof(IBlahDataConsumer<>))
-					yield return (EKind.DataConsumer, genArgType);
-				else if (genBaseType == typeof(IBlahDataProducer<>))
-					yield return (EKind.DataProducer, genArgType);
+				if (genBaseType == typeof(IBlahSignalRead<>))
+					yield return (EKind.SignalRead, genArgType);
+				else if (genBaseType == typeof(IBlahSignalWrite<>))
+					yield return (EKind.SignalWrite, genArgType);
+				else if (genBaseType == typeof(IBlahNfSignalRead<>))
+					yield return (EKind.NfSignalRead, genArgType);
+				else if (genBaseType == typeof(IBlahNfSignalWrite<>))
+					yield return (EKind.NfSignalWrite, genArgType);
+				else if (genBaseType == typeof(IBlahDataGet<>))
+					yield return (EKind.DataGet, genArgType);
+				else if (genBaseType == typeof(IBlahDataFull<>))
+					yield return (EKind.DataFull, genArgType);
 			}
 
 			system = system.BaseType;
@@ -90,64 +87,6 @@ public static class BlahReflection
 			BindingFlags.NonPublic
 		);
 		return (IReadOnlyList<Type>)prop?.GetValue(feature);
-	}
-
-
-	/// <summary>
-	/// Finds actual dependencies, not those which are set in feature file.
-	/// </summary>
-	public static void FindFeatureDependencies(
-		object feature,
-		HashSet<Type>   services,
-		HashSet<Type>   consumers,
-		HashSet<Type>   producers,
-		bool            shouldClearHashSets)
-	{
-		if (shouldClearHashSets)
-		{
-			services.Clear();
-			consumers.Clear();
-			producers.Clear();
-		}
-		foreach (var system in GetFeatureSystems(feature))
-			FindSystemDependencies(system, services, consumers, producers, false);
-	}
-
-	public static void FindSystemDependencies(
-		Type          system,
-		HashSet<Type> services,
-		HashSet<Type> consumers,
-		HashSet<Type> producers,
-		bool shouldClearHashSets)
-	{
-		if (shouldClearHashSets)
-		{
-			services.Clear();
-			consumers.Clear();
-			producers.Clear();
-		}
-		
-		foreach (var (kind, type) in EnumerateSystemFields(system))
-			switch (kind)
-			{
-				case EKind.Service:
-					services.Add(type);
-					break;
-				case EKind.SignalConsumer:
-                case EKind.NfSignalConsumer:
-                case EKind.SoloSignalConsumer:
-				case EKind.DataConsumer:
-					consumers.Add(type);
-					break;
-				case EKind.SignalProducer:
-                case EKind.NfSignalProducer:
-                case EKind.SoloSignalProducer:
-				case EKind.DataProducer:
-					producers.Add(type);
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
 	}
 	
 	public static IEnumerable<Attribute> EnumerateAttributes(Type type)
@@ -205,14 +144,12 @@ public static class BlahReflection
 	public enum EKind
 	{
 		Service,
-		SignalConsumer,
-		SignalProducer,
-		NfSignalConsumer,
-		NfSignalProducer,
-		SoloSignalConsumer,
-		SoloSignalProducer,
-		DataConsumer,
-		DataProducer,
+		SignalRead,
+		SignalWrite,
+		NfSignalRead,
+		NfSignalWrite,
+		DataGet,
+		DataFull,
 	}
 }
 }

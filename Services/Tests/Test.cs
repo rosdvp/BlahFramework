@@ -11,133 +11,130 @@ internal class Test
 		var services = new BlahServicesContext(null);
 		services.FinalizeInit();
 	}
-	
+
 	[Test]
-	public void Test_AddAAndFinalize_Inited()
-	{	
+	public void Test_Get_Inited()
+	{
 		var services = new BlahServicesContext(null);
-		services.Add<ServiceA>();
-		
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		
-		services.FinalizeInit();
-		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
+
+		Assert.IsNull(services.TestsRawGet<ServiceA>());
+		Assert.IsNull(services.TestsRawGet<ServiceBDependsOnA>());
+		Assert.IsNull(services.TestsRawGet<ServiceCDependsOnB>());
+		Assert.IsNull(services.TestsRawGet<ServiceDDependsOnBAndA>());
+
+		Assert.AreEqual(1, services.Get<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.Get<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.Get<ServiceCDependsOnB>().InitsCount);
+		Assert.AreEqual(1, services.Get<ServiceDDependsOnBAndA>().InitsCount);
 	}
 
 	[Test]
-	public void Test_AddAAndDoAndFinalize_InitedOnce()
+	public void Test_GetAndFinalize_InitedOnce()
 	{
 		var services = new BlahServicesContext(null);
-		services.Add<ServiceA>();
 		
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		
-		services.Get<ServiceA>().Do();
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		
-		services.FinalizeInit();
+		Assert.IsNull(services.TestsRawGet<ServiceA>());
 		
 		Assert.AreEqual(1, services.Get<ServiceA>().InitsCount);
-	}
-
-	[Test]
-	public void Test_AllFinalizeWithoutDo_InitedOnce()
-	{
-		var services = new BlahServicesContext(null);
-		services.Add<ServiceA>();
-		services.Add<ServiceBDependsOnA>();
-		services.Add<ServiceCDependsOnB>();
-		services.Add<ServiceDDependsOnBAndA>();
-		
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceBDependsOnA>(services).InitsCount);
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceCDependsOnB>(services).InitsCount);
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceDDependsOnBAndA>(services).InitsCount);
 		
 		services.FinalizeInit();
-
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceBDependsOnA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceCDependsOnB>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceDDependsOnBAndA>(services).InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
 	}
 
 	[Test]
 	public void Test_BonA_InitedOnce()
 	{
 		var services = new BlahServicesContext(null);
-		services.Add<ServiceA>();
-		services.Add<ServiceBDependsOnA>();
-		services.Get<ServiceBDependsOnA>().DoA();
+
+		var b = services.Get<ServiceBDependsOnA>();
+		Assert.AreEqual(0, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
 		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceBDependsOnA>(services).InitsCount);
+		b.InvokeA();
+		
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		
+		services.FinalizeInit();
+		
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
 	}
 
 	[Test]
 	public void Test_ConBonA_InitedOnce()
 	{
 		var services = new BlahServicesContext(null);
-		services.Add<ServiceA>();
-		services.Add<ServiceBDependsOnA>();
-		services.Add<ServiceCDependsOnB>();
+
+		var c = services.Get<ServiceCDependsOnB>();
+		Assert.IsNull(services.TestsRawGet<ServiceA>());
+		Assert.AreEqual(0, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceCDependsOnB>().InitsCount);
 		
-		services.Get<ServiceCDependsOnB>().DoB();
+		c.InvokeBWhichInvokesA();
 		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceBDependsOnA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceCDependsOnB>(services).InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceCDependsOnB>().InitsCount);
+		
+		services.FinalizeInit();
+		
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceCDependsOnB>().InitsCount);
 	}
 
 	[Test]
 	public void Test_All_InitedOnce()
 	{
 		var services = new BlahServicesContext(null);
-		services.Add<ServiceA>();
-		services.Add<ServiceBDependsOnA>();
-		services.Add<ServiceCDependsOnB>();
-		services.Add<ServiceDDependsOnBAndA>();
+
+		var d = services.Get<ServiceDDependsOnBAndA>();
+		Assert.AreEqual(0, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(0, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceDDependsOnBAndA>().InitsCount);
 		
-		services.Get<ServiceDDependsOnBAndA>().DoBAndA();
+		d.InvokeBWithInvokesA_InvokeA();
 		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceBDependsOnA>(services).InitsCount);
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceCDependsOnB>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceDDependsOnBAndA>(services).InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceDDependsOnBAndA>().InitsCount);
 		
 		services.FinalizeInit();
 		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceBDependsOnA>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceCDependsOnB>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceDDependsOnBAndA>(services).InitsCount);	
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceDDependsOnBAndA>().InitsCount);
 	}
 
 	[Test]
-	public void Test_CyclicEAndF_InitedOnce()
+	public void Test_DependencyInInit_InitedOnce()
 	{
 		var services = new BlahServicesContext(null);
-		services.Add<ServiceEDependsOnFInInit>();
-		services.Add<ServiceFDependsOnE>();
-		
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceEDependsOnFInInit>(services).InitsCount);
-		Assert.AreEqual(0, AssertHelper.GetService<ServiceFDependsOnE>(services).InitsCount);
-		
-		services.Get<ServiceEDependsOnFInInit>().DoEmpty();
-		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceEDependsOnFInInit>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceFDependsOnE>(services).InitsCount);
-		
-		services.Get<ServiceFDependsOnE>().DoE();
-		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceEDependsOnFInInit>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceFDependsOnE>(services).InitsCount);
-		
+
+		var e = services.Get<ServiceEDependsOnFInInit>();
+		Assert.AreEqual(1, services.TestsRawGet<ServiceEDependsOnFInInit>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceFDependsOnE>().InitsCount);
+
 		services.FinalizeInit();
 		
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceEDependsOnFInInit>(services).InitsCount);
-		Assert.AreEqual(1, AssertHelper.GetService<ServiceFDependsOnE>(services).InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceEDependsOnFInInit>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceFDependsOnE>().InitsCount);
+	}
+
+	[Test]
+	public void Test_LazyAndFinalizeInit_Inited()
+	{
+		var services = new BlahServicesContext(null);
+
+		var b = services.Get<ServiceBDependsOnA>();
+		Assert.AreEqual(0, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
+
+		services.FinalizeInit();
+
+		Assert.AreEqual(1, services.TestsRawGet<ServiceA>().InitsCount);
+		Assert.AreEqual(1, services.TestsRawGet<ServiceBDependsOnA>().InitsCount);
 	}
 }
 }

@@ -27,7 +27,7 @@ internal class TestSwitches
 	{
 		var (context, systems) = CreateFullSystems();
 
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
 		
 		AssertHelper.AssertSystems(
@@ -62,9 +62,9 @@ internal class TestSwitches
 	{
 		var (context, systems) = CreateFullSystems();
 
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
 		
 		AssertHelper.AssertSystems(
@@ -85,12 +85,12 @@ internal class TestSwitches
 	{
 		var (context, systems) = CreateFullSystems();
 
-		context.RequestSwitchGroup((int)EMockGroupId.GroupC);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupC);
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
 		context.Run();
 		context.Run();
@@ -113,11 +113,11 @@ internal class TestSwitches
 	{
 		var (context, systems) = CreateFullSystems();
 		
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
 		
 		AssertHelper.AssertSystems(

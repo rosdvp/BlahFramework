@@ -10,19 +10,12 @@ public class BlahSystemsContext
 
 	private readonly IBlahSystemsInitData _systemsInitData;
 
-	private readonly Action _cbBetweenPauseAndResume;
-
-	/// <param name="systemsInitData">
-	/// Passed to systems' Init.
-	/// </param>
-	/// <param name="cbBetweenPauseAndResume">
-	/// Invoked after old group pause and before new group resume.
-	/// </param>
-	public BlahSystemsContext(IBlahSystemsInitData systemsInitData, Action cbBetweenPauseAndResume)
+	private readonly Action _cbOnSwitch;
+	
+	public BlahSystemsContext(IBlahSystemsInitData systemsInitData, Action cbOnSwitch)
 	{
 		_systemsInitData = systemsInitData;
-
-		_cbBetweenPauseAndResume = cbBetweenPauseAndResume;
+		_cbOnSwitch      = cbOnSwitch;
 	}
 
 	//-----------------------------------------------------------
@@ -31,12 +24,9 @@ public class BlahSystemsContext
 
 	private bool _isSwitchRequested;
 	private int? _requestedSwitchGroupId;
-	public  int? ActiveGroupId { get; private set; }
 
-	/// <summary>
-	/// Creates new group to add systems to.<br/>
-	/// </summary>
-	/// <remarks>No group is active by default.</remarks>
+	public int? ActiveGroupId { get; private set; }
+
 	public BlahSystemsGroup AddGroup(int groupId)
 	{
 		if (_groupsMap.TryGetValue(groupId, out _))
@@ -46,52 +36,44 @@ public class BlahSystemsContext
 		return group;
 	}
 
-	public void RequestSwitchGroup(int? groupId)
+	public void RequestSwitchOnNextRun(int? groupId)
 	{
-		if (groupId == ActiveGroupId)
-			return;
-
-		if (groupId == null || _groupsMap.TryGetValue(groupId.Value, out _))
-		{
-			_requestedSwitchGroupId = groupId;
-			_isSwitchRequested      = true;
-		}
-		else
-			throw new Exception($"Group with id {groupId} does not exists.");
+		_isSwitchRequested      = true;
+		_requestedSwitchGroupId = groupId;
 	}
-
-
-	private void PerformSwitch()
-	{
-		_activeGroup?.PauseSystems();
-
-		_cbBetweenPauseAndResume?.Invoke();
-
-		if (_requestedSwitchGroupId == null)
-		{
-			_activeGroup = null;
-		}
-		else
-		{
-			_activeGroup = _groupsMap[_requestedSwitchGroupId.Value];
-			_activeGroup.TryInitSystems(_systemsInitData);
-			_activeGroup.ResumeSystems(_systemsInitData);
-		}
-		ActiveGroupId = _requestedSwitchGroupId;
-	}
-
-	/// <summary>
-	/// Calls <see cref="IBlahRunSystem.Run"/> for the current group systems.<br/>
-	/// </summary>
+	
 	public void Run()
 	{
 		if (_isSwitchRequested)
 		{
-			PerformSwitch();
+			PerformSwitch(_requestedSwitchGroupId);
 			_isSwitchRequested = false;
 		}
+		
 		_activeGroup?.RunSystems();
 	}
+
+	private void PerformSwitch(int? groupId)
+	{
+		if (groupId == ActiveGroupId)
+			return;
+		
+		_activeGroup?.PauseSystems();
+		_cbOnSwitch?.Invoke();
+		
+		ActiveGroupId = groupId;
+		if (groupId == null)
+		{
+			_activeGroup = null;
+			return;
+		}
+		
+		if (!_groupsMap.TryGetValue(groupId.Value, out _activeGroup))
+			throw new Exception($"group {groupId.Value} does not exist");
+		_activeGroup.TryInitSystems(_systemsInitData);
+		_activeGroup.ResumeSystems(_systemsInitData);
+	}
+
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------

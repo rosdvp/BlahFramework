@@ -27,7 +27,7 @@ internal class TestSwitchesComplex
 		       .AddSystem(systems[2]);
 		context.AddGroup((int)EMockGroupId.GroupC).AddSystem(systems[3]);
 
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
 		context.Run();
 
@@ -67,7 +67,7 @@ internal class TestSwitchesComplex
 		context.AddGroup((int)EMockGroupId.GroupB).AddSystem(systems[2]);
 		context.AddGroup((int)EMockGroupId.GroupC).AddSystem(systems[3]);
 
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
 		context.Run();
 

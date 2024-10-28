@@ -5,7 +5,7 @@ namespace Blah.Pools
 {
 public interface IBlahEntryData { }
 
-public interface IBlahDataConsumer<T> where T : IBlahEntryData
+public interface IBlahDataGet<T> where T : struct, IBlahEntryData
 {
 	public bool IsEmpty { get; }
 	public int  Count   { get; }
@@ -19,22 +19,24 @@ public interface IBlahDataConsumer<T> where T : IBlahEntryData
 	/// <returns>True if ptr is not null and such data exists.</returns>
 	public bool IsPtrValid(BlahDataPtr? ptr);
 	public ref T Get(BlahDataPtr        ptr);
+
 	/// <remarks>
 	/// Method exists to simplify using nullable BlahDataPtr.<br/>
 	/// It is implied that <see cref="IsPtrValid(Blah.Pools.BlahDataPtr?)"/> is used beforehand.
 	/// </remarks>
 	/// <exception cref="NullReferenceException">Ptr is null.</exception>
-	public ref T Get(BlahDataPtr?       ptr);
+	public ref T Get(BlahDataPtr? ptr);
 
 
 	public void Remove(int         iteratorLevel = -1);
 	public void Remove(BlahDataPtr ptr);
+	public void RemoveAll();
 
 	public ref T GetAny();
 	public void Sort(Comparison<T> comp);
 }
 
-public interface IBlahDataProducer<T> where T : IBlahEntryData
+public interface IBlahDataFull<T> : IBlahDataGet<T> where T : struct, IBlahEntryData
 {
 	public ref T Add();
 	public ref T Add(out BlahDataPtr ptr);
@@ -42,8 +44,8 @@ public interface IBlahDataProducer<T> where T : IBlahEntryData
 
 internal class BlahDataPool<T> :
 	BlahPool<T>,
-	IBlahDataConsumer<T>,
-	IBlahDataProducer<T> where T : IBlahEntryData
+	IBlahDataGet<T>,
+	IBlahDataFull<T> where T : struct, IBlahEntryData
 {
 	private BlahSet<BlahDataPtr> _set = new(1, 0);
 
@@ -114,6 +116,11 @@ internal class BlahDataPool<T> :
 	{
 		if (IsPtrValid(ptr))
 			RemoveSafe(ptr.EntryPtr);
+	}
+
+	public void RemoveAll()
+	{
+		Clear();
 	}
 
 	//-----------------------------------------------------------

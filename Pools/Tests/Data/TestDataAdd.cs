@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace Blah.Pools.Tests.Datas
+namespace Blah.Pools.Tests.Data
 {
 internal class TestDataAdd
 {
@@ -8,8 +8,8 @@ internal class TestDataAdd
     public void Test()
     {
         var context  = new BlahPoolsContext();
-        var producer = context.GetDataProducer<MockDataEntry>();
-        var consumer = context.GetDataConsumer<MockDataEntry>();
+        var producer = context.GetDataFull<MockDataEntry>();
+        var consumer = context.GetDataGetter<MockDataEntry>();
         
         for (var i = 0; i < 10; i++)
         {

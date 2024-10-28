@@ -2,29 +2,28 @@
 
 namespace Blah.Pools
 {
-public interface IBlahEntryNextFrameSignal { }
+public interface IBlahEntryNfSignal { }
 
-public interface IBlahNfSignalProducer<T> where T : IBlahEntryNextFrameSignal
-{
-	public ref T AddNf();
-}
 
-public interface IBlahNfSignalConsumer<T> where T : IBlahEntryNextFrameSignal
+public interface IBlahNfSignalRead<T> where T : struct, IBlahEntryNfSignal
 {
 	public bool IsEmpty { get; }
 	public int  Count   { get; }
 
 	public BlahPool<T>.Enumerator GetEnumerator();
 
-	public void Remove(int iteratorLevel = -1);
-
 	public ref T GetAny();
+}
+
+public interface IBlahNfSignalWrite<T> where T : struct, IBlahEntryNfSignal
+{
+	public ref T AddNf();
 }
 
 internal class BlahNfSignalPool<T> :
 	BlahPool<T>,
-	IBlahNfSignalConsumer<T>,
-	IBlahNfSignalProducer<T> where T : IBlahEntryNextFrameSignal
+	IBlahNfSignalRead<T>,
+	IBlahNfSignalWrite<T> where T : struct, IBlahEntryNfSignal
 {
 	private int[] _nextFramePtrs  = new int[1];
 	private int   _nextFrameCount = 0;

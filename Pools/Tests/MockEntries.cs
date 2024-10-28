@@ -26,7 +26,7 @@ internal struct MockSignalEntry : IBlahEntrySignal, IMockEntry
 	public int Value => Val;
 }
 
-internal struct MockSignalNextFrameEntry : IBlahEntryNextFrameSignal, IMockEntry
+internal struct MockSignalNextFrameEntry : IBlahEntryNfSignal, IMockEntry
 {
 	public int Val;
 

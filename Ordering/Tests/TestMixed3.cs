@@ -31,23 +31,23 @@ internal class TextMixed3
 	[BlahAfterAll]
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	private class SystemB
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 	}
 
 	[BlahAfterAll]
 	private class SystemC
 	{
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemD
 	{
-		private IBlahSignalConsumer<SignalB> _signalB;
+		private IBlahSignalRead<SignalB> _signalB;
 	}
 }
 }

@@ -3,23 +3,11 @@ using System.Reflection;
 
 namespace Blah.Services.Tests
 {
-internal static class AssertHelper
-{
-	public static T GetService<T>(BlahServicesContext context)
-	{
-		var type       = typeof(BlahServicesContext);
-		var baseMethod = type.GetMethod("TestGet", BindingFlags.Instance | BindingFlags.NonPublic);
-		var method     = baseMethod.MakeGenericMethod(typeof(T));
-		object result = method.Invoke(context, null);
-		return (T)result;
-	}
-}
-
 internal class ServiceA : BlahServiceBase
 {
 	public int InitsCount { get; private set; }
 
-	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services)
+	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services)
 	{
 		InitsCount += 1;
 	}
@@ -37,14 +25,14 @@ internal class ServiceBDependsOnA : BlahServiceBase
 
 	public int InitsCount { get; private set; }
 
-	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services)
+	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services)
 	{
 		InitsCount += 1;
 
 		_serviceA = services.GetLazy<ServiceA>();
 	}
 
-	public void DoA()
+	public void InvokeA()
 	{
 		if (InitsCount == 0)
 			throw new Exception("not inited");
@@ -59,19 +47,19 @@ internal class ServiceCDependsOnB : BlahServiceBase
 
 	public int InitsCount { get; private set; }
 
-	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services)
+	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services)
 	{
 		InitsCount += 1;
 
 		_serviceB = services.GetLazy<ServiceBDependsOnA>();
 	}
 
-	public void DoB()
+	public void InvokeBWhichInvokesA()
 	{
 		if (InitsCount == 0)
 			throw new Exception("not inited");
 		
-		_serviceB.Get.DoA();
+		_serviceB.Get.InvokeA();
 	}
 }
 
@@ -82,7 +70,7 @@ internal class ServiceDDependsOnBAndA : BlahServiceBase
 
 	public int InitsCount { get; private set; }
 
-	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services)
+	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services)
 	{
 		InitsCount += 1;
 
@@ -90,12 +78,12 @@ internal class ServiceDDependsOnBAndA : BlahServiceBase
 		_serviceB = services.GetLazy<ServiceBDependsOnA>();
 	}
 
-	public void DoBAndA()
+	public void InvokeBWithInvokesA_InvokeA()
 	{
 		if (InitsCount == 0)
 			throw new Exception("not inited");
 		
-		_serviceB.Get.DoA();
+		_serviceB.Get.InvokeA();
 		_serviceA.Get.Do();
 	}
 }
@@ -106,15 +94,15 @@ internal class ServiceEDependsOnFInInit : BlahServiceBase
 
 	public int InitsCount { get; private set; }
 
-	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services)
+	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services)
 	{
 		InitsCount += 1;
 
 		_serviceF = services.GetLazy<ServiceFDependsOnE>();
-		_serviceF.Get.DoEmpty();
+		_serviceF.Get.InvokeEmpty();
 	}
 
-	public void DoEmpty()
+	public void InvokeEmpty()
 	{
 		if (InitsCount == 0)
 			throw new Exception("not inited");
@@ -127,24 +115,24 @@ internal class ServiceFDependsOnE : BlahServiceBase
 
 	public int InitsCount { get; private set; }
 
-	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services)
+	protected override void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services)
 	{
 		InitsCount += 1;
 
 		_serviceE = services.GetLazy<ServiceEDependsOnFInInit>();
 	}
 
-	public void DoEmpty()
+	public void InvokeEmpty()
 	{
 		if (InitsCount == 0)
 			throw new Exception("not inited");
 	}
 
-	public void DoE()
+	public void InvokeE()
 	{
 		if (InitsCount == 0)
 			throw new Exception("not inited");
-		_serviceE.Get.DoEmpty();
+		_serviceE.Get.InvokeEmpty();
 	}
 }
 }

@@ -22,41 +22,42 @@ internal static class AssertHelper
 		Assert.AreEqual(expectedLength, actualLength);
 	}
 
-	public static void CheckContent<T>(IBlahSignalConsumer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntrySignal, IMockEntry 
+	public static void CheckContent<T>(IBlahSignalRead<T> pool, params int[] expectedValues) 
+		where T: struct, IBlahEntrySignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahSignalProducer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntrySignal, IMockEntry 
+	public static void CheckContent<T>(IBlahSignalWrite<T> pool, params int[] expectedValues) 
+		where T: struct, IBlahEntrySignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
 	
-	public static void CheckContent<T>(IBlahNfSignalConsumer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntryNextFrameSignal, IMockEntry 
+	public static void CheckContent<T>(IBlahNfSignalRead<T> pool, params int[] expectedValues) 
+		where T: struct, IBlahEntryNfSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahNfSignalProducer<T> pool, params int[] expectedValues) 
-		where T: IBlahEntryNextFrameSignal, IMockEntry 
+	public static void CheckContent<T>(IBlahNfSignalWrite<T> pool, params int[] expectedValues) 
+		where T: struct, IBlahEntryNfSignal, IMockEntry 
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
     
-	public static void CheckContent<T>(IBlahDataConsumer<T> pool, params int[] expectedValues)
-		where T : IBlahEntryData, IMockEntry
+	public static void CheckContent<T>(IBlahDataGet<T> pool, params int[] expectedValues)
+		where T : struct, IBlahEntryData, IMockEntry
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
-	public static void CheckContent<T>(IBlahDataProducer<T> pool, params int[] expectedValues)
-		where T : IBlahEntryData, IMockEntry
+	public static void CheckContent<T>(IBlahDataFull<T> pool, params int[] expectedValues)
+		where T : struct, IBlahEntryData, IMockEntry
 	{
 		CheckContent((BlahPool<T>)pool, expectedValues);
 	}
 	
 
-	private static void CheckContent<T>(BlahPool<T> pool, params int[] expectedValues) where T: IMockEntry
+	private static void CheckContent<T>(BlahPool<T> pool, params int[] expectedValues) 
+		where T: struct, IMockEntry
 	{
 		var values = new List<int>(expectedValues);
 		

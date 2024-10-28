@@ -8,7 +8,7 @@ public abstract class BlahServiceBase
 	//-----------------------------------------------------------
 	internal EState State { get; private set; }
 
-	internal void Init(IBlahServicesInitData initData, IBlahServicesContainerLazy container)
+	internal void Init(IBlahServicesInitData initData, IBlahServicesContext container)
 	{
 		if (State == EState.Initing)
 			throw new Exception($"services {GetType()} is already initing, " +
@@ -23,7 +23,7 @@ public abstract class BlahServiceBase
 		State = EState.Inited;
 	}
 
-	protected abstract void InitImpl(IBlahServicesInitData initData, IBlahServicesContainerLazy services);
+	protected abstract void InitImpl(IBlahServicesInitData initData, IBlahServicesContext services);
 	
 
 	internal enum EState

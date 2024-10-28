@@ -13,7 +13,7 @@ public static class BlahOrderer
 			return;
 
 		var cache = new Cache();
-		AddDependenciesFromConsumingsProducings(cache, systems);
+		AddDependenciesFromSignals(cache, systems);
 		if (isVerboseSanitizing)
 			BlahOrdererTpSort.ThrowOnCyclic(
 				systems,
@@ -73,19 +73,19 @@ public static class BlahOrderer
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	private static void AddDependenciesFromConsumingsProducings(Cache cache, List<Type> systems)
+	private static void AddDependenciesFromSignals(Cache cache, List<Type> systems)
 	{
 		foreach (var system in systems)
 		foreach (var (kind, type) in BlahReflection.EnumerateSystemFields(system))
-			if (kind is BlahReflection.EKind.SignalConsumer or BlahReflection.EKind.SoloSignalConsumer)
-				cache.AddSystemConsumingType(system, type);
-			else if (kind is BlahReflection.EKind.SignalProducer or BlahReflection.EKind.SoloSignalProducer)
-				cache.AddSystemProducingType(system, type);
+			if (kind is BlahReflection.EKind.SignalRead)
+				cache.AddSystemSignalRead(system, type);
+			else if (kind is BlahReflection.EKind.SignalWrite)
+				cache.AddSystemSignalWrite(system, type);
 
 		foreach (var system in systems)
-			if (cache.TryGetTypesThatSystemConsume(system, out var consumingTypes))
+			if (cache.TryGetSignalsThatSystemRead(system, out var consumingTypes))
 				foreach (var type in consumingTypes)
-					if (cache.TryGetSystemsThatProduceType(type, out var producingSystems))
+					if (cache.TryGetSystemsThatWriteSignal(type, out var producingSystems))
 						cache.AddSystemsDependency(producingSystems, system);
 	}
 
@@ -140,11 +140,11 @@ public static class BlahOrderer
 	//-----------------------------------------------------------
 	private class Cache
 	{
-		private Dictionary<Type, HashSet<Type>> _systemToConsumingTypes = new();
-		private Dictionary<Type, HashSet<Type>> _consumingTypeToSystems = new();
+		private Dictionary<Type, HashSet<Type>> _systemToReadSignals = new();
+		private Dictionary<Type, HashSet<Type>> _signalToReadSystems = new();
 
-		private Dictionary<Type, HashSet<Type>> _systemToProducingTypes = new();
-		private Dictionary<Type, HashSet<Type>> _producingTypeToSystems = new();
+		private Dictionary<Type, HashSet<Type>> _systemToWriteSignals = new();
+		private Dictionary<Type, HashSet<Type>> _signalToWriteSystems = new();
 
 		// >0 - before all, <0 - after all 
 		private Dictionary<int, HashSet<Type>> _priorityToSystems = new();
@@ -154,41 +154,41 @@ public static class BlahOrderer
 		private Dictionary<Type, HashSet<Type>> _systemToNextSystems = new();
 
 
-		public void AddSystemConsumingType(Type system, Type type)
+		public void AddSystemSignalRead(Type system, Type signal)
 		{
-			if (_systemToConsumingTypes.TryGetValue(system, out var consumingTypes))
-				consumingTypes.Add(type);
+			if (_systemToReadSignals.TryGetValue(system, out var signals))
+				signals.Add(signal);
 			else
-				_systemToConsumingTypes[system] = new HashSet<Type> { type };
+				_systemToReadSignals[system] = new HashSet<Type> { signal };
 
-			if (_consumingTypeToSystems.TryGetValue(type, out var consumingSystems))
-				consumingSystems.Add(system);
+			if (_signalToReadSystems.TryGetValue(signal, out var readSystems))
+				readSystems.Add(system);
 			else
-				_consumingTypeToSystems[type] = new HashSet<Type> { system };
+				_signalToReadSystems[signal] = new HashSet<Type> { system };
 		}
 
-		public bool TryGetTypesThatSystemConsume(Type system, out HashSet<Type> consumingTypes)
+		public bool TryGetSignalsThatSystemRead(Type system, out HashSet<Type> signals)
 		{
-			return _systemToConsumingTypes.TryGetValue(system, out consumingTypes);
+			return _systemToReadSignals.TryGetValue(system, out signals);
 		}
 
 
-		public void AddSystemProducingType(Type system, Type type)
+		public void AddSystemSignalWrite(Type system, Type signal)
 		{
-			if (_systemToProducingTypes.TryGetValue(system, out var producingTypes))
-				producingTypes.Add(type);
+			if (_systemToWriteSignals.TryGetValue(system, out var signals))
+				signals.Add(signal);
 			else
-				_systemToProducingTypes[system] = new HashSet<Type> { type };
+				_systemToWriteSignals[system] = new HashSet<Type> { signal };
 
-			if (_producingTypeToSystems.TryGetValue(type, out var producingSystems))
-				producingSystems.Add(system);
+			if (_signalToWriteSystems.TryGetValue(signal, out var writeSystems))
+				writeSystems.Add(system);
 			else
-				_producingTypeToSystems[type] = new HashSet<Type> { system };
+				_signalToWriteSystems[signal] = new HashSet<Type> { system };
 		}
 
-		public bool TryGetSystemsThatProduceType(Type producingType, out HashSet<Type> producingSystems)
+		public bool TryGetSystemsThatWriteSignal(Type signal, out HashSet<Type> writeSystems)
 		{
-			return _producingTypeToSystems.TryGetValue(producingType, out producingSystems);
+			return _signalToWriteSystems.TryGetValue(signal, out writeSystems);
 		}
 
 

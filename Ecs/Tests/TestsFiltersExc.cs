@@ -12,16 +12,16 @@ internal class TestsFiltersExc
 	public void Test_EntHasExcComp_NotInFilter()
 	{
 		var ecs    = new BlahEcs();
-		var writeA = ecs.GetWrite<CompA>();
-		var writeB = ecs.GetWrite<CompB>();
+		var writeA = ecs.GetCompFull<CompA>();
+		var writeB = ecs.GetCompFull<CompB>();
 
-		var filter = GetFilter(ecs, new[] { typeof(CompA) }, new[] { typeof(CompB) });
+		var filter = ecs.GetFilter<BlahFilter<CompA>.Exc<CompB>>();
 
-		var ents = new List<BlahEcsEntity>();
-		ents.Add(ecs.CreateEntity());
-		ents.Add(ecs.CreateEntity());
-		ents.Add(ecs.CreateEntity());
-		var temp = new List<BlahEcsEntity>();
+		var ents = new List<BlahEnt>();
+		ents.Add(ecs.CreateEnt());
+		ents.Add(ecs.CreateEnt());
+		ents.Add(ecs.CreateEnt());
+		var temp = new List<BlahEnt>();
 
 		foreach (var ent in ents)
 			writeA.Add(ent);
@@ -48,27 +48,17 @@ internal class TestsFiltersExc
 	}
 
 
-
-	private BlahEcsFilter GetFilter(BlahEcs ecs, Type[] inc, Type[] exc)
-	{
-		var core   = ecs.GetFilterCore(inc, exc);
-		var filter = new BlahEcsFilter();
-		filter.Set(core);
-		return filter;
-	}
-
-
-	private struct CompA : IBlahEntryEcs
+	private struct CompA : IBlahEntryComp
 	{
 		public int Val;
 	}
 
-	private struct CompB : IBlahEntryEcs
+	private struct CompB : IBlahEntryComp
 	{
 		public int Val;
 	}
 
-	private struct CompC : IBlahEntryEcs
+	private struct CompC : IBlahEntryComp
 	{
 		public int Val;
 	}

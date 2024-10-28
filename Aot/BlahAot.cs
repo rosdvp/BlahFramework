@@ -30,7 +30,7 @@ public static class BlahAot
 				sb.AppendLine($"pools.GetDataConsumer<{type.FullName}>();");
 				sb.AppendLine($"pools.GetDataProducer<{type.FullName}>();");
 			}
-			if (Array.IndexOf(interfaces, typeof(IBlahEntryNextFrameSignal)) != -1)
+			if (Array.IndexOf(interfaces, typeof(IBlahEntryNfSignal)) != -1)
 			{
 				sb.AppendLine($"pools.GetNfSignalConsumer<{type.FullName}>();");
 				sb.AppendLine($"pools.GetNfSignalProducer<{type.FullName}>();");

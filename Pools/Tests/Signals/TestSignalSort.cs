@@ -8,8 +8,8 @@ internal class TestSignalSort
 	public void Test()
 	{
 		var context  = new BlahPoolsContext();
-		var consumer = context.GetSignalConsumer<MockSignalEntry>();
-		var producer = context.GetSignalProducer<MockSignalEntry>();
+		var consumer = context.GetSignalRead<MockSignalEntry>();
+		var producer = context.GetSignalWrite<MockSignalEntry>();
 
 		int[] values     = { 3, 1, 2, 3, 2 };
 		int[] ascValues  = { 1, 2, 2, 3, 3 };

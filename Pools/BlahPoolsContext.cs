@@ -10,112 +10,97 @@ public class BlahPoolsContext
 
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public void Get<T>(out IBlahDataConsumer<T> consumer) where T : IBlahEntryData
+	public void Get<T>(out IBlahSignalRead<T> read) where T : struct, IBlahEntrySignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			consumer = (IBlahDataConsumer<T>)cached;
+			read = (IBlahSignalRead<T>)cached;
 		else
-			consumer = (IBlahDataConsumer<T>)AddPool<T>(new BlahDataPool<T>());
+			read = (IBlahSignalRead<T>)AddPool<T>(new BlahSignalPool<T>());
 	}
 	
-	public void Get<T>(out IBlahDataProducer<T> producer) where T : IBlahEntryData
+	public void Get<T>(out IBlahSignalWrite<T> write) where T : struct, IBlahEntrySignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			producer = (IBlahDataProducer<T>)cached;
+			write = (IBlahSignalWrite<T>)cached;
 		else
-			producer = (IBlahDataProducer<T>)AddPool<T>(new BlahDataPool<T>());
+			write = (IBlahSignalWrite<T>)AddPool<T>(new BlahSignalPool<T>());
 	}
 	
-	public void Get<T>(out IBlahSignalConsumer<T> consumer) where T : IBlahEntrySignal
+	public void Get<T>(out IBlahNfSignalRead<T> read) where T : struct, IBlahEntryNfSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			consumer = (IBlahSignalConsumer<T>)cached;
+			read = (IBlahNfSignalRead<T>)cached;
 		else
-			consumer = (IBlahSignalConsumer<T>)AddPool<T>(new BlahSignalPool<T>());
+			read = (IBlahNfSignalRead<T>)AddPool<T>(new BlahNfSignalPool<T>());
 	}
 	
-	public void Get<T>(out IBlahSignalProducer<T> producer) where T : IBlahEntrySignal
+	public void Get<T>(out IBlahNfSignalWrite<T> write) where T : struct, IBlahEntryNfSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			producer = (IBlahSignalProducer<T>)cached;
+			write = (IBlahNfSignalWrite<T>)cached;
 		else
-			producer = (IBlahSignalProducer<T>)AddPool<T>(new BlahSignalPool<T>());
-	}
-	public void Get<T>(out IBlahNfSignalConsumer<T> consumer) where T : IBlahEntryNextFrameSignal
-	{
-		if (_map.TryGetValue(typeof(T), out var cached))
-			consumer = (IBlahNfSignalConsumer<T>)cached;
-		else
-			consumer = (IBlahNfSignalConsumer<T>)AddPool<T>(new BlahNfSignalPool<T>());
+			write = (IBlahNfSignalWrite<T>)AddPool<T>(new BlahNfSignalPool<T>());
 	}
 	
-	public void Get<T>(out IBlahNfSignalProducer<T> producer) where T : IBlahEntryNextFrameSignal
+	public void Get<T>(out IBlahDataGet<T> getter) where T : struct, IBlahEntryData
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			producer = (IBlahNfSignalProducer<T>)cached;
+			getter = (IBlahDataGet<T>)cached;
 		else
-			producer = (IBlahNfSignalProducer<T>)AddPool<T>(new BlahNfSignalPool<T>());
+			getter = (IBlahDataGet<T>)AddPool<T>(new BlahDataPool<T>());
 	}
-    
+	
+	public void Get<T>(out IBlahDataFull<T> full) where T : struct, IBlahEntryData
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			full = (IBlahDataFull<T>)cached;
+		else
+			full = (IBlahDataFull<T>)AddPool<T>(new BlahDataPool<T>());
+	}
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
-	public IBlahDataConsumer<T> GetDataConsumer<T>() where T: IBlahEntryData
+	public IBlahSignalRead<T> GetSignalRead<T>() where T: struct, IBlahEntrySignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahDataConsumer<T>)cached;
-		return (IBlahDataConsumer<T>)AddPool<T>(new BlahDataPool<T>());
+			return (IBlahSignalRead<T>)cached;
+		return (IBlahSignalRead<T>)AddPool<T>(new BlahSignalPool<T>());
 	}
 
-	public IBlahDataProducer<T> GetDataProducer<T>() where T: IBlahEntryData
+	public IBlahSignalWrite<T> GetSignalWrite<T>() where T: struct, IBlahEntrySignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahDataProducer<T>)cached;
-		return (IBlahDataProducer<T>)AddPool<T>(new BlahDataPool<T>());
+			return (IBlahSignalWrite<T>)cached;
+		return (IBlahSignalWrite<T>)AddPool<T>(new BlahSignalPool<T>());
 	}
 
-	public IBlahSignalConsumer<T> GetSignalConsumer<T>() where T: IBlahEntrySignal
+	public IBlahNfSignalRead<T> GetNfSignalRead<T>() where T: struct, IBlahEntryNfSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSignalConsumer<T>)cached;
-		return (IBlahSignalConsumer<T>)AddPool<T>(new BlahSignalPool<T>());
+			return (IBlahNfSignalRead<T>)cached;
+		return (IBlahNfSignalRead<T>)AddPool<T>(new BlahNfSignalPool<T>());
 	}
 
-	public IBlahSignalProducer<T> GetSignalProducer<T>() where T: IBlahEntrySignal
+	public IBlahNfSignalWrite<T> GetNfSignalWrite<T>() where T: struct, IBlahEntryNfSignal
 	{
 		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSignalProducer<T>)cached;
-		return (IBlahSignalProducer<T>)AddPool<T>(new BlahSignalPool<T>());
-	}
-
-	public IBlahNfSignalConsumer<T> GetNfSignalConsumer<T>() where T: IBlahEntryNextFrameSignal
-	{
-		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahNfSignalConsumer<T>)cached;
-		return (IBlahNfSignalConsumer<T>)AddPool<T>(new BlahNfSignalPool<T>());
-	}
-
-	public IBlahNfSignalProducer<T> GetNfSignalProducer<T>() where T: IBlahEntryNextFrameSignal
-	{
-		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahNfSignalProducer<T>)cached;
-		return (IBlahNfSignalProducer<T>)AddPool<T>(new BlahNfSignalPool<T>());
-	}
-
-	public IBlahSoloSignalConsumer<T> GetSoloSignalConsumer<T>() where T : IBlahEntrySoloSignal
-	{
-		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSoloSignalConsumer<T>)cached;
-		return (IBlahSoloSignalConsumer<T>)AddPool<T>(new BlahSoloSignalPool<T>());
-	}
-
-	public IBlahSoloSignalProducer<T> GetSoloSignalProducer<T>() where T : IBlahEntrySoloSignal
-	{
-		if (_map.TryGetValue(typeof(T), out var cached))
-			return (IBlahSoloSignalProducer<T>)cached;
-		return (IBlahSoloSignalProducer<T>)AddPool<T>(new BlahSoloSignalPool<T>());
+			return (IBlahNfSignalWrite<T>)cached;
+		return (IBlahNfSignalWrite<T>)AddPool<T>(new BlahNfSignalPool<T>());
 	}
 
 
+	public IBlahDataGet<T> GetDataGetter<T>() where T: struct, IBlahEntryData
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			return (IBlahDataGet<T>)cached;
+		return (IBlahDataGet<T>)AddPool<T>(new BlahDataPool<T>());
+	}
+
+	public IBlahDataFull<T> GetDataFull<T>() where T: struct, IBlahEntryData
+	{
+		if (_map.TryGetValue(typeof(T), out var cached))
+			return (IBlahDataFull<T>)cached;
+		return (IBlahDataFull<T>)AddPool<T>(new BlahDataPool<T>());
+	}
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	private IBlahPoolInternal AddPool<T>(IBlahPoolInternal pool)

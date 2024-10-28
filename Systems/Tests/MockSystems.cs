@@ -90,7 +90,7 @@ internal class MockFullWithSwitchToBSystem :
 	public override void Run()
 	{
 		base.Run();
-		InitData.Context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		InitData.Context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 	}
 }
 
@@ -100,7 +100,7 @@ internal class MockFullWithSwitchToCSystem
 	public override void Run()
 	{
 		base.Run();
-		InitData.Context.RequestSwitchGroup((int)EMockGroupId.GroupC);
+		InitData.Context.RequestSwitchOnNextRun((int)EMockGroupId.GroupC);
 	}
 }
 }

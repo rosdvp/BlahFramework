@@ -11,7 +11,7 @@ internal class TestEmptyGroups
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		
 		Assert.AreEqual(null, context.ActiveGroupId);
 		
@@ -27,7 +27,7 @@ internal class TestEmptyGroups
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		
 		Assert.AreEqual(null, context.ActiveGroupId);
 		
@@ -43,7 +43,7 @@ internal class TestEmptyGroups
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		
 		Assert.AreEqual(null, context.ActiveGroupId);
 		
@@ -61,9 +61,9 @@ internal class TestEmptyGroups
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
 		
 		Assert.AreEqual((int)EMockGroupId.GroupA, context.ActiveGroupId);
@@ -76,11 +76,11 @@ internal class TestEmptyGroups
 		context.AddGroup((int)EMockGroupId.GroupA);
 		context.AddGroup((int)EMockGroupId.GroupB);
 		
-		context.RequestSwitchGroup((int)EMockGroupId.GroupB);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupB);
 		context.Run();
-		context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+		context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 		context.Run();
-		context.RequestSwitchGroup(null);
+		context.RequestSwitchOnNextRun(null);
 		context.Run();
 		
 		Assert.Null(context.ActiveGroupId);

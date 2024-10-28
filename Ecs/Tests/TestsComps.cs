@@ -8,13 +8,13 @@ internal class TestsComps
 	public void Test_AddComp_ValueSame([Range(1, 10)] int count)
 	{
 		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
+		var write = ecs.GetCompFull<CompA>();
+		var read  = ecs.GetCompGetter<CompA>();
 
-		var entities = new BlahEcsEntity[count];
+		var entities = new BlahEnt[count];
 		for (var i = 0; i < count; i++)
 		{
-			entities[i] = ecs.CreateEntity();
+			entities[i] = ecs.CreateEnt();
 
 			write.Add(entities[i]).Val = i + 1;
 			
@@ -27,10 +27,10 @@ internal class TestsComps
 	public void Test_ReAddComp_NoThrow()
 	{
 		var ecs    = new BlahEcs();
-		var write  = ecs.GetWrite<CompA>();
-		var read   = ecs.GetRead<CompA>();
+		var write  = ecs.GetCompFull<CompA>();
+		var read   = ecs.GetCompGetter<CompA>();
 
-		var ent = ecs.CreateEntity();
+		var ent = ecs.CreateEnt();
 
 		write.Add(ent);
 		read.Remove(ent);
@@ -42,10 +42,10 @@ internal class TestsComps
 	public void Test_DestroyEnt1AddCompEnt2_Ent1HasNoComp()
 	{
 		var ecs   = new BlahEcs();
-		var write = ecs.GetWrite<CompA>();
-		var read  = ecs.GetRead<CompA>();
+		var write = ecs.GetCompFull<CompA>();
+		var read  = ecs.GetCompGetter<CompA>();
 
-		var ent1 = ecs.CreateEntity();
+		var ent1 = ecs.CreateEnt();
         
 		Assert.IsFalse(read.Has(ent1));
 		
@@ -53,8 +53,8 @@ internal class TestsComps
 
 		Assert.IsTrue(read.Has(ent1));
 		
-		ecs.DestroyEntity(ent1);
-		var ent2 = ecs.CreateEntity();
+		ecs.DestroyEnt(ent1);
+		var ent2 = ecs.CreateEnt();
 		
 		Assert.IsFalse(read.Has(ent1));
 		Assert.IsFalse(read.Has(ent2));
@@ -65,7 +65,7 @@ internal class TestsComps
 	}
 	
 	
-	private struct CompA : IBlahEntryEcs
+	private struct CompA : IBlahEntryComp
 	{
 		public int Val;
 	}

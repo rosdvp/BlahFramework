@@ -2,7 +2,7 @@
 using System.Reflection;
 using NUnit.Framework;
 
-namespace Blah.Pools.Tests.Datas
+namespace Blah.Pools.Tests.Data
 {
 internal class TestDataPtr
 {
@@ -10,8 +10,8 @@ internal class TestDataPtr
 	public void TestNewPtr_PtrInvalid()
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 
 		var ptr = new BlahDataPtr();
 		Assert.IsFalse(consumer.IsPtrValid(ptr));
@@ -25,10 +25,10 @@ internal class TestDataPtr
 	public void TestPtrFromDiffPool_PtrInvalid()
 	{
 		var context   = new BlahPoolsContext();
-		var producerA = context.GetDataProducer<MockDataEntry>();
-		var consumerA = context.GetDataConsumer<MockDataEntry>();
-		var producerB = context.GetDataProducer<MockDataEntryB>();
-		var consumerB = context.GetDataConsumer<MockDataEntryB>();
+		var producerA = context.GetDataFull<MockDataEntry>();
+		var consumerA = context.GetDataGetter<MockDataEntry>();
+		var producerB = context.GetDataFull<MockDataEntryB>();
+		var consumerB = context.GetDataGetter<MockDataEntryB>();
 
 		producerA.Add(out var ptrA);
 		producerB.Add(out var ptrB);
@@ -44,8 +44,8 @@ internal class TestDataPtr
 	public void TestAddWithPtr_ValuesEqual()
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 
 		producer.Add(out var ptr1).Val = 1;
 		Assert.AreEqual(1, consumer.Get(ptr1).Val);
@@ -64,8 +64,8 @@ internal class TestDataPtr
 	public void TestGetPtr_ValuesEqual()
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 
 		var ptr1 = new BlahDataPtr();
 		var ptr2 = new BlahDataPtr();
@@ -103,8 +103,8 @@ internal class TestDataPtr
 	public void TestForeachRemoveOne_PtrInvalid(params int[] valsToRemove)
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 		
 		producer.Add(out var ptr0).Val = 0;
 		producer.Add(out var ptr1).Val = 1;
@@ -152,8 +152,8 @@ internal class TestDataPtr
 	public void TestForeachRemoveBatch_PtrsInvalid(params int[] rawValsToRemove)
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 
 		producer.Add(out var ptr0).Val = 0;
 		producer.Add(out var ptr1).Val = 1;
@@ -188,8 +188,8 @@ internal class TestDataPtr
 	public void TestPtrRemoveOne_PtrInvalid(params int[] valsToRemove)
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 		
 		producer.Add(out var ptr0).Val = 0;
 		producer.Add(out var ptr1).Val = 1;
@@ -232,8 +232,8 @@ internal class TestDataPtr
 	public void TestPtrRemoveBatch_PtrsInvalid(params int[] rawValsToRemove)
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 
 		producer.Add(out var ptr0).Val = 0;
 		producer.Add(out var ptr1).Val = 1;
@@ -264,8 +264,8 @@ internal class TestDataPtr
 	public void TestPtrAddRemoveAdd_PtrReUsed()
 	{
 		var context  = new BlahPoolsContext();
-		var producer = context.GetDataProducer<MockDataEntry>();
-		var consumer = context.GetDataConsumer<MockDataEntry>();
+		var producer = context.GetDataFull<MockDataEntry>();
+		var consumer = context.GetDataGetter<MockDataEntry>();
 
 		producer.Add(out var ptrA);
 		

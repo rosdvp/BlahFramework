@@ -16,7 +16,7 @@ internal class TestNoGroups
 	public void Test_SwitchToNo_NoGroupActive()
 	{
 		var context = new BlahSystemsContext(null, null);
-		context.RequestSwitchGroup(null);
+		context.RequestSwitchOnNextRun(null);
 		context.Run();
 		Assert.Null(context.ActiveGroupId);
 	}
@@ -35,7 +35,7 @@ internal class TestNoGroups
 		var context = new BlahSystemsContext(null, null);
 		try
 		{
-			context.RequestSwitchGroup((int)EMockGroupId.GroupA);
+			context.RequestSwitchOnNextRun((int)EMockGroupId.GroupA);
 			Assert.Fail();
 		}
 		catch (Exception)

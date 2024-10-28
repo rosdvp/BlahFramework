@@ -9,7 +9,7 @@ internal interface IBlahPoolInternal
 	void Clear();
 }
 
-public class BlahPool<T> : IBlahPoolInternal
+public class BlahPool<T> : IBlahPoolInternal where T: struct
 {
 	protected readonly BlahSet<T> Entries = new(2, 0);
 

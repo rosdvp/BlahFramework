@@ -38,32 +38,32 @@ internal class TextMixed
 
 	private class SystemA
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	[BlahBefore(typeof(SystemC))]
 	private class SystemB
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
+		private IBlahSignalWrite<SignalA> _signalA;
 	}
 
 	[BlahAfter(typeof(SystemA))]
 	private class SystemC
 	{
-		private IBlahSignalProducer<SignalA> _signalA;
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalA> _signalA;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemD
 	{
-		private IBlahSignalConsumer<SignalA> _signalA;
+		private IBlahSignalRead<SignalA> _signalA;
 
-		private IBlahSignalProducer<SignalB> _signalB;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	private class SystemE
 	{
-		private IBlahSignalConsumer<SignalB> _signalB;
+		private IBlahSignalRead<SignalB> _signalB;
 	}
 }
 }
