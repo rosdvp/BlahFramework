@@ -118,11 +118,6 @@ internal class BlahDataPool<T> :
 			RemoveSafe(ptr.EntryPtr);
 	}
 
-	public void RemoveAll()
-	{
-		Clear();
-	}
-
 	//-----------------------------------------------------------
 	//-----------------------------------------------------------
 	protected override void OnAliveEntryAdded(int entryPtr)

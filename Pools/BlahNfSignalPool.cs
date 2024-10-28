@@ -13,6 +13,9 @@ public interface IBlahNfSignalRead<T> where T : struct, IBlahEntryNfSignal
 	public BlahPool<T>.Enumerator GetEnumerator();
 
 	public ref T GetAny();
+	
+	public void Remove(int iteratorLevel = -1);
+	public void RemoveAll();
 }
 
 public interface IBlahNfSignalWrite<T> where T : struct, IBlahEntryNfSignal

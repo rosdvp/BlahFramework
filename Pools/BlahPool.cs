@@ -84,6 +84,13 @@ public class BlahPool<T> : IBlahPoolInternal where T: struct
 				break;
 			}
 	}
+	
+	public void RemoveAll()
+	{
+		if (GoingIteratorsCount > 0)
+			throw new Exception("RemoveAll must not be used during iteration");
+		Clear();
+	}
     
 	private void AddDelayedOp(bool isAdd, int entryPtr)
 	{

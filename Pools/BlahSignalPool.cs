@@ -13,6 +13,9 @@ public interface IBlahSignalRead<T> where T : struct, IBlahEntrySignal
 
 	public ref T GetAny();
 	public void Sort(Comparison<T> comp);
+
+	public void Remove(int iteratorLevel = -1);
+	public void RemoveAll();
 }
 
 public interface IBlahSignalWrite<T> where T : struct, IBlahEntrySignal
