@@ -15,21 +15,17 @@ internal static class BlahEditorSystemsOrdering
 	{
 		var sb = new StringBuilder();
 	
-		var context = BlahReflection.InstantiateGameTypesWithBaseType<BlahContextBase>();
-		
-		var featuresGroups =
-			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesGroups(context);
-		var bgFeatures =
-			(List<BlahFeatureBase>)BlahReflection.GetContextBackgroundFeatures(context);
-		foreach ((int groupId, var features) in featuresGroups)
+		var context = BlahReflection.InstantiateGameTypeWithBaseType<BlahContextBase>();
+
+		foreach ((int groupId, var features) in context.FeaturesGroups)
 		{
 			var systems = new List<Type>();
 			foreach (var feature in features)
 				if (feature.Systems != null)
 					foreach (var system in feature.Systems)
 						systems.Add(system.GetType());
-			if (bgFeatures != null)
-				foreach (var bgFeature in bgFeatures)
+			if (context.BackgroundFeatures != null)
+				foreach (var bgFeature in context.BackgroundFeatures)
 				foreach (var bgSystem in bgFeature.Systems)
 					systems.Add(bgSystem.GetType());
 			try
