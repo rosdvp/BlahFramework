@@ -9,13 +9,14 @@ namespace Blah.Ordering.Tests
 internal class TextMixed3
 {
 	[Test]
-	public void Test()
+	public void Test([Range(0, 10)] int offset)
 	{
 		var a       = typeof(SystemA);
 		var b       = typeof(SystemB);
 		var c       = typeof(SystemC);
 		var d       = typeof(SystemD);
 		var systems = new List<Type> { d, c, b, a };
+		AssertHelper.Shift(systems, offset);
 		
 		BlahOrderer.Order(ref systems);
 		

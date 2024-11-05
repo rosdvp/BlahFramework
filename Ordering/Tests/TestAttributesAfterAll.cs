@@ -8,7 +8,7 @@ namespace Blah.Ordering.Tests
 internal class TestAttributesAfterAll
 {
 	[Test]
-	public void Test()
+	public void Test([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -18,6 +18,7 @@ internal class TestAttributesAfterAll
 			typeof(SystemD),
 			typeof(SystemC),
 		};
+		AssertHelper.Shift(systems, offset);
 		var expected = new[]
 		{
 			typeof(SystemA),

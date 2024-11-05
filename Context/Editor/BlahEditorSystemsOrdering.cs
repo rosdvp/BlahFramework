@@ -10,13 +10,12 @@ namespace Blah.Context.Editor
 {
 internal static class BlahEditorSystemsOrdering
 {
-	[MenuItem("Blah/Framework/Report systems ordering issues")]
-	public static void ReportIssues()
+	[MenuItem("Blah/Framework/Report systems order")]
+	public static void ReportSystemsOrder()
 	{
 		var sb = new StringBuilder();
-		sb.AppendLine("--- systems ordering issues ---");
-
-		var context = BlahReflection.InstantiateGameTypeWithBaseType<BlahContextBase>();
+	
+		var context = BlahReflection.InstantiateGameTypesWithBaseType<BlahContextBase>();
 		
 		var featuresGroups =
 			(Dictionary<int, List<BlahFeatureBase>>)BlahReflection.GetContextFeaturesGroups(context);
@@ -36,10 +35,15 @@ internal static class BlahEditorSystemsOrdering
 			try
 			{
 				BlahOrderer.Order(ref systems, true);
+				sb.Clear();
+				sb.AppendLine($"group {groupId}");
+				foreach (var system in systems)
+					sb.AppendLine(system.Name);
+				Debug.Log(sb.ToString());
 			}
 			catch (BlahOrdererSortingException e)
 			{
-				sb.AppendLine($"group {groupId}, {e.GetFullMsg()}");
+				Debug.Log($"problem in group {groupId}, {e.GetFullMsg()}");
 			}
 		}
 

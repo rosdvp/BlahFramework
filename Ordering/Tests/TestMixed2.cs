@@ -9,7 +9,7 @@ namespace Blah.Ordering.Tests
 internal class TextMixed2
 {
 	[Test]
-	public void Test()
+	public void Test([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -17,6 +17,7 @@ internal class TextMixed2
 			typeof(SystemC),
 			typeof(SystemB),
 		};
+		AssertHelper.Shift(systems, offset);
 		var expected = new[]
 		{
 			typeof(SystemA),

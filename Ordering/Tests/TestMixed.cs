@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using Blah.Ordering.Attributes;
 using Blah.Pools;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace Blah.Ordering.Tests
 {
 internal class TextMixed
 {
 	[Test]
-	public void Test()
+	public void Test([NUnit.Framework.Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -19,11 +20,13 @@ internal class TextMixed
 			typeof(SystemB),
 			typeof(SystemC),
 		};
+		AssertHelper.Shift(systems, offset);
 		var expected = new[]
 		{
 			typeof(SystemA),
 			typeof(SystemB),
-			typeof(SystemC)
+			typeof(SystemC),
+			typeof(SystemE)
 		};
 		
 		BlahOrderer.Order(ref systems);
@@ -44,13 +47,13 @@ internal class TextMixed
 	[BlahBefore(typeof(SystemC))]
 	private class SystemB
 	{
-		private IBlahSignalWrite<SignalA> _signalA;
+		private IBlahSignalRead<SignalA>  _signalA;
+		private IBlahSignalWrite<SignalB> _signalB;
 	}
 
 	[BlahAfter(typeof(SystemA))]
 	private class SystemC
 	{
-		private IBlahSignalWrite<SignalA> _signalA;
 		private IBlahSignalWrite<SignalB> _signalB;
 	}
 

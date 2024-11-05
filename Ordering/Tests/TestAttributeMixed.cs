@@ -8,7 +8,7 @@ namespace Blah.Ordering.Tests
 internal class TestAttributeMixed
 {
 	[Test]
-	public void Test_AllAttributed()
+	public void Test_AllAttributed([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -17,6 +17,7 @@ internal class TestAttributeMixed
 			typeof(SystemC),
 			typeof(SystemB),
 		};
+		AssertHelper.Shift(systems, offset);
 		var expected = new[]
 		{
 			typeof(SystemA),
@@ -31,7 +32,7 @@ internal class TestAttributeMixed
 	}
 
 	[Test]
-	public void Test_SomeAttributed()
+	public void Test_SomeAttributed([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -42,6 +43,7 @@ internal class TestAttributeMixed
 			typeof(SystemB),
 			typeof(SystemF)
 		};
+		AssertHelper.Shift(systems, offset);
 		var expectedOrder = new[]
 		{
 			typeof(SystemA),

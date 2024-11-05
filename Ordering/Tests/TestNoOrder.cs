@@ -7,7 +7,7 @@ namespace Blah.Ordering.Tests
 internal class TestNoOrder
 {
 	[Test]
-	public void Test_NoOrder()
+	public void Test_NoOrder([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -15,6 +15,7 @@ internal class TestNoOrder
 			typeof(SystemB),
 			typeof(SystemC)
 		};
+		AssertHelper.Shift(systems, offset);
 		var expected = systems.ToArray();
 		BlahOrderer.Order(ref systems);
 		

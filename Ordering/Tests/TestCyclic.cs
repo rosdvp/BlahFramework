@@ -9,7 +9,7 @@ namespace Blah.Ordering.Tests
 internal class TestCyclic
 {
 	[Test]
-	public void Test_Cyclic_Throws()
+	public void Test_Cyclic_Throws([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>()
 		{
@@ -19,6 +19,7 @@ internal class TestCyclic
 			typeof(SystemA4),
 			typeof(SystemA5)
 		};
+		AssertHelper.Shift(systems, offset);
 		try
 		{
 			BlahOrderer.Order(ref systems);

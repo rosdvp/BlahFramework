@@ -6,6 +6,17 @@ namespace Blah.Ordering.Tests
 {
 internal static class AssertHelper
 {
+	public static void Shift(List<Type> list, int offset)
+	{
+		for (var offs = 0; offs < offset; offs++)
+		{
+			var first = list[0];
+			for (var i = 0; i < list.Count - 1; i++)
+				list[i] = list[i + 1];
+			list[^1] = first;
+		}
+	}
+	
 	public static void AssertEqual(IReadOnlyList<Type> expected, IReadOnlyList<Type> actual)
 	{
 		string errorStr = BuildErrorStr(expected, actual);

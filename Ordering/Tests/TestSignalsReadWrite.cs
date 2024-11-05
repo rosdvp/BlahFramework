@@ -5,10 +5,10 @@ using NUnit.Framework;
 
 namespace Blah.Ordering.Tests
 {
-internal class TestProduceConsume
+internal class TestSignalsReadWrite
 {
 	[Test]
-	public void Test_AllWithFields()
+	public void Test_AllWithFields([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -16,6 +16,7 @@ internal class TestProduceConsume
 			typeof(SystemA),
 			typeof(SystemB),
 		};
+		AssertHelper.Shift(systems, offset);
 		var expected = new[]
 		{
 			typeof(SystemA),
@@ -29,7 +30,7 @@ internal class TestProduceConsume
 	}
 
 	[Test]
-	public void Test_SomeWithFields()
+	public void Test_SomeWithFields([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -39,6 +40,7 @@ internal class TestProduceConsume
 			typeof(SystemE),
 			typeof(SystemC),
 		};
+		AssertHelper.Shift(systems, offset);
 		var expectedOrder = new[]
 		{
 			typeof(SystemA),
@@ -52,7 +54,7 @@ internal class TestProduceConsume
 	}
 
 	[Test]
-	public void Test_ComplexChain()
+	public void Test_ComplexChain([Range(0, 10)] int offset)
 	{
 		var systems = new List<Type>
 		{
@@ -61,6 +63,7 @@ internal class TestProduceConsume
 			typeof(SystemF),
 			typeof(SystemG),
 		};
+		AssertHelper.Shift(systems, offset);
 		
 		BlahOrderer.Order(ref systems);
 
