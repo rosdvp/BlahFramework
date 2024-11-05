@@ -53,41 +53,6 @@ public static class BlahReflection
 			system = system.BaseType;
 		}
 	}
-
-	public static object GetContextFeaturesGroups(object context)
-	{
-		var type = context.GetType();
-		var prop = type.GetProperty(
-			"FeaturesGroups",
-			BindingFlags.Instance |
-			BindingFlags.Public |
-			BindingFlags.NonPublic
-		);
-		return prop?.GetValue(context);
-	}
-
-	public static object GetContextBackgroundFeatures(object context)
-	{
-		var type = context.GetType();
-		var prop = type.GetProperty(
-			"BackgroundFeatures",
-			BindingFlags.Instance |
-			BindingFlags.Public |
-			BindingFlags.NonPublic
-		);
-		return prop?.GetValue(context);
-	}
-
-	public static IReadOnlyList<Type> GetFeatureSystems(object feature)
-	{
-		var prop = feature.GetType().GetProperty(
-			"Systems",
-			BindingFlags.Instance |
-			BindingFlags.Public |
-			BindingFlags.NonPublic
-		);
-		return (IReadOnlyList<Type>)prop?.GetValue(feature);
-	}
 	
 	public static IEnumerable<Attribute> EnumerateAttributes(Type type)
 	{
@@ -113,15 +78,6 @@ public static class BlahReflection
 			}
 		}
 	}
-    
-	public static T InstantiateGameType<T>() where T: class
-	{
-		var targetType = typeof(T);
-		foreach (var type in EnumerateGameTypes())
-			if (type == targetType)
-				return (T)Activator.CreateInstance(type);
-		return null;
-	}
 
 	public static T InstantiateGameTypeWithBaseType<T>() where T : class
 	{
@@ -130,14 +86,6 @@ public static class BlahReflection
 			if (type.BaseType == baseType)
 				return (T)Activator.CreateInstance(type);
 		return null;
-	}
-	
-	public static IEnumerable<T> InstantiateGameTypesWithBaseType<T>()
-	{
-		var baseType = typeof(T);
-		foreach (var type in EnumerateGameTypes())
-			if (type.BaseType == baseType)
-				yield return (T)Activator.CreateInstance(type);
 	}
 
 
