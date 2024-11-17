@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Blah.Profiling;
-using UnityEngine.Profiling;
 
 namespace Blah.Systems
 {
@@ -45,9 +44,13 @@ public class BlahSystemsGroup
 		_isInited = true;
 		for (var i = 0; i < _initSystems.Count; i++)
 		{
-			BlahProfilerMarkers.SystemInit.Begin();
+#if BLAH_PROFILER
+			var profiler = BlahProfilerMarkers.BeginSystemInit(_initSystems[i]);
+#endif
 			_initSystems[i].Init(initData);
-			BlahProfilerMarkers.SystemInit.End();
+#if BLAH_PROFILER
+			profiler.End();
+#endif
 		}
 	}
 
@@ -60,9 +63,13 @@ public class BlahSystemsGroup
 		_isActive = true;
 		for (var i = 0; i < _resumeSystems.Count; i++)
 		{
-			BlahProfilerMarkers.SystemResume.Begin();
+#if BLAH_PROFILER
+			var profiler = BlahProfilerMarkers.BeginSystemResume(_resumeSystems[i]);
+#endif
 			_resumeSystems[i].Resume(initData);
-			BlahProfilerMarkers.SystemResume.End();
+#if BLAH_PROFILER
+			profiler.End();
+#endif
 		}
 	}
 
@@ -75,9 +82,13 @@ public class BlahSystemsGroup
 		_isActive = false;
 		for (var i = 0; i < _pauseSystems.Count; i++)
 		{
-			BlahProfilerMarkers.SystemPause.Begin();
+#if BLAH_PROFILER
+			var profiler = BlahProfilerMarkers.BeginSystemPause(_pauseSystems[i]);
+#endif
 			_pauseSystems[i].Pause();
-			BlahProfilerMarkers.SystemPause.End();
+#if BLAH_PROFILER
+			profiler.End();
+#endif
 		}
 	}
 	
@@ -90,9 +101,13 @@ public class BlahSystemsGroup
 
 		for (var i = 0; i < _runSystems.Count; i++)
 		{
-			BlahProfilerMarkers.SystemRun.Begin();
+#if BLAH_PROFILER
+			var profiler = BlahProfilerMarkers.BeginSystemRun(_runSystems[i]);
+#endif
 			_runSystems[i].Run();
-			BlahProfilerMarkers.SystemRun.End();
+#if BLAH_PROFILER
+			profiler.End();
+#endif
 		}
 	}
 
