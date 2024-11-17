@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Blah.Profiling;
+using UnityEngine.Profiling;
 
 namespace Blah.Systems
 {
@@ -42,7 +44,11 @@ public class BlahSystemsGroup
 			return;
 		_isInited = true;
 		for (var i = 0; i < _initSystems.Count; i++)
+		{
+			BlahProfilerMarkers.SystemInit.Begin();
 			_initSystems[i].Init(initData);
+			BlahProfilerMarkers.SystemInit.End();
+		}
 	}
 
 	internal void ResumeSystems(IBlahSystemsInitData initData)
@@ -53,7 +59,11 @@ public class BlahSystemsGroup
 			throw new Exception("Group is already active!");
 		_isActive = true;
 		for (var i = 0; i < _resumeSystems.Count; i++)
+		{
+			BlahProfilerMarkers.SystemResume.Begin();
 			_resumeSystems[i].Resume(initData);
+			BlahProfilerMarkers.SystemResume.End();
+		}
 	}
 
 	internal void PauseSystems()
@@ -64,7 +74,11 @@ public class BlahSystemsGroup
 			throw new Exception("Group is already inactive!");
 		_isActive = false;
 		for (var i = 0; i < _pauseSystems.Count; i++)
+		{
+			BlahProfilerMarkers.SystemPause.Begin();
 			_pauseSystems[i].Pause();
+			BlahProfilerMarkers.SystemPause.End();
+		}
 	}
 	
 	internal void RunSystems()
@@ -73,9 +87,13 @@ public class BlahSystemsGroup
 			throw new Exception("Group is not inited!");
 		if (!_isActive)
 			throw new Exception("Group is inactive!");
-		
+
 		for (var i = 0; i < _runSystems.Count; i++)
+		{
+			BlahProfilerMarkers.SystemRun.Begin();
 			_runSystems[i].Run();
+			BlahProfilerMarkers.SystemRun.End();
+		}
 	}
 
 	//-----------------------------------------------------------
